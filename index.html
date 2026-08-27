@@ -27,21 +27,16 @@
 
   <main id="main">
     <section class="hero" id="top">
-      <div class="hero-media" aria-hidden="true">
-        <img src="assets/perth-futsal.png" alt="">
-        <img src="assets/aqua-local.jpg" alt="">
-        <img src="assets/perth-tennis.png" alt="">
-      </div>
-      <div class="hero-shade" aria-hidden="true"></div>
+      <img class="hero-background" src="assets/hero-workspace.jpg" alt="" aria-hidden="true">
       <div class="shell hero-content">
-        <p class="eyebrow eyebrow-light">Perth, Western Australia</p>
+        <p class="eyebrow">Perth, Western Australia</p>
         <h1>Philipp Alimov</h1>
         <p class="hero-role">Senior software test engineer and product builder</p>
         <p class="hero-summary">I turn product risk into focused quality strategy, practical automation and reliable releases. Outside my core QA role, I design and ship public web and mobile products from requirements through production operations.</p>
         <div class="hero-actions">
           <a class="button button-primary" href="#work">View selected work</a>
           <a class="button button-quiet" href="assets/Philipp_Alimov_Resume.pdf" download>Download resume</a>
-          <a class="text-action text-action-light" href="mailto:philalimov.apps@gmail.com">Email me</a>
+          <a class="text-action" href="mailto:philalimov.apps@gmail.com">Email me</a>
         </div>
       </div>
     </section>
@@ -62,73 +57,45 @@
           <p>These projects are selected for delivery depth, operational ownership and public evidence, not for the size of the technology list.</p>
         </div>
 
-        <article class="project project-featured">
-          <div class="project-copy">
-            <div class="project-index">01</div>
-            <p class="project-type">Sports technology · Live product</p>
-            <h3>Perth Futsal</h3>
-            <p class="project-lede">An independent competition companion that turns fragmented futsal data into a fast supporter experience across web, iOS and Android.</p>
-            <p>I own product direction, data ingestion, API design, identity reconciliation, frontend and native delivery, privacy controls, operational diagnostics and release quality.</p>
-            <dl class="project-facts">
-              <div><dt>Experience</dt><dd>Fixtures, results, standings, teams, player histories, favourites, notifications and global futsal coverage</dd></div>
-              <div><dt>Engineering</dt><dd>Python, Flask, PostgreSQL, React, Playwright, Capacitor and scheduled data pipelines</dd></div>
-              <div><dt>Operations</dt><dd>Web and native releases, MFA-protected administration, auditability, scraper recovery and production monitoring</dd></div>
-            </dl>
-            <div class="project-links">
-              <a href="https://perth-futsal.onrender.com/about">View product</a>
-              <a href="https://apps.apple.com/au/app/perth-futsal/id6758882763">App Store</a>
+        <div class="project-grid">
+          <article class="project project-featured">
+            <div class="project-copy">
+              <div class="project-index">01</div>
+              <p class="project-type">Sports technology · Live product</p>
+              <h3>Perth Futsal</h3>
+              <p class="project-lede">An independent competition companion that turns fragmented futsal data into a fast supporter experience across web, iOS and Android.</p>
+              <p>I own product direction, data ingestion, API design, identity reconciliation, frontend and native delivery, privacy controls, operational diagnostics and release quality.</p>
+              <dl class="project-facts">
+                <div><dt>Experience</dt><dd>Fixtures, results, standings, teams, player histories, favourites, notifications and global futsal coverage</dd></div>
+                <div><dt>Engineering</dt><dd>Python, Flask, PostgreSQL, React, Playwright, Capacitor and scheduled data pipelines</dd></div>
+                <div><dt>Operations</dt><dd>Web and native releases, MFA-protected administration, auditability, scraper recovery and production monitoring</dd></div>
+              </dl>
+              <div class="project-links">
+                <a href="https://perth-futsal.onrender.com/about">View product</a>
+                <a href="https://apps.apple.com/au/app/perth-futsal/id6758882763">App Store</a>
+              </div>
             </div>
-          </div>
-          <figure class="project-visual project-visual-phone">
-            <img src="assets/perth-futsal.png" alt="Perth Futsal fixture screen showing divisions, teams, venues and match actions" loading="lazy">
-            <figcaption>Mobile-first fixture flow</figcaption>
-          </figure>
-        </article>
+          </article>
 
-        <article class="project">
-          <div class="project-copy">
-            <div class="project-index">02</div>
-            <p class="project-type">Public data · App Store product</p>
-            <h3>Aqua Local</h3>
-            <p class="project-lede">A public swimming and water-activity product for discovering pools, lessons, recovery facilities and venue availability with visible source provenance.</p>
-            <p>The product combines a national venue catalogue with source freshness, mobile discovery, privacy-light analytics, operator controls and a native iOS release.</p>
-            <dl class="project-facts">
-              <div><dt>Experience</dt><dd>Pool discovery, nearby sorting, lessons, opening context, saved venues and direct venue actions</dd></div>
-              <div><dt>Engineering</dt><dd>FastAPI, React, structured ingestion, source-quality controls, Capacitor and Oracle deployment</dd></div>
-              <div><dt>Quality</dt><dd>Provenance rules, stale and unknown states, secure administration and release-gated native delivery</dd></div>
-            </dl>
-            <div class="project-links">
-              <a href="https://aqualocal.com.au">View product</a>
-              <a href="https://apps.apple.com/au/app/aqua-local/id6773764070">App Store</a>
+          <article class="project">
+            <div class="project-copy">
+              <div class="project-index">02</div>
+              <p class="project-type">Public data · App Store product</p>
+              <h3>Aqua Local</h3>
+              <p class="project-lede">A public swimming and water-activity product for discovering pools, lessons, recovery facilities and venue availability with visible source provenance.</p>
+              <p>The product combines a national venue catalogue with source freshness, mobile discovery, privacy-light analytics, operator controls and a native iOS release.</p>
+              <dl class="project-facts">
+                <div><dt>Experience</dt><dd>Pool discovery, nearby sorting, lessons, opening context, saved venues and direct venue actions</dd></div>
+                <div><dt>Engineering</dt><dd>FastAPI, React, structured ingestion, source-quality controls, Capacitor and Oracle deployment</dd></div>
+                <div><dt>Quality</dt><dd>Provenance rules, stale and unknown states, secure administration and release-gated native delivery</dd></div>
+              </dl>
+              <div class="project-links">
+                <a href="https://aqualocal.com.au">View product</a>
+                <a href="https://apps.apple.com/au/app/aqua-local/id6773764070">App Store</a>
+              </div>
             </div>
-          </div>
-          <figure class="project-visual project-visual-phone">
-            <img src="assets/aqua-local.jpg" alt="Aqua Local discovery screen with pool search, activity choices and nearby venues" loading="lazy">
-            <figcaption>Public pool and activity discovery</figcaption>
-          </figure>
-        </article>
-
-        <article class="project">
-          <div class="project-copy">
-            <div class="project-index">03</div>
-            <p class="project-type">Local discovery · Live web product</p>
-            <h3>Perth Tennis</h3>
-            <p class="project-lede">A mobile-first tennis product combining competition scores and player records with public court, club, lesson and program discovery.</p>
-            <p>The system prioritises traceable source data and graceful degradation across external league, venue and council sources.</p>
-            <dl class="project-facts">
-              <div><dt>Experience</dt><dd>Scores, ladders, player results, venue search, availability signals and verified booking paths</dd></div>
-              <div><dt>Engineering</dt><dd>Python, Flask, PostgreSQL, React, scheduled ingestion, caching and Capacitor</dd></div>
-              <div><dt>Reliability</dt><dd>Source provenance, confidence states, offline fallback, structured scrape health and production smoke checks</dd></div>
-            </dl>
-            <div class="project-links">
-              <a href="https://129-213-100-42.sslip.io">View product</a>
-            </div>
-          </div>
-          <figure class="project-visual project-visual-wide">
-            <img src="assets/perth-tennis.png" alt="Perth Tennis mobile web interface showing local tennis discovery" loading="lazy">
-            <figcaption>Competition and venue discovery</figcaption>
-          </figure>
-        </article>
+          </article>
+        </div>
       </div>
     </section>
 

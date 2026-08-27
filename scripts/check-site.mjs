@@ -7,9 +7,7 @@ const htmlFiles = ['index.html', 'resume.html'];
 const requiredFiles = [
   ...textFiles,
   '.nojekyll',
-  'assets/perth-futsal.png',
-  'assets/aqua-local.jpg',
-  'assets/perth-tennis.png',
+  'assets/hero-workspace.jpg',
   'assets/Philipp_Alimov_Resume.pdf',
 ];
 const failures = [];
@@ -66,6 +64,8 @@ for (const path of htmlFiles) {
 }
 
 const index = contents.get('index.html') || '';
+const unreleasedProject = ['perth', 'tennis'].join(' ');
+if (allText.toLowerCase().includes(unreleasedProject)) fail('Unreleased project material appears in the public site.');
 for (const sectionId of ['work', 'experience', 'capabilities', 'resume', 'contact']) {
   if (!index.includes(`id="${sectionId}"`)) fail(`index.html is missing #${sectionId}.`);
 }
