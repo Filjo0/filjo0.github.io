@@ -21,7 +21,7 @@ Maintain a fast, factual, accessible developer portfolio and public resume for P
 
 - Use verified resume and repository evidence. Do not invent metrics, users, responsibilities or project status.
 - Treat the approved current resume as the content and layout baseline. Improve it incrementally; do not replace it with a parallel resume design without explicit approval.
-- Publish only `philalimov.apps@gmail.com`; do not publish a phone number, exact address or private account details.
+- Use `philalimov.apps@gmail.com` on the portfolio contact page and retain `philalimov@gmail.com` on the approved resume. Do not publish a phone number, exact address or other private account details.
 - Never copy personal adviser, health, relationship, financial, prompt-history or private input material into this repository.
 - Keep employer content limited to public resume responsibilities and avoid proprietary implementation details.
 - Use only first-party or generated visual assets that improve comprehension. Do not use product screenshots as decoration or add unlicensed stock assets.

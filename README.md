@@ -37,7 +37,7 @@ Add a custom domain only after it is registered and the Pages DNS records are co
 ## Public Content Boundary
 
 - Employment, education and project claims must remain supported by the current resume or project repositories.
-- Publish only the business email. Do not add a personal phone number, home address, credentials or private adviser data.
+- Use the business email on the portfolio contact page and retain the original email on the approved resume. Do not add a personal phone number, home address, credentials or private adviser data.
 - Do not publish private screenshots, production logs, customer data or employer-confidential material.
 - Regenerate the PDF after changing `resume.html`; the generator removes the
   previous artifact and verifies that the replacement contains two pages.

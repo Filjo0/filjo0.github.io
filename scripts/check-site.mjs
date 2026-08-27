@@ -23,13 +23,19 @@ const contents = new Map(
     .map((path) => [path, readFileSync(resolve(root, path), 'utf8')]),
 );
 
+const index = contents.get('index.html') || '';
+const resume = contents.get('resume.html') || '';
 const allText = [...contents.values()].join('\n');
 const emailMatches = allText.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) || [];
+const approvedEmails = new Set(['philalimov.apps@gmail.com', 'philalimov@gmail.com']);
 const unexpectedEmails = [...new Set(emailMatches)].filter(
-  (email) => email.toLowerCase() !== 'philalimov.apps@gmail.com',
+  (email) => !approvedEmails.has(email.toLowerCase()),
 );
 if (unexpectedEmails.length) fail(`Unexpected public email address: ${unexpectedEmails.join(', ')}`);
-if (!emailMatches.length) fail('Business contact email is missing.');
+if (!index.includes('mailto:philalimov.apps@gmail.com')) fail('Portfolio business contact email is missing.');
+if (index.includes('mailto:philalimov@gmail.com')) fail('Personal resume email appears on the portfolio page.');
+if (!resume.includes('mailto:philalimov@gmail.com')) fail('Original resume email is missing.');
+if (resume.includes('mailto:philalimov.apps@gmail.com')) fail('Business contact email appears in the resume.');
 if (/\b(?:\+?61[ -]?)?0?4\d{2}[ -]?\d{3}[ -]?\d{3}\b/.test(allText)) {
   fail('A personal phone number appears in the public site.');
 }
@@ -63,7 +69,6 @@ for (const path of htmlFiles) {
   }
 }
 
-const index = contents.get('index.html') || '';
 const unreleasedProject = ['perth', 'tennis'].join(' ');
 if (allText.toLowerCase().includes(unreleasedProject)) fail('Unreleased project material appears in the public site.');
 for (const sectionId of ['work', 'experience', 'capabilities', 'resume', 'contact']) {
