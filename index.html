@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Philipp Alimov is a senior software test engineer and product builder in Perth, Western Australia, specialising in quality strategy, automation, web and mobile products.">
+  <meta name="theme-color" content="#111413">
+  <title>Philipp Alimov | Quality engineer and product builder</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header" data-site-header>
+    <nav class="shell site-nav" aria-label="Primary navigation">
+      <a class="site-mark" href="#top" aria-label="Philipp Alimov, home"><span aria-hidden="true">PA</span></a>
+      <button class="menu-button" type="button" aria-expanded="false" aria-controls="site-links" data-menu-button>Menu</button>
+      <div class="site-links" id="site-links" data-site-links>
+        <a href="#work">Selected work</a>
+        <a href="#experience">Experience</a>
+        <a href="resume.html">Resume</a>
+        <a href="#contact">Contact</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="hero-media" aria-hidden="true">
+        <img src="assets/perth-futsal.png" alt="">
+        <img src="assets/aqua-local.jpg" alt="">
+        <img src="assets/perth-tennis.png" alt="">
+      </div>
+      <div class="hero-shade" aria-hidden="true"></div>
+      <div class="shell hero-content">
+        <p class="eyebrow eyebrow-light">Perth, Western Australia</p>
+        <h1>Philipp Alimov</h1>
+        <p class="hero-role">Senior software test engineer and product builder</p>
+        <p class="hero-summary">I turn product risk into focused quality strategy, practical automation and reliable releases. Outside my core QA role, I design and ship public web and mobile products from requirements through production operations.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#work">View selected work</a>
+          <a class="button button-quiet" href="assets/Philipp_Alimov_Resume.pdf" download>Download resume</a>
+          <a class="text-action text-action-light" href="mailto:philalimov.apps@gmail.com">Email me</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="proof-band" aria-label="Professional focus">
+      <div class="shell proof-grid">
+        <p><strong>Quality engineering</strong><span>Risk-based strategy, automation and release decisions</span></p>
+        <p><strong>Product delivery</strong><span>Web, iOS and Android products operated in production</span></p>
+        <p><strong>Domain range</strong><span>Sports technology, public data and operational tooling</span></p>
+      </div>
+    </section>
+
+    <section class="section" id="work">
+      <div class="shell">
+        <div class="section-heading">
+          <p class="eyebrow">Selected work</p>
+          <h2>Products built around real user decisions</h2>
+          <p>These projects are selected for delivery depth, operational ownership and public evidence, not for the size of the technology list.</p>
+        </div>
+
+        <article class="project project-featured">
+          <div class="project-copy">
+            <div class="project-index">01</div>
+            <p class="project-type">Sports technology · Live product</p>
+            <h3>Perth Futsal</h3>
+            <p class="project-lede">An independent competition companion that turns fragmented futsal data into a fast supporter experience across web, iOS and Android.</p>
+            <p>I own product direction, data ingestion, API design, identity reconciliation, frontend and native delivery, privacy controls, operational diagnostics and release quality.</p>
+            <dl class="project-facts">
+              <div><dt>Experience</dt><dd>Fixtures, results, standings, teams, player histories, favourites, notifications and global futsal coverage</dd></div>
+              <div><dt>Engineering</dt><dd>Python, Flask, PostgreSQL, React, Playwright, Capacitor and scheduled data pipelines</dd></div>
+              <div><dt>Operations</dt><dd>Web and native releases, MFA-protected administration, auditability, scraper recovery and production monitoring</dd></div>
+            </dl>
+            <div class="project-links">
+              <a href="https://perth-futsal.onrender.com/about">View product</a>
+              <a href="https://apps.apple.com/au/app/perth-futsal/id6758882763">App Store</a>
+            </div>
+          </div>
+          <figure class="project-visual project-visual-phone">
+            <img src="assets/perth-futsal.png" alt="Perth Futsal fixture screen showing divisions, teams, venues and match actions" loading="lazy">
+            <figcaption>Mobile-first fixture flow</figcaption>
+          </figure>
+        </article>
+
+        <article class="project">
+          <div class="project-copy">
+            <div class="project-index">02</div>
+            <p class="project-type">Public data · App Store product</p>
+            <h3>Aqua Local</h3>
+            <p class="project-lede">A public swimming and water-activity product for discovering pools, lessons, recovery facilities and venue availability with visible source provenance.</p>
+            <p>The product combines a national venue catalogue with source freshness, mobile discovery, privacy-light analytics, operator controls and a native iOS release.</p>
+            <dl class="project-facts">
+              <div><dt>Experience</dt><dd>Pool discovery, nearby sorting, lessons, opening context, saved venues and direct venue actions</dd></div>
+              <div><dt>Engineering</dt><dd>FastAPI, React, structured ingestion, source-quality controls, Capacitor and Oracle deployment</dd></div>
+              <div><dt>Quality</dt><dd>Provenance rules, stale and unknown states, secure administration and release-gated native delivery</dd></div>
+            </dl>
+            <div class="project-links">
+              <a href="https://aqualocal.com.au">View product</a>
+              <a href="https://apps.apple.com/au/app/aqua-local/id6773764070">App Store</a>
+            </div>
+          </div>
+          <figure class="project-visual project-visual-phone">
+            <img src="assets/aqua-local.jpg" alt="Aqua Local discovery screen with pool search, activity choices and nearby venues" loading="lazy">
+            <figcaption>Public pool and activity discovery</figcaption>
+          </figure>
+        </article>
+
+        <article class="project">
+          <div class="project-copy">
+            <div class="project-index">03</div>
+            <p class="project-type">Local discovery · Live web product</p>
+            <h3>Perth Tennis</h3>
+            <p class="project-lede">A mobile-first tennis product combining competition scores and player records with public court, club, lesson and program discovery.</p>
+            <p>The system prioritises traceable source data and graceful degradation across external league, venue and council sources.</p>
+            <dl class="project-facts">
+              <div><dt>Experience</dt><dd>Scores, ladders, player results, venue search, availability signals and verified booking paths</dd></div>
+              <div><dt>Engineering</dt><dd>Python, Flask, PostgreSQL, React, scheduled ingestion, caching and Capacitor</dd></div>
+              <div><dt>Reliability</dt><dd>Source provenance, confidence states, offline fallback, structured scrape health and production smoke checks</dd></div>
+            </dl>
+            <div class="project-links">
+              <a href="https://129-213-100-42.sslip.io">View product</a>
+            </div>
+          </div>
+          <figure class="project-visual project-visual-wide">
+            <img src="assets/perth-tennis.png" alt="Perth Tennis mobile web interface showing local tennis discovery" loading="lazy">
+            <figcaption>Competition and venue discovery</figcaption>
+          </figure>
+        </article>
+      </div>
+    </section>
+
+    <section class="section section-muted" id="experience">
+      <div class="shell resume-layout">
+        <div class="section-heading resume-heading">
+          <p class="eyebrow">Experience</p>
+          <h2>Quality ownership with product context</h2>
+          <p>My core work is software quality engineering. Independent products add direct experience with users, scope, operations and release consequences.</p>
+          <a class="text-action" href="resume.html">Open full resume</a>
+        </div>
+
+        <div class="timeline">
+          <article class="timeline-entry">
+            <div class="timeline-meta"><span>Jul 2026 - present</span><span>Acquire Technology Solutions</span></div>
+            <h3>Senior Software Test Engineer</h3>
+            <p>Coordinate risk-based quality across delivery, align acceptance criteria and coverage with product risk, facilitate defect triage, communicate release trade-offs, review automation code and support team capability.</p>
+          </article>
+          <article class="timeline-entry">
+            <div class="timeline-meta"><span>2021 - Jun 2026</span><span>Acquire Technology Solutions</span></div>
+            <h3>Software Test Engineer</h3>
+            <p>Developed C#/.NET automation for web and mobile products using NUnit, Selenium, Appium and TestComplete, with SQL and API validation, complex defect investigation and cross-functional delivery support.</p>
+          </article>
+          <article class="timeline-entry">
+            <div class="timeline-meta"><span>2024 - present</span><span>Independent product work</span></div>
+            <h3>Product owner and full-stack developer</h3>
+            <p>Build and operate public web and mobile products, covering discovery, product decisions, architecture, data quality, privacy, infrastructure, native releases and support.</p>
+          </article>
+          <article class="timeline-entry">
+            <div class="timeline-meta"><span>2017</span><span>Legal Advice Services, Russia</span></div>
+            <h3>Lawyer</h3>
+            <p>Drafted and reviewed legal documents, advised clients on compliance and handled matters requiring structured analysis and clear communication under pressure.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="capabilities">
+      <div class="shell">
+        <div class="section-heading">
+          <p class="eyebrow">Capabilities</p>
+          <h2>Useful across the full delivery loop</h2>
+        </div>
+        <div class="capability-grid">
+          <article>
+            <h3>Quality engineering</h3>
+            <p>Risk-based test strategy, acceptance criteria, release risk, defect triage, web and mobile testing, API and SQL validation, automation review and mentoring.</p>
+            <p class="capability-tools">C#/.NET · NUnit · Selenium · Appium · Playwright · TestComplete · Postman · SQL</p>
+          </article>
+          <article>
+            <h3>Product engineering</h3>
+            <p>Requirements, data contracts, Python APIs, React interfaces, PostgreSQL, mobile packaging, source integrations and operational administration.</p>
+            <p class="capability-tools">Python · Flask · FastAPI · React · PostgreSQL · JavaScript · Capacitor</p>
+          </article>
+          <article>
+            <h3>Delivery and operations</h3>
+            <p>CI/CD, release checklists, production diagnostics, scheduled jobs, backups, privacy boundaries, incident thinking and stakeholder communication.</p>
+            <p class="capability-tools">Git · Docker · Azure DevOps · Jira · Bamboo · Render · Neon · Oracle</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-education" id="resume">
+      <div class="shell education-grid">
+        <div>
+          <p class="eyebrow">Education</p>
+          <h2>Technology, quality, business and law</h2>
+        </div>
+        <div class="education-list">
+          <p><strong>Graduate Certificate in Business</strong><span>Curtin University · 2025</span></p>
+          <p><strong>Diploma of Software Development</strong><span>North Metropolitan TAFE · 2020-2021</span></p>
+          <p><strong>Master's in Quality Management</strong><span>Tomsk State University · 2017</span></p>
+          <p><strong>Bachelor of Laws</strong><span>Tomsk State University · 2011-2017</span></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="contact" id="contact">
+      <div class="shell contact-inner">
+        <p class="eyebrow eyebrow-light">Contact</p>
+        <h2>Discuss quality engineering, product delivery or sports technology.</h2>
+        <p>Based in Perth, Western Australia.</p>
+        <div class="contact-actions">
+          <a class="button button-primary" href="mailto:philalimov.apps@gmail.com">philalimov.apps@gmail.com</a>
+          <a class="text-action text-action-light" href="https://www.linkedin.com/in/philalimov">LinkedIn</a>
+          <a class="text-action text-action-light" href="https://github.com/Filjo0">GitHub</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="shell footer-inner">
+      <p>Philipp Alimov · Senior software test engineer and product builder</p>
+      <p>&copy; <span data-current-year>2026</span></p>
+    </div>
+  </footer>
+</body>
+</html>

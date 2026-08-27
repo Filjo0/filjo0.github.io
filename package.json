@@ -1,0 +1,13 @@
+{
+  "name": "philipp-alimov-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static portfolio and public resume for Philipp Alimov",
+  "scripts": {
+    "test": "node scripts/check-site.mjs",
+    "resume": "node scripts/render-resume.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
