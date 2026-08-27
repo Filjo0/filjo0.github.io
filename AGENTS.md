@@ -20,6 +20,7 @@ Maintain a fast, factual, accessible developer portfolio and public resume for P
 ## Public Content Rules
 
 - Use verified resume and repository evidence. Do not invent metrics, users, responsibilities or project status.
+- Treat the approved current resume as the content and layout baseline. Improve it incrementally; do not replace it with a parallel resume design without explicit approval.
 - Publish only `philalimov.apps@gmail.com`; do not publish a phone number, exact address or private account details.
 - Never copy personal adviser, health, relationship, financial, prompt-history or private input material into this repository.
 - Keep employer content limited to public resume responsibilities and avoid proprietary implementation details.

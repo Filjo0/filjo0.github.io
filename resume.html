@@ -3,130 +3,708 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Resume of Philipp Alimov, senior software test engineer and product builder in Perth, Western Australia.">
-  <title>Resume | Philipp Alimov</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta name="description" content="Resume of Philipp Alimov, Senior Software Test Engineer.">
+  <title>Philipp Alimov - Senior Software Test Engineer</title>
   <script src="script.js" defer></script>
+  <style>
+    :root {
+      --navy: #142f4c;
+      --teal: #0e766e;
+      --teal-light: #92d7cf;
+      --ink: #1c2730;
+      --muted: #566571;
+      --line: #cbd6dd;
+      --sidebar: #f1f5f6;
+      --paper: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      letter-spacing: 0;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #e7ebee;
+      color: var(--ink);
+      font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+      font-size: 9.8pt;
+      line-height: 1.4;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    :focus-visible {
+      outline: 3px solid #f4b728;
+      outline-offset: 3px;
+    }
+
+    .skip-link {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 1000;
+      transform: translateY(-160%);
+      padding: 10px 14px;
+      border: 2px solid var(--navy);
+      background: var(--paper);
+      color: var(--navy);
+      font-weight: 700;
+    }
+
+    .skip-link:focus {
+      transform: translateY(0);
+    }
+
+    .resume-toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 8px max(16px, calc((100% - 920px) / 2));
+      background: var(--navy);
+      color: #ffffff;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.24);
+    }
+
+    .resume-toolbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .resume-toolbar a,
+    .resume-toolbar button {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.54);
+      border-radius: 4px;
+      background: transparent;
+      color: #ffffff;
+      font-size: 9pt;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .page {
+      display: flex;
+      flex-direction: column;
+      width: 210mm;
+      height: 297mm;
+      margin: 12mm auto;
+      overflow: hidden;
+      background: var(--paper);
+      box-shadow: 0 4mm 12mm rgba(22, 50, 79, 0.14);
+      break-after: page;
+      page-break-after: always;
+    }
+
+    .page:last-child {
+      break-after: auto;
+      page-break-after: auto;
+    }
+
+    .masthead {
+      position: relative;
+      min-height: 50mm;
+      padding: 12mm 16mm 10mm;
+      background: var(--navy);
+      color: #ffffff;
+    }
+
+    .masthead::after {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      height: 2mm;
+      background: var(--teal);
+      content: "";
+    }
+
+    h1 {
+      margin: 0;
+      color: #ffffff;
+      font-size: 27.5pt;
+      line-height: 1.02;
+      font-weight: 760;
+    }
+
+    .headline {
+      margin: 2.3mm 0 0;
+      color: var(--teal-light);
+      font-size: 13.2pt;
+      font-weight: 700;
+    }
+
+    .positioning {
+      margin: 1.4mm 0 0;
+      color: #d6e1e8;
+      font-size: 9.2pt;
+      font-weight: 600;
+    }
+
+    .contact {
+      margin: 3.4mm 0 0;
+      color: #ffffff;
+      font-size: 8.5pt;
+      font-style: normal;
+      line-height: 1.55;
+    }
+
+    .contact-line {
+      display: block;
+      overflow-wrap: anywhere;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .separator {
+      color: #91a5b3;
+      padding: 0 1.45mm;
+    }
+
+    .page-grid {
+      display: grid;
+      flex: 1;
+      grid-template-areas: "sidebar main";
+      grid-template-columns: 51mm minmax(0, 1fr);
+      gap: 10mm;
+      min-height: 0;
+      padding: 10mm 16mm 14mm;
+    }
+
+    .main-column {
+      grid-area: main;
+      min-width: 0;
+    }
+
+    .sidebar {
+      grid-area: sidebar;
+      min-width: 0;
+      height: 100%;
+      padding: 5mm 5mm 6mm;
+      border-top: 1.4mm solid var(--teal);
+      background: var(--sidebar);
+    }
+
+    section {
+      margin: 0 0 6.2mm;
+    }
+
+    section:last-child {
+      margin-bottom: 0;
+    }
+
+    h2 {
+      margin: 0 0 3mm;
+      padding: 0 0 1.5mm;
+      border-bottom: 0.45mm solid var(--line);
+      color: var(--navy);
+      font-size: 12.2pt;
+      line-height: 1.15;
+      font-weight: 760;
+    }
+
+    h2::after {
+      display: block;
+      width: 16mm;
+      height: 0.7mm;
+      margin: 1.4mm 0 -1.85mm;
+      background: var(--teal);
+      content: "";
+    }
+
+    .sidebar h2 {
+      margin-bottom: 2.6mm;
+      padding-bottom: 1.3mm;
+      border-color: #bccbd2;
+      font-size: 9.2pt;
+      line-height: 1.2;
+      text-transform: uppercase;
+    }
+
+    .sidebar h2::after {
+      width: 11mm;
+      height: 0.55mm;
+      margin-top: 1.2mm;
+      margin-bottom: -1.6mm;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    .summary {
+      font-size: 10.1pt;
+      line-height: 1.48;
+    }
+
+    .side-section {
+      margin-bottom: 6mm;
+    }
+
+    .side-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .side-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .side-list li {
+      position: relative;
+      margin: 0 0 2.15mm;
+      padding: 0 0 0 3.6mm;
+      font-size: 8.8pt;
+      line-height: 1.35;
+    }
+
+    .side-list li:last-child {
+      margin-bottom: 0;
+    }
+
+    .side-list li::before {
+      position: absolute;
+      top: 0.58em;
+      left: 0;
+      width: 1.5mm;
+      height: 1.5mm;
+      background: var(--teal);
+      content: "";
+    }
+
+    .side-group {
+      margin: 0 0 3.2mm;
+      font-size: 8.75pt;
+      line-height: 1.38;
+    }
+
+    .side-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .side-label {
+      display: block;
+      margin-bottom: 0.7mm;
+      color: var(--navy);
+      font-weight: 700;
+    }
+
+    .employer {
+      margin: 0 0 3mm;
+      font-size: 11.2pt;
+      color: var(--ink);
+      font-weight: 760;
+    }
+
+    .role-block {
+      margin: 0 0 5mm;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .role-block:last-child {
+      margin-bottom: 0;
+    }
+
+    .role-line {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 3mm;
+      align-items: baseline;
+      margin: 0 0 1.7mm;
+    }
+
+    .role-title {
+      margin: 0;
+      color: var(--teal);
+      font-size: 10.2pt;
+      font-weight: 700;
+    }
+
+    .date {
+      color: var(--muted);
+      font-size: 8.8pt;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .positioning-detail {
+      margin: -0.4mm 0 2mm;
+      color: var(--muted);
+      font-size: 8.8pt;
+      font-weight: 600;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 4.8mm;
+    }
+
+    li {
+      margin: 0 0 1.7mm;
+      padding-left: 0.65mm;
+    }
+
+    li:last-child {
+      margin-bottom: 0;
+    }
+
+    li::marker {
+      color: var(--teal);
+    }
+
+    .compact-masthead {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      min-height: 34mm;
+      padding: 8mm 16mm 7mm;
+      border-bottom: 2mm solid var(--teal);
+      background: var(--navy);
+      color: #ffffff;
+    }
+
+    .compact-name {
+      margin: 0;
+      font-size: 17pt;
+      line-height: 1.05;
+      font-weight: 750;
+    }
+
+    .compact-role {
+      margin: 1.1mm 0 0;
+      color: var(--teal-light);
+      font-size: 9.2pt;
+      font-weight: 650;
+    }
+
+    .page-number {
+      color: #d6e1e8;
+      font-size: 8.5pt;
+      font-weight: 650;
+    }
+
+    .entry {
+      margin: 0 0 5.2mm;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .entry:last-child {
+      margin-bottom: 0;
+    }
+
+    .entry-title {
+      margin: 0 0 1.4mm;
+      color: var(--ink);
+      font-size: 10.5pt;
+      line-height: 1.25;
+      font-weight: 760;
+    }
+
+    .compact-list {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .compact-list li {
+      margin-bottom: 3mm;
+      padding-left: 0;
+      font-size: 8.75pt;
+      line-height: 1.38;
+    }
+
+    .compact-list strong {
+      display: block;
+      margin-bottom: 0.45mm;
+      color: var(--navy);
+    }
+
+    .language-list li {
+      margin-bottom: 2.4mm;
+    }
+
+    .language-list strong {
+      display: inline;
+      margin: 0;
+    }
+
+    @media print {
+      @page {
+        size: A4;
+        margin: 0;
+      }
+
+      body {
+        background: #ffffff;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .page {
+        margin: 0;
+        box-shadow: none;
+      }
+
+      .resume-toolbar,
+      .skip-link {
+        display: none !important;
+      }
+
+      a {
+        color: inherit;
+      }
+    }
+
+    @media screen and (max-width: 850px) {
+      body {
+        background: #ffffff;
+      }
+
+      .page {
+        display: block;
+        width: 100%;
+        height: auto;
+        min-height: 0;
+        margin: 0;
+        overflow: visible;
+        box-shadow: none;
+      }
+
+      .page + .page {
+        border-top: 8px solid #e7ebee;
+      }
+
+      .masthead,
+      .compact-masthead {
+        padding-right: 8vw;
+        padding-left: 8vw;
+      }
+
+      .page-grid,
+      .page-two .page-grid {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        padding: 8vw;
+      }
+
+      .main-column {
+        order: 1;
+      }
+
+      .sidebar {
+        order: 2;
+        width: 100%;
+        height: auto;
+      }
+
+      .resume-toolbar {
+        padding-inline: 12px;
+      }
+
+      .resume-toolbar a,
+      .resume-toolbar button {
+        padding-inline: 9px;
+        font-size: 8.5pt;
+      }
+    }
+  </style>
 </head>
-<body class="resume-page">
-  <a class="skip-link" href="#resume-main">Skip to resume</a>
-  <header class="resume-toolbar" aria-label="Resume actions">
+<body>
+  <a class="skip-link" href="#resume-content">Skip to resume</a>
+  <nav class="resume-toolbar" aria-label="Resume actions">
     <a href="index.html">Back to portfolio</a>
-    <div>
+    <div class="resume-toolbar-actions">
       <a href="assets/Philipp_Alimov_Resume.pdf" download>Download PDF</a>
       <button type="button" data-print-resume>Print</button>
     </div>
-  </header>
+  </nav>
 
-  <main class="resume-document" id="resume-main">
-    <section class="resume-sheet resume-sheet-first">
-      <header class="resume-identity">
-        <div>
-          <h1>Philipp Alimov</h1>
-          <p class="resume-title">Senior Software Test Engineer</p>
-          <p class="resume-focus">Test strategy · Automation · Web and mobile quality · Release risk</p>
-        </div>
-        <address>
-          Perth, Western Australia<br>
-          <a href="mailto:philalimov.apps@gmail.com">philalimov.apps@gmail.com</a><br>
-          <a href="https://www.linkedin.com/in/philalimov">linkedin.com/in/philalimov</a><br>
-          <a href="https://github.com/Filjo0">github.com/Filjo0</a>
-        </address>
-      </header>
+  <article class="page" id="resume-content" aria-label="Resume page 1 of 2">
+    <header class="masthead">
+      <h1>Philipp Alimov</h1>
+      <p class="headline">Senior Software Test Engineer</p>
+      <p class="positioning">Test Strategy | Automation | Web &amp; Mobile Quality | Release Risk</p>
+      <address class="contact">
+        <span class="contact-line">Perth, Western Australia<span class="separator">|</span><a href="mailto:philalimov.apps@gmail.com">philalimov.apps@gmail.com</a></span>
+        <span class="contact-line"><a href="https://linkedin.com/in/philalimov">linkedin.com/in/philalimov</a><span class="separator">|</span><a href="https://github.com/Filjo0">github.com/Filjo0</a></span>
+      </address>
+    </header>
 
-      <section class="resume-section">
-        <h2>Professional summary</h2>
-        <p>Senior Software Test Engineer working across risk-based test strategy, C#/.NET automation, web and mobile quality, API and SQL validation, defect triage and release risk. Translates product risk into focused coverage and clear quality signals for technical and non-technical stakeholders. Also builds and operates public web and mobile products, adding direct product, data, privacy and release ownership.</p>
-      </section>
+    <div class="page-grid">
+      <main class="main-column">
+        <section aria-labelledby="summary-heading">
+          <h2 id="summary-heading">Professional Summary</h2>
+          <p class="summary">Senior Software Test Engineer working across risk-based test strategy, C#/.NET automation, web and mobile quality, API and SQL validation, defect triage, and release risk. Translates product risk into focused coverage and clear quality signals for technical and non-technical stakeholders. Brings additional product ownership, quality management, business, and legal analysis to delivery decisions.</p>
+        </section>
 
-      <section class="resume-section">
-        <h2>Core skills</h2>
-        <div class="resume-skill-grid">
-          <p><strong>Strategy and delivery</strong><span>Risk-based testing, test planning, acceptance criteria, release risk, defect triage, mentoring</span></p>
-          <p><strong>Automation and quality</strong><span>C#/.NET, NUnit, Selenium, Appium, Playwright, TestComplete, web and mobile testing</span></p>
-          <p><strong>Data, API and tooling</strong><span>Microsoft SQL Server, PostgreSQL, Postman, Azure DevOps, Jira, Bamboo, Git, Docker, CI/CD</span></p>
-          <p><strong>Product engineering</strong><span>Python, Flask, FastAPI, React, JavaScript, Capacitor, source integrations and production operations</span></p>
-        </div>
-      </section>
+        <section aria-labelledby="experience-heading">
+          <h2 id="experience-heading">Professional Experience</h2>
+          <p class="employer">Acquire Technology Solutions</p>
 
-      <section class="resume-section">
-        <h2>Professional experience</h2>
-        <article class="resume-role">
-          <header><div><h3>Senior Software Test Engineer</h3><p>Acquire Technology Solutions</p></div><time>Jul 2026 - present</time></header>
-          <ul>
-            <li>Coordinate risk-based quality across delivery by aligning acceptance criteria, test approach and release risk with product and engineering stakeholders.</li>
-            <li>Prioritise coverage using product risk, automation and quality signals so testing remains focused on high-impact areas.</li>
-            <li>Facilitate defect triage and communicate quality status, dependencies and release trade-offs clearly.</li>
-            <li>Review automation code, mentor colleagues and improve test artefacts, handovers and SDLC feedback loops.</li>
+          <div class="role-block">
+            <div class="role-line">
+              <p class="role-title">Senior Software Test Engineer</p>
+              <p class="date">Jul 2026 - Present</p>
+            </div>
+            <ul>
+              <li>Coordinate risk-based quality across delivery by aligning acceptance criteria, test approach, and release risk with product and engineering stakeholders.</li>
+              <li>Prioritise coverage using product risk, automation, and quality signals so testing remains focused on high-impact areas.</li>
+              <li>Facilitate defect triage and communicate quality status, dependencies, and release trade-offs clearly.</li>
+              <li>Review automation code, mentor colleagues, and improve test artefacts, handovers, and SDLC feedback loops.</li>
+            </ul>
+          </div>
+
+          <div class="role-block">
+            <div class="role-line">
+              <p class="role-title">Software Test Engineer</p>
+              <p class="date">2021 - Jun 2026</p>
+            </div>
+            <ul>
+              <li>Developed and maintained automated tests and supporting frameworks in C#/.NET using NUnit, Selenium, Appium, and TestComplete for web and mobile products.</li>
+              <li>Validated databases and APIs with Microsoft SQL Server, T-SQL, and Postman.</li>
+              <li>Investigated complex defects with developers and translated technical findings into actionable evidence.</li>
+              <li>Collaborated with Product, Support, and Learning teams to address client concerns and improve usability.</li>
+            </ul>
+          </div>
+        </section>
+      </main>
+
+      <aside class="sidebar" aria-label="Core skills">
+        <section class="side-section" aria-labelledby="expertise-heading">
+          <h2 id="expertise-heading">Core Expertise</h2>
+          <ul class="side-list">
+            <li>Risk-based test strategy</li>
+            <li>Test planning and acceptance criteria</li>
+            <li>Release risk and quality signals</li>
+            <li>Defect triage and investigation</li>
+            <li>Web and mobile quality</li>
+            <li>Mentoring and code review</li>
           </ul>
-        </article>
-        <article class="resume-role">
-          <header><div><h3>Software Test Engineer</h3><p>Acquire Technology Solutions</p></div><time>2021 - Jun 2026</time></header>
-          <ul>
-            <li>Developed and maintained C#/.NET automation and supporting frameworks using NUnit, Selenium, Appium and TestComplete for web and mobile products.</li>
-            <li>Validated databases and APIs with Microsoft SQL Server, T-SQL and Postman.</li>
-            <li>Investigated complex defects with developers and translated technical findings into actionable evidence.</li>
-            <li>Collaborated with Product, Support and Learning teams to address client concerns and improve usability.</li>
+        </section>
+
+        <section class="side-section" aria-labelledby="automation-heading">
+          <h2 id="automation-heading">Automation</h2>
+          <p class="side-group"><span class="side-label">Languages and frameworks</span>C#/.NET, NUnit</p>
+          <p class="side-group"><span class="side-label">Web and mobile</span>Selenium, Appium, Playwright, TestComplete</p>
+        </section>
+
+        <section class="side-section" aria-labelledby="tooling-heading">
+          <h2 id="tooling-heading">Data &amp; Delivery</h2>
+          <p class="side-group"><span class="side-label">Data and API</span>Microsoft SQL Server (T-SQL), PostgreSQL, Postman</p>
+          <p class="side-group"><span class="side-label">Delivery tooling</span>Azure DevOps, Jira, Bamboo, Git, Docker, CI/CD</p>
+        </section>
+      </aside>
+    </div>
+  </article>
+
+  <article class="page page-two" aria-label="Resume page 2 of 2">
+    <header class="compact-masthead">
+      <div>
+        <p class="compact-name">Philipp Alimov</p>
+        <p class="compact-role">Senior Software Test Engineer</p>
+      </div>
+      <p class="page-number">Page 2 of 2</p>
+    </header>
+
+    <div class="page-grid">
+      <main class="main-column">
+        <section aria-labelledby="project-heading">
+          <h2 id="project-heading">Selected Technical Project</h2>
+          <div class="entry">
+            <p class="entry-title">Perth Futsal</p>
+            <div class="role-line">
+              <p class="role-title">Product Owner &amp; Full-Stack Developer</p>
+              <p class="date">2024 - Present</p>
+            </div>
+            <p class="positioning-detail">Web, iOS &amp; Android</p>
+            <ul>
+              <li>Built and released web, iOS, and Android applications for fixtures, results, standings, teams, player records, favourites, notifications, and futsal content.</li>
+              <li>Own the roadmap and release cadence using feedback from players, coaches, supporters, and administrators.</li>
+              <li>Apply release checklists, automated regression coverage, staged database rehearsal, and production smoke testing to keep iterative updates stable.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section aria-labelledby="additional-heading">
+          <h2 id="additional-heading">Additional Experience</h2>
+          <div class="entry">
+            <p class="entry-title">Legal Advice Services, Russia</p>
+            <div class="role-line">
+              <p class="role-title">Lawyer</p>
+              <p class="date">2017</p>
+            </div>
+            <ul>
+              <li>Drafted and reviewed legal documents, advised clients on compliance, and represented matters requiring structured analysis and clear communication under pressure.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section aria-labelledby="leadership-heading">
+          <h2 id="leadership-heading">Leadership &amp; Community</h2>
+          <div class="entry">
+            <p class="entry-title">Floreat Athena FC</p>
+            <div class="role-line">
+              <p class="role-title">Youth Football Coach (U14)</p>
+              <p class="date">2020 - Present</p>
+            </div>
+            <p>Head coach across youth age groups from U9 to U14, leading player development, training, and match preparation over multiple seasons. Football Australia C Licence.</p>
+          </div>
+        </section>
+      </main>
+
+      <aside class="sidebar" aria-label="Education and credentials">
+        <section class="side-section" aria-labelledby="education-heading">
+          <h2 id="education-heading">Education</h2>
+          <ul class="compact-list">
+            <li><strong>Graduate Certificate in Business</strong>Curtin University, 2025</li>
+            <li><strong>Diploma of Software Development</strong>North Metropolitan TAFE<br>2020 - 2021<br>C#/.NET, Python, and SQL</li>
+            <li><strong>Master's in Quality Management</strong>Tomsk State University, 2017<br>ISO standards and process management</li>
+            <li><strong>Bachelor of Laws (LLB)</strong>Tomsk State University<br>2011 - 2017</li>
           </ul>
-        </article>
-      </section>
-    </section>
+        </section>
 
-    <section class="resume-sheet">
-      <section class="resume-section resume-section-first-on-page">
-        <h2>Selected product work</h2>
-        <article class="resume-role">
-          <header><div><h3>Product Owner and Full-Stack Developer</h3><p>Perth Futsal</p></div><time>2024 - present</time></header>
-          <ul>
-            <li>Built and released web, iOS and Android applications for fixtures, results, standings, teams, player records, favourites, notifications and futsal content.</li>
-            <li>Own product direction, data ingestion, API and frontend delivery, native releases, privacy controls, administrator operations and production diagnostics.</li>
-            <li>Use release checklists, automated regression coverage, staged database rehearsal and production smoke testing to manage iterative delivery.</li>
+        <section class="side-section" aria-labelledby="development-heading">
+          <h2 id="development-heading">Professional Development</h2>
+          <ul class="compact-list">
+            <li><strong>Hugging Face</strong>AI Agents Fundamentals, 2025</li>
+            <li><strong>Acquire Technology</strong>GIM Suite Professional and Practitioner</li>
+            <li><strong>Stepik</strong>Test Automation Using Python and Selenium</li>
           </ul>
-        </article>
-        <article class="resume-role compact-role">
-          <header><div><h3>Independent product development</h3><p>Aqua Local</p></div><time>2026</time></header>
-          <p>Built a source-aware public-data product for swimming and water-activity discovery using Python APIs, React, PostgreSQL, scheduled ingestion, privacy controls and mobile delivery. Aqua Local is live on the App Store.</p>
-        </article>
-      </section>
+        </section>
 
-      <section class="resume-section">
-        <h2>Additional experience</h2>
-        <article class="resume-role compact-role">
-          <header><div><h3>Lawyer</h3><p>Legal Advice Services, Russia</p></div><time>2017</time></header>
-          <p>Drafted and reviewed legal documents, advised clients on compliance and represented matters requiring structured analysis and clear communication under pressure.</p>
-        </article>
-      </section>
-
-      <section class="resume-section">
-        <h2>Education</h2>
-        <div class="resume-education">
-          <p><strong>Graduate Certificate in Business</strong><span>Curtin University · 2025</span></p>
-          <p><strong>Diploma of Software Development</strong><span>North Metropolitan TAFE · 2020-2021</span></p>
-          <p><strong>Master's in Quality Management</strong><span>Tomsk State University · 2017</span></p>
-          <p><strong>Bachelor of Laws</strong><span>Tomsk State University · 2011-2017</span></p>
-        </div>
-      </section>
-
-      <section class="resume-section resume-columns">
-        <div>
-          <h2>Professional development</h2>
-          <ul>
-            <li>Hugging Face · AI Agents Fundamentals, 2025</li>
-            <li>Acquire Technology · GIM Suite Professional and Practitioner</li>
-            <li>Stepik · Test Automation Using Python and Selenium</li>
+        <section class="side-section" aria-labelledby="languages-heading">
+          <h2 id="languages-heading">Languages</h2>
+          <ul class="compact-list language-list">
+            <li><strong>English:</strong> Full professional</li>
+            <li><strong>Russian:</strong> Native</li>
+            <li><strong>Spanish:</strong> Elementary</li>
           </ul>
-        </div>
-        <div>
-          <h2>Leadership and community</h2>
-          <p><strong>Youth Football Coach, Floreat Athena FC</strong><br>Head coach across youth age groups from U9 to U14, 2020 - present. Football Australia C Licence.</p>
-        </div>
-      </section>
-
-      <section class="resume-section resume-footer-row">
-        <p><strong>Languages</strong><br>English · Full professional<br>Russian · Native<br>Spanish · Elementary</p>
-        <p><strong>Public work</strong><br><a href="https://perth-futsal.onrender.com/about">Perth Futsal</a><br><a href="https://aqualocal.com.au">Aqua Local</a><br><a href="index.html#work">Portfolio case studies</a></p>
-      </section>
-    </section>
-  </main>
+        </section>
+      </aside>
+    </div>
+  </article>
 </body>
 </html>
