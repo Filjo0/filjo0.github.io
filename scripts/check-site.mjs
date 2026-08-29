@@ -36,6 +36,9 @@ if (!index.includes('mailto:philalimov.apps@gmail.com')) fail('Portfolio busines
 if (index.includes('mailto:philalimov@gmail.com')) fail('Personal resume email appears on the portfolio page.');
 if (!resume.includes('mailto:philalimov@gmail.com')) fail('Original resume email is missing.');
 if (resume.includes('mailto:philalimov.apps@gmail.com')) fail('Business contact email appears in the resume.');
+if (!index.includes('<h3>FUTSL</h3>')) fail('The FUTSL portfolio project is missing.');
+if (!resume.includes('<p class="entry-title">FUTSL</p>')) fail('The FUTSL resume project is missing.');
+if (/Perth Futsal/i.test(`${index}\n${resume}`)) fail('Former FUTSL product branding appears in the public portfolio.');
 if (/\b(?:\+?61[ -]?)?0?4\d{2}[ -]?\d{3}[ -]?\d{3}\b/.test(allText)) {
   fail('A personal phone number appears in the public site.');
 }
