@@ -168,6 +168,15 @@ try {
   await fallback({noJS:true});await fallback({block:'**/room.js'});await fallback({block:'**/assets/vendor/three.module.js'});await fallback({webglFailure:true});await fallback({contextLoss:true});
   const missing=await browser.newPage({reducedMotion:'reduce'});await missing.route('**/assets/studio-workspace.webp',r=>r.abort());await missing.goto(url);await settled('overview',missing);
   check(await missing.locator('canvas.room-canvas').isVisible(),'Missing exterior texture still leaves full room geometry');await missing.close();
+  const corner=await browser.newPage({reducedMotion:'reduce'});await corner.goto(url);await settled('overview',corner);
+  await corner.waitForFunction(()=>document.querySelector('canvas.room-canvas')?.dataset.artCorner==='loaded');
+  check(true,'Authored contact corner loads');await corner.close();
+  for(const [label,handler] of [['missing',r=>r.abort()],['corrupt',r=>r.fulfill({status:200,contentType:'model/gltf-binary',body:'not a model'})]]){
+    const p=await browser.newPage({reducedMotion:'reduce'});const pageErrors=[];p.on('pageerror',e=>pageErrors.push(e.message));
+    await p.route('**/assets/studio/contact-zone.glb',handler);await p.goto(`${url}/#contact`);await settled('contact',p);
+    await p.waitForFunction(()=>document.querySelector('canvas.room-canvas')?.dataset.artCorner==='fallback');
+    check(await p.locator('[data-object-surface]').isVisible() && pageErrors.length===0,`${label} authored corner keeps the procedural phone corner usable`);await p.close();
+  }
   const resumeFailure=await browser.newPage({reducedMotion:'reduce'});await resumeFailure.route('**/resume.html?embed=1',r=>r.fulfill({status:404,contentType:'text/html',body:'Missing document'}));await resumeFailure.goto(`${url}/#resume`);await settled('resume',resumeFailure);
   await resumeFailure.waitForFunction(()=>document.querySelector('[data-resume-view]').dataset.state==='error');
   check(await resumeFailure.locator('[data-resume-retry]').isVisible(),'Resume failure offers retry');

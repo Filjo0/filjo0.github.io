@@ -71,11 +71,45 @@ they no longer drive navigation.
 `room.js` imports the locally bundled **Three.js 0.186.1** from
 `assets/vendor/three.module.js`. Its MIT notice is retained in
 `assets/vendor/THREE-LICENSE.txt` and the bundle. The bundle was produced from the
-official `three@0.186.1` npm package's `build/three.module.js` using esbuild with
-`--bundle --minify --format=esm --legal-comments=inline`. No runtime CDN, npm
+official `three@0.186.1` npm package with esbuild
+`--bundle --minify --format=esm --legal-comments=inline`, from an entry that re-exports
+`three` plus the same package's `examples/jsm/loaders/GLTFLoader.js`:
+
+```js
+export * from 'three';
+export { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+```
+
+Bundling `build/three.module.js` alone with the same flags reproduces the previous
+vendored file byte for byte; the loader adds about 44 KB and shares the one library.
+No runtime CDN, npm
 installation or build step is needed to preview or publish this static site.
 Three.js is the one runtime library, necessary for real perspective geometry and
 continuous camera movement. No analytics, cookies, database or contact backend.
+
+## Authored contact corner
+
+The phone corner (side table, copper lamp, small and floor plants, bookshelf, sofa) is
+original artwork modelled by `art/studio/contact_zone.py`, a Blender script that builds
+the geometry in the room's exact coordinates, bakes Cycles diffuse lighting (lamp,
+dusk window, ceiling wash, bounce light) into the textures, bakes floor/wall shadow
+decals, and exports `assets/studio/contact-zone.glb`. Regenerate it with Blender 5.2:
+
+```powershell
+& "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" -b --factory-startup --python art/studio/contact_zone.py -- <out_dir>
+```
+
+Add `--preview` for two Cycles preview renders, `--fast` for a quick low-sample
+bake, `--gpu` for an available CUDA device, or `--inspect` for mesh counts without
+baking. CPU is the default; copy `<out_dir>/contact-zone.glb` into `assets/studio/`.
+No third-party models or textures are used; materials are procedural Blender nodes. Baked meshes render
+unlit through the room's tone mapping, decals darken the live floor and walls, and
+the copper lamp and phone keep live PBR materials with a one-off room reflection.
+The oak uses irregular stretched noise with microscopic bump rather than repeating
+wave bands. Book bevels and sofa subdivisions are limited to visible detail. The
+GLB is about 1.91 MB; `npm test` enforces a 2,000,000-byte budget and validates its
+binary header. Until the model loads, or if it fails, the procedural stand-ins
+remain. The rest of the room is still procedural and visibly less realistic than this corner.
 
 ## Validation
 

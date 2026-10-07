@@ -2,7 +2,7 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import { extname, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
-const textFiles = ['index.html', 'resume.html', 'styles.css', 'studio.css', 'walkthrough.css', 'script.js', 'room.js', 'README.md', 'AGENTS.md'];
+const textFiles = ['index.html', 'resume.html', 'styles.css', 'studio.css', 'walkthrough.css', 'script.js', 'room.js', 'art/studio/contact_zone.py', 'README.md', 'AGENTS.md'];
 const htmlFiles = ['index.html', 'resume.html'];
 const requiredFiles = [
   ...textFiles,
@@ -12,6 +12,7 @@ const requiredFiles = [
   'assets/studio-workspace.webp',
   'assets/vendor/three.module.js',
   'assets/vendor/THREE-LICENSE.txt',
+  'assets/studio/contact-zone.glb',
   'assets/Philipp_Alimov_Resume.pdf',
 ];
 const failures = [];
@@ -87,6 +88,16 @@ for (const sectionId of ['work', 'experience', 'capabilities', 'resume', 'contac
 const styles = `${contents.get('styles.css') || ''}\n${contents.get('studio.css') || ''}\n${contents.get('walkthrough.css') || ''}`;
 if (/linear-gradient|radial-gradient/i.test(styles)) fail('Decorative gradients are not part of the portfolio system.');
 if (/letter-spacing:\s*-/i.test(styles)) fail('Negative letter spacing is not allowed.');
+
+const cornerPath = resolve(root, 'assets/studio/contact-zone.glb');
+if (existsSync(cornerPath)) {
+  const model = readFileSync(cornerPath);
+  if (model.length > 2_000_000) fail('Contact corner exceeds its 2 MB download budget.');
+  if (model.length < 20 || model.readUInt32LE(0) !== 0x46546c67 ||
+      model.readUInt32LE(4) !== 2 || model.readUInt32LE(8) !== model.length) {
+    fail('Contact corner must be a complete glTF 2 binary asset.');
+  }
+}
 
 const pdfPath = resolve(root, 'assets/Philipp_Alimov_Resume.pdf');
 if (existsSync(pdfPath) && statSync(pdfPath).size < 20_000) fail('Generated resume PDF is unexpectedly small.');

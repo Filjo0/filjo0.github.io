@@ -1,4 +1,5 @@
 import * as THREE from './assets/vendor/three.module.js';
+import { GLTFLoader } from './assets/vendor/three.module.js';
 
 const vec = (x, y, z) => new THREE.Vector3(x, y, z);
 const smooth = (t) => t * t * (3 - 2 * t);
@@ -192,8 +193,10 @@ export function createWalkthrough({ host, surface, points, onContextLost }) {
   const table=group([2.22,0,-1.46]);cylinder(table,0.43,0.055,[0,0.69,0],oak);
   for(let i=0;i<3;i++){const a=i*Math.PI*2/3;box(table,[0.04,0.67,0.04],[Math.cos(a)*.3,.35,Math.sin(a)*.3],darkOak);}
   const phone=group([2.15,0.732,-1.34]);phone.rotation.x=-Math.PI/2;phone.rotation.z=-0.2;
-  box(phone,[0.102,0.203,0.01],[0,0,0],black,0.012);
+  // Graphite frame and glass screen; reflections are added once the room environment exists.
+  const phoneBody=box(phone,[0.102,0.203,0.01],[0,0,0],material('#2a2d30',{metalness:.7,roughness:.38}),0.012);
   const phoneFace=face(phone,0.092,0.184,0.014,'#091114');
+  phoneFace.material.roughness=.12;
   remember('contact',phone,phoneFace,0.092,0.184);
   box(phone,[0.025,0.003,0.002],[0,0.086,0.016],black,0.001);
 
@@ -204,8 +207,9 @@ export function createWalkthrough({ host, surface, points, onContextLost }) {
     add(parent,new THREE.SphereGeometry(0.18*scale,32,16,0,Math.PI*2,0,Math.PI/2),copper,[x,y+0.42*scale,z]);
     cylinder(parent,0.13*scale,0.01,[x,y+0.416*scale,z],glow);
     const light=new THREE.PointLight('#ffcf91',small?9:15,3,2);light.position.set(x,y+0.34*scale,z);parent.add(light);
+    return light;
   };
-  lamp(table,0.15,0.725,-0.13,true);
+  const tableLight=lamp(table,0.15,0.725,-0.13,true);
   lamp(desk,-0.83,0.85,-0.08,true);
   const plant=(position,size)=>{
     const p=group(position);
@@ -234,9 +238,10 @@ export function createWalkthrough({ host, surface, points, onContextLost }) {
       const leaf=add(p,leafGeometry,material(shades[i%3],{roughness:.88,side:THREE.DoubleSide}),tip.toArray());
       leaf.rotation.set(.55+random()*.6,a,Math.cos(a)*.4);
     }
+    return p;
   };
-  plant([-1.65,0,-2.5],1.12);plant([1.65,0,-2.45],.82);plant([-3.48,0.86,-1.66],.27);
-  plant([2.38,0.723,-1.39],.22);
+  plant([-1.65,0,-2.5],1.12);const windowPlant=plant([1.65,0,-2.45],.82);plant([-3.48,0.86,-1.66],.27);
+  const tablePlant=plant([2.38,0.723,-1.39],.22);
   const shelf=group([3.68,0,-2.24],-Math.PI/2);
   for(const x of [-.4,.4])box(shelf,[.045,2.8,.36],[x,1.4,0],darkOak);
   for(let row=0;row<6;row++){
@@ -253,6 +258,51 @@ export function createWalkthrough({ host, surface, points, onContextLost }) {
   const hem=new THREE.HemisphereLight('#d2dce1','#6c6256',2.3);scene.add(hem);
   const key=new THREE.SpotLight('#ffe9cf',55,12,Math.PI/3,0.8,2);key.position.set(-2.6,2.9,1.8);key.target.position.set(-.4,.1,-1);key.castShadow=true;key.shadow.mapSize.set(1024,1024);key.shadow.bias=-0.0007;key.shadow.normalBias=.035;scene.add(key,key.target);
   const fill=new THREE.DirectionalLight('#98bed8',1.25);fill.position.set(0,2.8,-2.4);scene.add(fill);
+  // Authored contact corner (art/studio/contact_zone.py): Cycles-baked furniture is shown
+  // unlit through the same tone mapping; decals darken the live floor and walls beneath it.
+  // The procedural stand-ins stay until it loads, and remain if it fails.
+  const phoneShadow=(()=>{
+    const canvas=document.createElement('canvas');canvas.width=canvas.height=64;
+    const ctx=canvas.getContext('2d');const gradient=ctx.createRadialGradient(32,32,4,32,32,31);
+    gradient.addColorStop(0,'#bbb');gradient.addColorStop(.55,'#666');gradient.addColorStop(1,'#000');
+    ctx.fillStyle=gradient;ctx.fillRect(0,0,64,64);
+    const map=new THREE.CanvasTexture(canvas);resources.push(map);
+    const shade=new THREE.MeshBasicMaterial({color:'#000',alphaMap:map,transparent:true,depthWrite:false,toneMapped:false});resources.push(shade);
+    const mesh=new THREE.Mesh(geometry(new THREE.PlaneGeometry(.15,.27)),shade);
+    mesh.rotation.set(-Math.PI/2,0,-.2);mesh.position.set(2.15,.7268,-1.34);mesh.visible=false;scene.add(mesh);
+    return mesh;
+  })();
+  new GLTFLoader().load('assets/studio/contact-zone.glb',(gltf)=>{
+    const meshes=[];gltf.scene.traverse((node)=>{if(node.isMesh)meshes.push(node);});
+    if(disposed){for(const node of meshes){node.geometry.dispose();node.material.map?.dispose();node.material.dispose();}return;}
+    let copperLamp=null;
+    for(const node of meshes){
+      const source=node.material,name=source.name||'';
+      resources.push(node.geometry);
+      if(name.startsWith('baked_'))node.material=new THREE.MeshBasicMaterial({map:source.map});
+      else if(name.startsWith('decal_')){
+        source.map.colorSpace=THREE.NoColorSpace;
+        node.material=new THREE.MeshBasicMaterial({color:'#000',alphaMap:source.map,transparent:true,depthWrite:false,toneMapped:false});
+        node.renderOrder=1;
+      } else if(name==='copper')copperLamp=node;
+      if(node.material!==source)source.dispose();
+      resources.push(node.material);if(node.material.map)resources.push(node.material.map);if(node.material.alphaMap)resources.push(node.material.alphaMap);
+    }
+    for(const child of table.children)child.visible=child===tableLight;
+    sofa.visible=false;tablePlant.visible=false;windowPlant.visible=false;shelf.visible=false;phoneShadow.visible=true;
+    scene.add(gltf.scene);
+    if(copperLamp){
+      // A one-off reflection of this room gives the copper believable highlights.
+      const pmrem=new THREE.PMREMGenerator(renderer);const environmentTarget=pmrem.fromScene(scene,.04);
+      const environment=environmentTarget.texture;pmrem.dispose();
+      copperLamp.material.envMap=environment;copperLamp.material.envMapIntensity=.9;resources.push(environmentTarget);
+      for(const mesh of [phoneBody,phoneFace]){mesh.material.envMap=environment;mesh.material.envMapIntensity=.4;mesh.material.needsUpdate=true;}
+    }
+    // The baked corner already holds the lamp's light; keep only a soft fill for the moving phone.
+    tableLight.intensity=2;
+    renderer.domElement.dataset.artCorner='loaded';
+    render();
+  },undefined,()=>{renderer.domElement.dataset.artCorner='fallback';render();});
 
   const positions={ overview:[0,1.65,3.55], work:[-2.68,1.36,-.7], experience:[.12,1.43,1.0], resume:[-1.47,1.48,-.56], contact:[1.37,1.47,-.65] };
   const targets={ overview:[0,1.0,-.85], work:[-2.68,1.34,-2.12], experience:[-.08,.46,.12], resume:[-1.64,.85,-1.66], contact:[2.15,.73,-1.34] };
@@ -312,6 +362,8 @@ export function createWalkthrough({ host, surface, points, onContextLost }) {
   function render(){
     if(disposed)return;
     scene.updateMatrixWorld(true);camera.updateMatrixWorld(true);
+    // The phone's contact shadow fades as it is lifted from the table.
+    if(phoneShadow.visible)phoneShadow.material.opacity=THREE.MathUtils.clamp(1-objects.contact.root.position.distanceTo(objects.contact.home)/.05,0,1);
     renderer.render(scene,camera);
     renderer.domElement.dataset.cameraPosition=camera.position.toArray().map(n=>n.toFixed(3)).join(',');
     renderer.domElement.dataset.cameraRotation=camera.quaternion.toArray().map(n=>n.toFixed(3)).join(',');
