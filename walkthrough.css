@@ -9,7 +9,7 @@ body[data-studio-ready="true"] .room-fallback { visibility:hidden; }
 body[data-studio-ready="true"] .studio::before { display:none; }
 body[data-studio-ready="true"] .studio-point-resume { --hit-width:84px; --hit-height:60px; }
 body[data-studio-ready="true"] .scene-caption { max-width: min(380px,48%); }
-body[data-studio-ready="true"] .studio-swipe-hint { display:inline-flex; top:18px; right:24px; bottom:auto; left:auto; transform:none; }
+body[data-studio-ready="true"] .studio-swipe-hint { display:inline-flex; z-index:4; pointer-events:none; top:18px; right:24px; bottom:auto; left:auto; transform:none; }
 body[data-studio-ready="true"] .studio:not([data-destination="overview"]) .studio-swipe-hint { display:none; }
 .object-surface { position:absolute; left:0; top:0; z-index:5; transform-origin:0 0; overflow:hidden; will-change:transform; backface-visibility:hidden; }
 .object-surface .scene-reader { position:static; width:100%; height:100%; display:flex; padding:24px 30px; border:0; background:#152326; }
@@ -78,6 +78,10 @@ body[data-studio-ready="true"] .studio:not([data-destination="overview"]) .studi
   .studio[data-destination]:not([data-destination="overview"]) .scene-arrows { left:12px; right:12px; bottom:12px; top:auto; justify-content:space-between; }
   .studio[data-reading="true"] .scene-arrows button { min-height:44px; min-width:44px; padding:8px; }
   body[data-studio-ready="true"] .scene-caption { max-width:calc(100% - 32px); }
+  /* Keep the overview caption over the window instead of over the table and notebook. */
+  body[data-studio-ready="true"] .studio[data-destination="overview"] .scene-caption { top:16px; bottom:auto; max-width:calc(100% - 190px); padding:10px 14px; }
+  body[data-studio-ready="true"] .studio[data-destination="overview"] .scene-caption h2 { font-size:20px; margin:0; }
+  body[data-studio-ready="true"] .studio[data-destination="overview"] .scene-caption > span { display:none; }
   body[data-studio-ready="true"] .studio-swipe-hint { right:16px; top:16px; }
 }
 @media (prefers-reduced-motion:reduce) { .object-surface .scene-reader { animation:none; } }

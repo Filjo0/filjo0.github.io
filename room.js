@@ -292,7 +292,8 @@ export function createWalkthrough({ host, surface, points, onContextLost }) {
     const sideways=active!=='work' && landscapeSurface();
     if(sideways)corners.push(corners.shift());
     const projectedWidth=Math.hypot(corners[1].x-corners[0].x,corners[1].y-corners[0].y);
-    const cssWidth=active==='contact'?(sideways?Math.min(560,height*.82*2):Math.min(360,projectedWidth)):Math.min(active==='resume'?560:880,width-48,height<420?projectedWidth:Infinity);
+    // Lay held paper out near its projected width so text keeps its CSS size.
+    const cssWidth=active==='contact'?(sideways?Math.min(560,height*.82*2):Math.min(360,projectedWidth)):Math.min(active==='resume'?560:active==='experience'?Math.max(320,projectedWidth):880,width-48,height<420?projectedWidth:Infinity);
     const cssHeight=sideways?cssWidth*o.w/o.h:cssWidth*o.h/faceWidth;
     surface.style.width=`${cssWidth}px`;surface.style.height=`${cssHeight}px`;
     const [p0,p1,p2,p3]=corners;
@@ -373,10 +374,21 @@ export function createWalkthrough({ host, surface, points, onContextLost }) {
     const curve=filtered.length>1?new THREE.CatmullRomCurve3(filtered,false,'centripetal'):null;
     const rotation=camera.quaternion.clone();
     const dummy=new THREE.PerspectiveCamera();dummy.position.copy(finish);dummy.lookAt(vec(...targets[route]));
+    // A walker faces their path with a level gaze, then turns toward the object on
+    // arrival. Short repositioning keeps a single direct turn.
+    const walking=curve && curve.getLength()>1.5;
+    const gaze=new THREE.PerspectiveCamera(),ahead=new THREE.Vector3(),heading=rotation.clone();
     const result=await animate(immediate?0:Math.min(2600,1250+(curve?.getLength()||0)*220),t=>{
       camera.position.copy(curve?curve.getPointAt(t):finish);
+      if(!walking){camera.quaternion.slerpQuaternions(rotation,dummy.quaternion,t);}
+      else {
+        curve.getPointAt(Math.min(1,t+.15),ahead);ahead.y=camera.position.y-.12;
+        gaze.position.copy(camera.position);
+        if(ahead.distanceToSquared(gaze.position)>.0004){gaze.lookAt(ahead);heading.copy(gaze.quaternion);}
+        camera.quaternion.slerpQuaternions(rotation,heading,THREE.MathUtils.smoothstep(t,0,.22));
+        camera.quaternion.slerp(dummy.quaternion,THREE.MathUtils.smoothstep(t,.55,1));
+      }
       if(motion && curve && t>0 && t<1)camera.position.y+=Math.sin(t*Math.PI*8)*.012*Math.sin(t*Math.PI);
-      camera.quaternion.slerpQuaternions(rotation,dummy.quaternion,t);
     });
     return result && id===sequence;
   };

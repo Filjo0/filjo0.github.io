@@ -173,5 +173,16 @@ try {
   check(await resumeFailure.locator('[data-resume-retry]').isVisible(),'Resume failure offers retry');
   check(await resumeFailure.locator('[data-standalone-resume]').isVisible(),'Resume failure retains standalone link');
   check(await resumeFailure.locator('.studio-resume-actions a[download]').isVisible(),'Resume failure retains PDF');await resumeFailure.close();
+  const walker=await browser.newPage({viewport:{width:1440,height:1000}});await walker.goto(url);await settled('overview',walker);
+  await walker.locator('.studio-dock [data-studio-route="contact"]').click();
+  await walker.waitForFunction(()=>Number(document.querySelector('canvas.room-canvas').dataset.cameraPosition.split(',')[2])<1.4);
+  const pitch=await walker.evaluate(()=>{const [x,y,z,w]=document.querySelector('canvas.room-canvas').dataset.cameraRotation.split(',').map(Number);return 2*(w*x-y*z);});
+  check(pitch>-.2,`Walker faces the path with a level gaze mid-walk: ${pitch.toFixed(3)}`);
+  await settled('contact',walker);await walker.close();
+  const narrow=await browser.newPage({viewport:{width:390,height:844},hasTouch:true});await narrow.goto(url);await settled('overview',narrow);
+  // The hint is click-through; probe its stacking with hit-testing briefly enabled.
+  check(await narrow.evaluate(()=>{const node=document.querySelector('[data-swipe-hint]');node.style.pointerEvents='auto';const hint=node.getBoundingClientRect();const top=document.elementFromPoint(hint.x+hint.width/2,hint.y+hint.height/2);node.style.pointerEvents='';return Boolean(top?.closest('[data-swipe-hint]'));}),'Mobile look-around hint is drawn above the room');
+  const caption=await narrow.locator('[data-scene-caption]').boundingBox(),notebook=await narrow.locator('.studio-point-experience').boundingBox();
+  check(caption.y+caption.height<=notebook.y,'Mobile overview caption does not cover the notebook');await narrow.close();
   console.log(`${browserName}: ${checks} walkthrough checks passed; screenshots in validation-artifacts/${browserName}.`);
 } finally {await browser?.close();await new Promise(done=>server.close(done));}
