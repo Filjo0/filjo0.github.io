@@ -10,6 +10,24 @@ python -m http.server 8080
 
 Open `http://127.0.0.1:8080`.
 
+The homepage opens in an interactive studio: explore the monitor for selected work,
+the notebook for experience, the phone for contact, and the wall print for the resume.
+The scene has gentle pointer movement, pulsing markers, lighting and sliding panels.
+Use **Pause motion** to stop animation; the site also honours reduced-motion preferences.
+On mobile and tablet, swipe the room or use the four links underneath it.
+Section links still work without JavaScript.
+
+The studio backdrop (`assets/studio-workspace.webp`) is an original image produced
+with the built-in image generation tool, compressed to WebP for delivery.
+Hotspots, lights, camera movement and panels are implemented in HTML, CSS and JavaScript.
+
+<details>
+<summary>Original backdrop generation prompt</summary>
+
+Use case: stylized-concept. Asset type: background for an interactive personal portfolio, landscape 16:9. Create a premium cinematic architectural 3D render of a software engineer's small studio in Perth at dusk, viewed from the front at a slightly elevated wide angle, a realistic elegant room with warm oak furniture, charcoal concrete walls and copper accents, soft amber desk lighting and blue dusk through a window. The entire room is visible, straight walls, no people. On the left at 23% horizontal and 52% vertical: a small desk with a glowing desktop monitor showing abstract code, keyboard. At center around 47% horizontal and 65% vertical: a low desk with an open notebook. On the right at 74% horizontal and 55% vertical: a small side table with a smartphone. At 85% horizontal and 35% vertical: a framed abstract print on the wall. A futsal ball on the floor near the left desk, a small green plant, neat personal details, visually cohesive, beautifully lit, restrained. Leave the upper left wall and bottom edge uncluttered for HTML title and labels. Render as an immersive tactile miniature architectural scene with real material detail, not a flat illustration. No legible text, no logos, no UI labels, no hotspots baked in, no watermark. The objects will receive real interactive HTML overlays.
+
+</details>
+
 ## Validation
 
 ```powershell

@@ -2,12 +2,13 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import { extname, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
-const textFiles = ['index.html', 'resume.html', 'styles.css', 'script.js', 'README.md', 'AGENTS.md'];
+const textFiles = ['index.html', 'resume.html', 'styles.css', 'studio.css', 'script.js', 'README.md', 'AGENTS.md'];
 const htmlFiles = ['index.html', 'resume.html'];
 const requiredFiles = [
   ...textFiles,
   '.nojekyll',
   'assets/hero-workspace.jpg',
+  'assets/studio-workspace.webp',
   'assets/Philipp_Alimov_Resume.pdf',
 ];
 const failures = [];
@@ -78,14 +79,14 @@ for (const sectionId of ['work', 'experience', 'capabilities', 'resume', 'contac
   if (!index.includes(`id="${sectionId}"`)) fail(`index.html is missing #${sectionId}.`);
 }
 
-const styles = contents.get('styles.css') || '';
+const styles = `${contents.get('styles.css') || ''}\n${contents.get('studio.css') || ''}`;
 if (/linear-gradient|radial-gradient/i.test(styles)) fail('Decorative gradients are not part of the portfolio system.');
 if (/letter-spacing:\s*-/i.test(styles)) fail('Negative letter spacing is not allowed.');
 
 const pdfPath = resolve(root, 'assets/Philipp_Alimov_Resume.pdf');
 if (existsSync(pdfPath) && statSync(pdfPath).size < 20_000) fail('Generated resume PDF is unexpectedly small.');
 
-for (const path of requiredFiles.filter((value) => ['.png', '.jpg', '.pdf'].includes(extname(value).toLowerCase()))) {
+for (const path of requiredFiles.filter((value) => ['.png', '.jpg', '.webp', '.pdf'].includes(extname(value).toLowerCase()))) {
   if (existsSync(resolve(root, path)) && statSync(resolve(root, path)).size === 0) {
     fail(`Generated or copied asset is empty: ${path}`);
   }
