@@ -536,6 +536,12 @@
       html[data-resume-embedded="true"] body { padding: 0; }
       html[data-resume-embedded="true"] .page { margin-top: 12px; margin-bottom: 12px; }
     }
+    @media screen and (max-height: 250px) {
+      html[data-resume-embedded="true"] .page { margin: 0; }
+      html[data-resume-embedded="true"] .masthead { min-height: 0; padding-block: 14px; }
+      html[data-resume-embedded="true"] h1 { font-size: 24px; }
+      html[data-resume-embedded="true"] .headline { font-size: 16px; }
+    }
   </style>
 </head>
 <body>

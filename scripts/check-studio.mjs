@@ -2,230 +2,176 @@ import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { readFile, mkdir } from 'node:fs/promises';
 import { resolve, extname, sep } from 'node:path';
-
-const playwright = await import(process.env.PLAYWRIGHT_MODULE || 'playwright').catch(() => {
-  throw new Error('Use development Playwright tooling; PLAYWRIGHT_MODULE can point to its index.mjs file URL.');
-});
+const playwright = await import(process.env.PLAYWRIGHT_MODULE || 'playwright').catch(() => { throw new Error('Set PLAYWRIGHT_MODULE to development Playwright index.mjs.'); });
 const browserName = process.env.STUDIO_BROWSER || 'chromium';
 const root = resolve(import.meta.dirname, '..');
 const artifacts = resolve(root, 'validation-artifacts', browserName);
 await mkdir(artifacts, { recursive: true });
-const mime = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.webp': 'image/webp', '.pdf': 'application/pdf' };
-const server = createServer(async (request, response) => {
+const mime = { '.html':'text/html', '.css':'text/css', '.js':'text/javascript', '.webp':'image/webp', '.pdf':'application/pdf' };
+const server = createServer(async (request,response) => {
   try {
-    const pathname = new URL(request.url, 'http://localhost').pathname;
+    const pathname = new URL(request.url,'http://localhost').pathname;
     const file = resolve(root, `.${pathname === '/' ? '/index.html' : pathname}`);
     if (!file.startsWith(root + sep)) throw new Error('Outside project');
-    const bytes = await readFile(file);
-    response.writeHead(200, { 'Content-Type': mime[extname(file)] || 'application/octet-stream' });
+    const bytes=await readFile(file);
+    response.writeHead(200, { 'Content-Type':mime[extname(file)] || 'application/octet-stream' });
     response.end(bytes);
-  } catch { response.writeHead(404); response.end('Not found'); }
+  } catch { response.writeHead(404);response.end('Not found'); }
 });
-await new Promise((done) => server.listen(0, '127.0.0.1', done));
+await new Promise(done => server.listen(0,'127.0.0.1',done));
 const url = `http://127.0.0.1:${server.address().port}`;
-let assertions = 0;
-const check = (value, message) => { assert.ok(value, message); assertions += 1; };
-let browser;
+let checks=0,browser;
+const check=(value,message)=>{assert.ok(value,message);checks++;};
 try {
-  browser = await playwright[browserName].launch({ headless: true, ...(process.env.STUDIO_BROWSER_EXECUTABLE ? { executablePath: process.env.STUDIO_BROWSER_EXECUTABLE } : {}) });
-  const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
-  const errors = [];
-  page.on('pageerror', (error) => errors.push(error.message));
-  const settled = (destination) => page.waitForFunction((expected) => {
-    const scene = document.querySelector('[data-studio]');
-    return scene.dataset.destination === expected && scene.dataset.travelling === 'false';
-  }, destination);
-  const open = async (destination) => {
-    await page.locator(`.studio-dock [data-studio-route="${destination}"]`).click();
-    await settled(destination);
+  browser=await playwright[browserName].launch({headless:true,
+    ...(process.env.STUDIO_BROWSER_EXECUTABLE?{executablePath:process.env.STUDIO_BROWSER_EXECUTABLE}:{}),
+    ...(browserName==='chromium'?{args:['--enable-unsafe-swiftshader']}:{}),
+  });
+  const page=await browser.newPage({viewport:{width:1440,height:1000}});
+  const errors=[];page.on('pageerror',error=>errors.push(error.message));
+  await page.addInitScript(()=>{
+    window.studioFrameRequests=0;const original=requestAnimationFrame;
+    window.requestAnimationFrame=callback=>{window.studioFrameRequests++;return original(callback);};
+  });
+  const settled=(route,p=page)=>p.waitForFunction(route=>{
+    const room=document.querySelector('[data-studio]');return document.body.dataset.studioReady==='true'&&room.dataset.destination===route&&room.dataset.travelling==='false';
+  },route);
+  const open=async route=>{await page.locator(`.studio-dock [data-studio-route="${route}"]`).click();await settled(route);};
+  const home=async()=>{await page.goto(url);await settled('overview');};
+  const screenshot=name=>page.screenshot({path:resolve(artifacts,`${name}.png`)});
+  const unique=async()=>check(await page.evaluate(()=>{const ids=[...document.querySelectorAll('[id]')].map(n=>n.id);return new Set(ids).size===ids.length;}),'Canonical IDs stay unique');
+  const fits=async()=>{
+    check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1&&document.documentElement.scrollHeight<=innerHeight+1&&scrollY===0),'Room fits viewport without document scrolling');
+    const bounds=await page.locator('[data-object-surface]').boundingBox();
+    if(bounds){const viewport=page.viewportSize();check(bounds.x>=-1&&bounds.y>=0&&bounds.x+bounds.width<=viewport.width+1&&bounds.y+bounds.height<=viewport.height+1,'Projected object surface fits viewport');}
+    const reading=await page.locator('[data-reader-body]').evaluate(n=>({width:n.clientWidth,scrollWidth:n.scrollWidth}));
+    check(reading.scrollWidth<=reading.width+1,`Reading has no horizontal overflow at ${page.viewportSize().width}px ${await page.locator('[data-studio]').getAttribute('data-destination')}: ${JSON.stringify(reading)}`);
   };
-  const home = async () => { await page.goto(url); await settled('overview'); };
-  const uniqueIds = async () => check(await page.evaluate(() => {
-    const ids = [...document.querySelectorAll('[id]')].map((node) => node.id);
-    return new Set(ids).size === ids.length;
-  }), 'Canonical sections retain unique IDs');
-  const noOverflow = async () => check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1 && document.documentElement.scrollHeight <= innerHeight + 1 && document.querySelector('[data-studio]').scrollTop === 0), 'Enhanced room fits the viewport');
-  const screenshot = (name) => page.screenshot({ path: resolve(artifacts, `${name}.png`) });
-  await home();
-  check(await page.locator('dialog,[role="dialog"]').count() === 0, 'Room navigation has no dialogs');
-  check(await page.locator('[data-studio-fallback]').isHidden(), 'Ordinary page does not duplicate the enhanced scene');
-  await noOverflow();
-  await screenshot('overview');
-  const workLabel = page.locator('.studio-point-work .studio-label');
-  check(await workLabel.evaluate((node) => getComputedStyle(node).opacity === '0'), 'Desktop labels stay hidden at rest');
-  await page.locator('.studio-point-work').hover();
-  await page.waitForFunction(() => getComputedStyle(document.querySelector('.studio-point-work .studio-label')).opacity === '1');
-  check(await workLabel.isVisible(), 'Hover reveals the destination name');
-  await screenshot('overview-hover');
-  await page.mouse.move(0, 0);
-  await page.keyboard.press('Tab');
-  await page.locator('.studio-point-work').focus();
-  await page.waitForFunction(() => getComputedStyle(document.querySelector('.studio-point-work .studio-label')).opacity === '1');
-  check(await page.locator('.studio-point-work').evaluate((node) => node.matches(':focus-visible')), 'Keyboard focus reveals the label too');
-  await home();
-  const before = await page.locator('[data-studio-stage]').evaluate((node) => getComputedStyle(node).transform);
-  await page.locator('.studio-point-work').click();
-  await page.waitForTimeout(140);
-  const during = await page.locator('[data-studio-stage]').evaluate((node) => getComputedStyle(node).transform);
-  check(before !== during, 'Clicking an object actually changes the camera transform');
-  check(await page.locator('[data-scene-reader]').isHidden(), 'Camera travel precedes reading content');
-  await settled('work');
-  check(page.url().endsWith('#work'), 'Scene has a shareable route');
-  check((await page.locator('[data-viewpoint-image]').getAttribute('src')).endsWith('studio-work-angle.webp'), 'Desk uses its own closer viewpoint');
-  check(await page.locator('[data-scene-content] [data-studio-section="work"]').isVisible(), 'Live project content belongs to the desk');
-  check(await page.locator('[data-scene-title]').evaluate((node) => document.activeElement === node), 'Destination is announced through heading focus');
-  await uniqueIds();
-  await screenshot('work');
+  await home();await unique();await fits();await screenshot('walk-overview');
+  check(await page.locator('canvas.room-canvas').count()===1,'One real world canvas');
+  check(await page.locator('dialog,[role="dialog"],[data-viewpoint-image]').count()===0,'No dialogs or photograph swaps');
+  check(await page.locator('[data-studio-fallback]').isHidden(),'No duplicate page beneath scene');
+  check(await page.locator('.studio-point-resume').getAttribute('aria-label')==='Walk to the desk folio: Resume','Resume belongs to desk folio');
+  const marker=page.locator('.studio-point-work');
+  check(await marker.locator('.studio-label').evaluate(n=>getComputedStyle(n).opacity==='0'),'Desktop labels hidden at rest');
+  await marker.hover();await page.waitForFunction(()=>getComputedStyle(document.querySelector('.studio-point-work .studio-label')).opacity==='1');
+  await marker.focus();await page.keyboard.press('Tab');await marker.focus();
+  check(await marker.evaluate(n=>n.matches(':focus-visible')),'Hotspots support keyboard discovery');
+  const camera=()=>page.locator('canvas').getAttribute('data-camera-position');
+  const rotation=()=>page.locator('canvas').getAttribute('data-camera-rotation');
+  const homeObjects=await page.locator('canvas').getAttribute('data-object-positions');
+  const before=await camera(),fov=await page.locator('canvas').getAttribute('data-fov');
+  await marker.click();await page.waitForTimeout(250);
+  check(await camera()!==before,'Camera physically translates during walk');
+  check(await page.locator('[data-object-surface]').isHidden(),'Walking precedes object reading');
+  await screenshot('walk-in-progress');await settled('work');
+  check(await page.locator('canvas').getAttribute('data-fov')===fov,'Walking retains constant lens FOV');
+  check(await page.locator('[data-object-surface]').getAttribute('data-surface')==='monitor','Projects on monitor');
+  check(await page.locator('[data-scene-content] [data-studio-section="work"]').isVisible(),'Canonical projects mounted on physical surface');
+  check(await page.locator('[data-scene-title]').evaluate(n=>document.activeElement===n),'Destination heading receives focus');
+  await fits();await screenshot('monitor');
+  await page.locator('[data-reader-body]').evaluate(n=>n.scrollTop=230);
+  await open('experience');await screenshot('notebook');
+  for(const id of ['experience','capabilities','resume'])check(await page.locator(`[data-scene-content] [data-studio-section="${id}"]`).count()===1,`${id} on notebook`);
+  await page.goBack();await settled('work');
+  check(Math.abs(await page.locator('[data-reader-body]').evaluate(n=>n.scrollTop)-230)<3,'Back restores scroll position');
+  await page.goForward();await settled('experience');
+  await open('resume');await page.waitForFunction(()=>document.querySelector('[data-resume-view]').dataset.state==='ready');
+  check(await page.locator('[data-object-surface]').getAttribute('data-surface')==='folio','Resume on physical desk folio');
+  check(await page.frameLocator('[data-resume-frame]').locator('.page').count()===2,'Approved two-page resume embedded');
+  check(await page.frameLocator('[data-resume-frame]').locator('.resume-toolbar').isHidden(),'Embedded resume has no duplicate toolbar');
+  await screenshot('folio');await page.goBack();await settled('experience');
+  check(page.url().endsWith('#experience'),'Frame adds no joint history entry');
+  await open('resume');await page.frameLocator('[data-resume-frame]').locator('a').first().focus();await page.keyboard.press('Escape');await settled('overview');
+  await marker.focus();await page.keyboard.press('Enter');await settled('work');await page.keyboard.press('Escape');await settled('overview');
+  check(await marker.evaluate(n=>document.activeElement===n),'Escape restores hotspot focus');
+  await open('contact');
+  check(await page.locator('[data-phone-wake]').isVisible(),'Phone must be activated after approach');
+  check(await page.locator('[data-scene-reader]').isHidden(),'Contacts stay off while phone asleep');
+  check(await page.locator('[data-phone-wake]').evaluate(n=>n===document.activeElement),'Wake is keyboard focus target');
+  // WebKit snapshots after iframe focus can clear native focus; capture the
+  // sleeping screen in the separate touch scenario, after keyboard checks.
+  await page.keyboard.press('Enter');await page.waitForTimeout(250);
+  check(await page.locator('[data-object-surface]').getAttribute('data-surface')==='phone','Contacts on phone glass');
+  check(await page.locator('[data-object-surface] a[href="mailto:philalimov.apps@gmail.com"]').isVisible(),'Business email active inside phone');
+  check(await page.locator('[data-studio]').getAttribute('data-phase')==='phone-awake','Tap wakes screen');
+  await screenshot('phone-awake');await fits();
   await page.locator('[data-reader-toggle]').click();
-  check(await page.locator('[data-scene-reader]').isHidden(), 'Look around reveals the whole scene');
-  check(await page.locator('[data-viewpoint]').isVisible(), 'Looking around retains the approached viewpoint');
-  await screenshot('work-look-around');
-  await page.locator('[data-reader-toggle]').click();
-  await page.locator('[data-reader-body]').evaluate((node) => { node.scrollTop = 230; });
-  await open('experience');
-  check(await page.locator('[data-scene-content] [data-studio-section="experience"]').isVisible(), 'Notebook owns experience');
-  check(await page.locator('[data-scene-content] [data-studio-section="capabilities"]').count() === 1, 'Capabilities stay available');
-  check(await page.locator('[data-scene-content] [data-studio-section="resume"]').count() === 1, 'Education stays available in experience');
-  await page.goBack(); await settled('work');
-  const restoredScroll = await page.locator('[data-reader-body]').evaluate((node) => node.scrollTop);
-  check(Math.abs(restoredScroll - 230) < 3, `History restores reading position: expected 230, got ${restoredScroll}`);
-  await page.goForward(); await settled('experience');
-  await page.locator('[data-scene-next]').click(); await settled('resume');
-  await page.waitForFunction(() => document.querySelector('[data-resume-view]').dataset.state === 'ready');
-  check(await page.locator('[data-resume-frame]').isVisible(), 'Resume stays in the room');
-  check(await page.frameLocator('[data-resume-frame]').locator('.page').count() === 2, 'Approved two-page resume is embedded');
-  check(await page.frameLocator('[data-resume-frame]').locator('.resume-toolbar').isHidden(), 'Embedded resume hides duplicate toolbar');
-  await page.goBack(); await settled('experience');
-  check(page.url().endsWith('#experience'), 'Frame did not add a spurious history step');
-  await open('resume');
-  const frameLink = page.frameLocator('[data-resume-frame]').locator('a').first();
-  await frameLink.focus();
-  await page.keyboard.press('Escape'); await settled('overview');
-  check(await page.locator('[data-scene-reader]').isHidden(), 'Escape within resume returns to overview');
-  await page.locator('.studio-point-work').focus(); await page.keyboard.press('Enter'); await settled('work');
-  await page.keyboard.press('Escape'); await settled('overview');
-  check(await page.locator('.studio-point-work').evaluate((node) => document.activeElement === node), 'Returning restores the original object focus');
-  // Keep navigation responsive when a journey is interrupted.
+  check(await page.locator('[data-object-surface]').isHidden(),'Look around puts phone down');
+  await page.waitForFunction(expected=>document.querySelector('canvas').dataset.objectPositions===expected,homeObjects);
+  const lookBounds=await page.locator('[data-room-world]').boundingBox(),lookRotation=await rotation();
+  await page.mouse.move(lookBounds.width*.45,lookBounds.y+lookBounds.height*.4);await page.mouse.down();await page.mouse.move(lookBounds.width*.65,lookBounds.y+lookBounds.height*.4,{steps:4});await page.mouse.up();
+  check(await rotation()!==lookRotation,'Look around allows turning at the approached object');
+  await page.locator('[data-reader-toggle]').click();await settled('contact');
+  check(await page.locator('[data-scene-reader]').isVisible(),'Picking phone up again retains awake state');
   await page.locator('.studio-dock [data-studio-route="work"]').click();
-  await page.locator('.studio-dock [data-studio-route="contact"]').click();
-  await settled('contact');
-  check(await page.locator('[data-scene-content] [data-studio-section="contact"]').isVisible(), 'Newest rapid destination wins');
-  check(await page.locator('[data-scene-content] [data-studio-section="work"]').count() === 0, 'Earlier journey does not restore stale content');
-  await uniqueIds();
-  await screenshot('contact');
-  // Motion settings change during a journey as well as between journeys.
   await page.locator('.studio-dock [data-studio-route="experience"]').click();
-  await page.locator('[data-studio-motion]').click(); await settled('experience');
-  check(await page.evaluate(() => document.getAnimations().filter((animation) => animation.playState === 'running').length === 0), 'Pause cancels camera and ambient animation');
-  await open('work');
-  check(await page.locator('[data-viewpoint]').isVisible(), 'Paused motion still reaches the destination');
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.waitForFunction(() => document.querySelector('[data-studio-motion]').disabled);
-  check(await page.locator('[data-studio-motion]').isDisabled(), 'System preference cannot be overridden');
-  await open('resume'); await screenshot('resume');
-  await page.emulateMedia({ reducedMotion: 'no-preference' });
-  await page.waitForFunction(() => !document.querySelector('[data-studio-motion]').disabled);
-  await page.locator('[data-studio-motion]').click();
-  // Every breakpoint has visible destinations, readable content and matching object anchors.
-  for (const [width, height] of [[1920,1080], [1101,900], [1100,900], [721,900], [720,900], [390,844], [320,568], [844,390]]) {
-    await page.setViewportSize({ width, height }); await home(); await noOverflow();
-    for (const destination of ['work','experience','resume','contact']) {
-      check(await page.locator(`.studio-dock [data-studio-route="${destination}"]`).isVisible(), `${width}: ${destination} direct navigation`);
-    }
-    const geometry = await page.locator('.studio-point').evaluateAll((nodes) => nodes.filter((node) => getComputedStyle(node).visibility !== 'hidden').map((node) => {
-      const marker = node.querySelector('.studio-marker').getBoundingClientRect();
-      const box = node.getBoundingClientRect();
-      return Math.abs(marker.x + marker.width/2 - box.x - box.width/2) < 1 && Math.abs(marker.y + marker.height/2 - box.y - box.height/2) < 1;
-    }));
-    check(geometry.every(Boolean), `${width}: markers stay centered on their target`);
-    await open('work'); await noOverflow();
-    const reading = await page.locator('[data-reader-body]').boundingBox();
-    check(reading.width >= 270 && reading.height > 55, `${width}: scrollable reading area remains usable`);
-    await screenshot(`work-${width}`);
-    if (width === 390) {
-      for (const destination of ['experience','resume','contact']) {
-        await open(destination);
-        check(await page.locator('[data-reader-body]').evaluate((node) => node.scrollWidth <= node.clientWidth + 1), `${destination}: reading content has no horizontal overflow`);
-        await screenshot(`${destination}-mobile`);
-        if (destination === 'experience') {
-          await page.locator('[data-reader-body]').evaluate((node) => { node.scrollTop = node.scrollHeight; });
-          await screenshot('education-mobile');
-        }
-      }
-      await page.locator('[data-reader-toggle]').click(); await screenshot('contact-mobile-look-around');
-      await page.locator('.scene-back').click(); await settled('overview');
-      const sceneView = page.locator('[data-studio-view]');
-      const originalScroll = await sceneView.evaluate((node) => node.scrollLeft);
-      await sceneView.hover({ position: { x: 200, y: 150 } });
-      await page.mouse.wheel(350, 0); await page.waitForTimeout(250);
-      check(await sceneView.evaluate((node) => node.scrollLeft) > originalScroll, 'Mobile overview supports horizontal room exploration');
-      await screenshot('overview-mobile');
-    }
+  await page.locator('.studio-dock [data-studio-route="contact"]').click();await settled('contact');
+  check(await page.locator('[data-scene-content] [data-studio-section="work"]').count()===0,'Interrupted journeys do not restore stale content');
+  await unique();
+  await page.locator('.studio-dock [data-studio-route="experience"]').click();await page.waitForTimeout(120);
+  await page.setViewportSize({width:390,height:844});await settled('experience');await fits();
+  check(await page.locator('[data-reader-body]').evaluate(n=>n.clientHeight>=300),'Resize during movement fits the newly held page');
+  await page.setViewportSize({width:1440,height:1000});await open('contact');
+  await page.locator('.studio-dock [data-studio-route="experience"]').click();await page.locator('[data-studio-motion]').click();await settled('experience');
+  check(await page.evaluate(()=>document.getAnimations().filter(a=>a.playState==='running').length===0),'Pause stops room motion');
+  await page.keyboard.press('Escape');await settled('overview');
+  check(await page.locator('canvas').getAttribute('data-object-positions')===homeObjects,'Interrupted put-down returns every prop to its home');
+  const room=await page.locator('[data-room-world]').boundingBox(),oldRotation=await rotation();
+  await page.mouse.move(room.x+room.width*.6,room.y+room.height*.45);await page.mouse.down();await page.mouse.move(room.x+room.width*.8,room.y+room.height*.45,{steps:6});await page.mouse.up();
+  check(await rotation()!==oldRotation,'Dragging rotates real camera');
+  await page.waitForTimeout(300);const requests=await page.evaluate(()=>window.studioFrameRequests);await page.waitForTimeout(500);
+  check(await page.evaluate(()=>window.studioFrameRequests)===requests,'Idle room requests no ongoing render frames');
+  await page.emulateMedia({reducedMotion:'reduce'});await page.waitForFunction(()=>document.querySelector('[data-studio-motion]').disabled);check(await page.locator('[data-studio-motion]').isDisabled(),'System reduced motion takes precedence');
+  for(const hash of ['work','experience','resume','contact','capabilities']){
+    await page.goto(`${url}/#${hash}`);await settled(hash==='capabilities'?'experience':hash);await unique();await fits();
   }
-  // Browser zoom reflows into the narrow layout rather than clipping content.
-  await page.setViewportSize({ width:720, height:500 }); await home(); await open('experience'); await noOverflow(); await screenshot('zoom-reflow');
-  await page.setViewportSize({ width:1440, height:1000 });
-  await page.goto(`${url}/#capabilities`); await settled('experience');
-  check(await page.locator('[data-studio-section=capabilities]').isVisible(), 'Legacy capabilities route resolves to notebook');
-  await page.goto(`${url}/#contact`); await settled('contact');
-  check(await page.locator('[data-reader-body]').evaluate((node) => node.scrollTop) === 0, 'Deep link starts at the beginning of the content');
-  await noOverflow();
-  // Content still works without a generated close-up.
-  const missingArt = await browser.newPage();
-  await missingArt.route('**/studio-work-angle.webp', (route) => route.fulfill({ status:404, body:'Not found' }));
-  await missingArt.goto(`${url}/#work`);
-  await missingArt.waitForFunction(() => document.querySelector('[data-studio]').dataset.travelling === 'false');
-  check(await missingArt.locator('[data-scene-content] [data-studio-section="work"]').isVisible(), 'Missing art keeps zoomed room and readable content');
-  await missingArt.close();
-  const brokenResume = await browser.newPage();
-  await brokenResume.route('**/resume.html?embed=1', (route) => route.fulfill({ status:404, contentType:'text/html', body:'Missing resume' }));
-  await brokenResume.goto(`${url}/#resume`);
-  await brokenResume.waitForFunction(() => document.querySelector('[data-resume-view]').dataset.state === 'error');
-  check(await brokenResume.locator('[data-resume-retry]').isVisible(), 'Resume failure provides retry');
-  check(await brokenResume.locator('[data-standalone-resume]').isVisible(), 'Standalone resume survives failure');
-  check(await brokenResume.locator('[download]').isVisible(), 'PDF survives failure');
-  await brokenResume.unroute('**/resume.html?embed=1');
-  await brokenResume.locator('[data-resume-retry]').click();
-  await brokenResume.waitForFunction(() => document.querySelector('[data-resume-view]').dataset.state === 'ready');
-  await brokenResume.close();
-  const touch = await browser.newPage({ viewport:{ width:390, height:844 }, hasTouch:true, isMobile:true });
-  await touch.goto(url);
-  await touch.waitForFunction(() => document.querySelector('[data-studio]').dataset.travelling === 'false');
-  check(await touch.locator('.studio-point-experience .studio-label').evaluate((node) => getComputedStyle(node).opacity === '1' && getComputedStyle(node).visibility === 'visible'), 'Touch visitors can identify a hotspot without hover');
-  const hitBox = await touch.locator('.studio-point-experience').boundingBox();
-  check(hitBox.width >= 44 && hitBox.height >= 44, 'Touch target remains at least 44px');
-  await touch.locator('.studio-point-experience').tap();
-  await touch.waitForFunction(() => document.querySelector('[data-studio]').dataset.destination === 'experience' && document.querySelector('[data-studio]').dataset.travelling === 'false');
-  check(await touch.locator('[data-scene-content] [data-studio-section="experience"]').isVisible(), 'A single touch enters the object viewpoint');
-  check((await touch.locator('[data-viewpoint-image]').getAttribute('src')).endsWith('studio-experience-angle.webp'), 'Touch navigation uses the downward notebook view');
-  await touch.screenshot({ path:resolve(artifacts, 'experience-touch.png') });
-  await touch.close();
-  const noJS = await browser.newPage({ javaScriptEnabled:false, viewport:{width:390,height:844} });
-  await noJS.goto(url);
-  check(await noJS.locator('[data-studio-fallback]').isVisible(), 'No-JavaScript content remains available');
-  await noJS.locator('.studio-dock [href="#work"]').click();
-  check(await noJS.locator('#work').isVisible(), 'No-JavaScript links navigate ordinary content');
-  check(await noJS.locator('[data-studio-route="resume"]').first().getAttribute('href') === 'resume.html', 'No-JavaScript resume remains a normal link');
-  await noJS.close();
-  const initFailure = await browser.newPage();
-  await initFailure.addInitScript(() => { window.ResizeObserver = undefined; });
-  await initFailure.goto(url);
-  check(await initFailure.locator('[data-studio-fallback]').isVisible(), 'Unsupported initialization never hides content');
-  await initFailure.close();
-  const rollback = await browser.newPage();
-  await rollback.addInitScript(() => { window.ResizeObserver = class { constructor() { throw new Error('Simulated unavailable layout observer'); } }; });
-  await rollback.goto(`${url}/#work`);
-  await rollback.waitForFunction(() => window.scrollY > 0);
-  check(await rollback.locator('[data-studio-fallback]').isVisible(), 'Failed initialization restores ordinary content');
-  check(await rollback.locator('#work').count() === 1, 'Rollback does not duplicate sections');
-  check(await rollback.evaluate(() => history.scrollRestoration === 'auto'), 'Rollback restores normal browser scrolling');
-  await rollback.close();
-  await page.goto(`${url}/resume.html`);
-  check(await page.locator('.resume-toolbar').isVisible(), 'Standalone resume toolbar is unchanged');
-  check(await page.locator('.page').count() === 2, 'Standalone resume preserves two pages');
-  check(errors.length === 0, `No browser errors: ${errors.join(', ')}`);
-  console.log(`${browserName}: ${assertions} room navigation and fallback checks passed.`);
-} finally {
-  await browser?.close();
-  await new Promise((done) => server.close(done));
-}
+  for(const viewport of [{width:320,height:844},{width:390,height:844},{width:720,height:900},{width:1100,height:800},{width:720,height:500},{width:844,height:390}]){
+    await page.setViewportSize(viewport);await page.goto(url);await settled('overview');await fits();
+    for(const route of ['work','experience','resume','contact']){
+      await open(route);if(route==='contact')await page.locator('[data-phone-wake]').click();
+      await fits();await unique();
+      if(route==='resume'){
+        await page.waitForFunction(()=>document.querySelector('[data-resume-view]').dataset.state==='ready');
+        check(await page.frameLocator('[data-resume-frame]').locator('h1').isVisible(),'Resume identity is visible in embedded screen mode');
+        if(viewport.height<540)check(await page.locator('[data-resume-frame]').evaluate(n=>n.clientHeight>=100),'Short landscape preserves document reading area');
+      }
+      if(viewport.width===390)check(await page.locator('[data-reader-body]').evaluate(n=>n.clientHeight>=300),'Portrait readers keep substantial readable height');
+      await screenshot(`${viewport.width}x${viewport.height}-${route}`);
+    }
+    if(viewport.width===844)check(await page.locator('[data-object-surface]').getAttribute('data-orientation')==='landscape','Short landscape phone rotates with upright UI');
+  }
+  const touch=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'});
+  await touch.goto(url);await settled('overview',touch);
+  await touch.locator('.studio-dock [data-studio-route="contact"]').tap();await settled('contact',touch);
+  check(await touch.locator('[data-phone-wake]').isVisible(),'Touch destination reaches sleeping phone');
+  await touch.screenshot({path:resolve(artifacts,'phone-asleep.png')});
+  await touch.locator('[data-phone-wake]').tap();
+  const contactLinks=touch.locator('[data-object-surface] .contact-actions a');
+  for(let i=0;i<await contactLinks.count();i++)check((await contactLinks.nth(i).boundingBox()).height>=44,'Touch contact link keeps 44px target');
+  await touch.screenshot({path:resolve(artifacts,'touch-phone.png')});await touch.close();
+  check(errors.length===0,`No runtime errors: ${errors.join('; ')}`);await page.close();
+  const fallback=async({noJS=false,block,webglFailure=false,contextLoss=false})=>{
+    const p=await browser.newPage({viewport:{width:390,height:844},javaScriptEnabled:!noJS,reducedMotion:'reduce'});
+    if(block)await p.route(block,r=>r.abort());
+    if(webglFailure)await p.addInitScript(()=>{const getContext=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(kind,...args){return kind.startsWith('webgl')?null:getContext.call(this,kind,...args);};});
+    await p.goto(url);
+    if(contextLoss){await settled('overview',p);await p.locator('.studio-dock [data-studio-route="work"]').click();await settled('work',p);await p.locator('canvas').evaluate(n=>n.dispatchEvent(new Event('webglcontextlost',{cancelable:true})));}
+    await p.waitForFunction(()=>!document.querySelector('[data-studio-fallback]').hidden);
+    // Initialization may still be attempting module import before fallback checks.
+    await p.waitForTimeout(350);
+    check(await p.locator('[data-studio-fallback]').isVisible(),'Ordinary content survives initialization/context failures');
+    check(await p.locator('#work').count()===1&&await p.locator('#contact').count()===1,'Fallback restores original section IDs');
+    check(await p.locator('.studio-dock [data-studio-route="resume"]').getAttribute('href')==='resume.html','Fallback resume opens standalone');
+    await p.close();
+  };
+  await fallback({noJS:true});await fallback({block:'**/room.js'});await fallback({block:'**/assets/vendor/three.module.js'});await fallback({webglFailure:true});await fallback({contextLoss:true});
+  const missing=await browser.newPage({reducedMotion:'reduce'});await missing.route('**/assets/studio-workspace.webp',r=>r.abort());await missing.goto(url);await settled('overview',missing);
+  check(await missing.locator('canvas.room-canvas').isVisible(),'Missing exterior texture still leaves full room geometry');await missing.close();
+  const resumeFailure=await browser.newPage({reducedMotion:'reduce'});await resumeFailure.route('**/resume.html?embed=1',r=>r.fulfill({status:404,contentType:'text/html',body:'Missing document'}));await resumeFailure.goto(`${url}/#resume`);await settled('resume',resumeFailure);
+  await resumeFailure.waitForFunction(()=>document.querySelector('[data-resume-view]').dataset.state==='error');
+  check(await resumeFailure.locator('[data-resume-retry]').isVisible(),'Resume failure offers retry');
+  check(await resumeFailure.locator('[data-standalone-resume]').isVisible(),'Resume failure retains standalone link');
+  check(await resumeFailure.locator('.studio-resume-actions a[download]').isVisible(),'Resume failure retains PDF');await resumeFailure.close();
+  console.log(`${browserName}: ${checks} walkthrough checks passed; screenshots in validation-artifacts/${browserName}.`);
+} finally {await browser?.close();await new Promise(done=>server.close(done));}

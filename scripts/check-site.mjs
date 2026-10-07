@@ -2,7 +2,7 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import { extname, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
-const textFiles = ['index.html', 'resume.html', 'styles.css', 'studio.css', 'script.js', 'README.md', 'AGENTS.md'];
+const textFiles = ['index.html', 'resume.html', 'styles.css', 'studio.css', 'walkthrough.css', 'script.js', 'room.js', 'README.md', 'AGENTS.md'];
 const htmlFiles = ['index.html', 'resume.html'];
 const requiredFiles = [
   ...textFiles,
@@ -10,7 +10,8 @@ const requiredFiles = [
   'scripts/check-studio.mjs',
   'assets/hero-workspace.jpg',
   'assets/studio-workspace.webp',
-  ...['work', 'experience', 'resume', 'contact'].map((name) => `assets/studio-${name}-angle.webp`),
+  'assets/vendor/three.module.js',
+  'assets/vendor/THREE-LICENSE.txt',
   'assets/Philipp_Alimov_Resume.pdf',
 ];
 const failures = [];
@@ -83,7 +84,7 @@ for (const sectionId of ['work', 'experience', 'capabilities', 'resume', 'contac
   if (!index.includes(`id="${sectionId}"`)) fail(`index.html is missing #${sectionId}.`);
 }
 
-const styles = `${contents.get('styles.css') || ''}\n${contents.get('studio.css') || ''}`;
+const styles = `${contents.get('styles.css') || ''}\n${contents.get('studio.css') || ''}\n${contents.get('walkthrough.css') || ''}`;
 if (/linear-gradient|radial-gradient/i.test(styles)) fail('Decorative gradients are not part of the portfolio system.');
 if (/letter-spacing:\s*-/i.test(styles)) fail('Negative letter spacing is not allowed.');
 

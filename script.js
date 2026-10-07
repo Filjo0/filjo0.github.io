@@ -1,390 +1,220 @@
-(() => {
-  document.querySelectorAll('[data-current-year]').forEach((node) => {
-    node.textContent = String(new Date().getFullYear());
-  });
+(async () => {
+  document.querySelectorAll('[data-current-year]').forEach(node => { node.textContent = String(new Date().getFullYear()); });
   document.querySelector('[data-print-resume]')?.addEventListener('click', () => window.print());
   if (window.parent !== window && new URLSearchParams(location.search).get('embed') === '1') {
     document.documentElement.dataset.resumeEmbedded = 'true';
-    document.querySelectorAll('a[href^="https:"]').forEach((link) => {
-      link.target = '_blank';
-      link.rel = 'noopener';
-    });
+    document.querySelectorAll('a[href^="https:"]').forEach(link => { link.target = '_blank'; link.rel = 'noopener'; });
   }
-
   const studio = document.querySelector('[data-studio]');
   if (!studio) return;
-  const find = (name) => document.querySelector(`[data-${name}]`);
-  const view = find('studio-view');
-  const stage = find('studio-stage');
-  const fallback = find('studio-fallback');
-  const viewpoint = find('viewpoint');
-  const viewpointImage = find('viewpoint-image');
+  const find = name => document.querySelector(`[data-${name}]`);
+  const host = find('room-world');
+  const surface = find('object-surface');
   const reader = find('scene-reader');
   const readerBody = find('reader-body');
   const content = find('scene-content');
   const title = find('scene-title');
-  const tools = find('scene-tools');
-  const toggle = find('reader-toggle');
+  const wake = find('phone-wake');
+  const fallback = find('studio-fallback');
   const motionButton = find('studio-motion');
+  const toggle = find('reader-toggle');
   const resumeView = find('resume-view');
   const resumeFrame = find('resume-frame');
   const resumeStatus = find('resume-status');
   const resumeRetry = find('resume-retry');
-  if (![view, stage, fallback, viewpoint, viewpointImage, reader, readerBody, content,
-    title, tools, toggle, motionButton, resumeView, resumeFrame, resumeStatus, resumeRetry].every(Boolean)
-    || !window.ResizeObserver || !stage.animate) return;
-
+  if (![host,surface,reader,readerBody,content,title,wake,fallback,motionButton,toggle,resumeView,resumeFrame,resumeStatus,resumeRetry].every(Boolean) || !window.ResizeObserver) return;
   const routes = {
-    work: { title: 'Work', object: 'At the desk', text: 'Products, from idea to release.', sections: ['work'], x: 0.205, y: 0.395, scale: 1.45 },
-    experience: { title: 'Experience', object: 'At the notebook', text: 'The work behind the products.', sections: ['experience', 'capabilities', 'resume'], x: 0.502, y: 0.625, scale: 1.5 },
-    resume: { title: 'Resume', object: 'At the wall print', text: 'The full picture.', sections: [], x: 0.905, y: 0.25, scale: 1.5 },
-    contact: { title: 'Contact', object: 'At the phone', text: 'Start a conversation.', sections: ['contact'], x: 0.798, y: 0.585, scale: 1.6 },
+    work:{title:'Work',object:'The monitor',sections:['work']},
+    experience:{title:'Experience',object:'The notebook',sections:['experience','capabilities','resume']},
+    resume:{title:'Resume',object:'The desk folio',sections:[]},
+    contact:{title:'Contacts',object:'Philipp Alimov',sections:['contact']},
   };
-  const order = ['overview', ...Object.keys(routes)];
-  const labels = { overview: 'Room', ...Object.fromEntries(Object.entries(routes).map(([key, route]) => [key, route.title])) };
-  const records = new Map();
-  for (const route of Object.values(routes)) {
-    for (const id of route.sections) {
-      const node = document.getElementById(id);
-      if (!node) return;
-      const placeholder = document.createElement('span');
-      placeholder.hidden = true;
-      records.set(id, { node, placeholder });
-    }
+  const order=['overview',...Object.keys(routes)];
+  const labels={overview:'Room',work:'Work',experience:'Experience',resume:'Resume',contact:'Contact'};
+  const records=new Map();
+  for(const route of Object.values(routes)) for(const id of route.sections){
+    const node=document.getElementById(id);if(!node)return;
+    const placeholder=document.createElement('span');placeholder.hidden=true;
+    records.set(id,{node,placeholder});
   }
-  const links = [...document.querySelectorAll('[data-studio-route]')];
-  const points = [...stage.querySelectorAll('.studio-point')];
-  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  const mobile = matchMedia('(max-width: 1100px)');
-  const finePointer = matchMedia('(pointer: fine)');
-  const scrollPositions = new Map();
-  const imageLoads = new Map();
-  const previousScrollRestoration = history.scrollRestoration;
-  let ready = false;
-  let active = 'overview';
-  let previousMobile = null;
-  let opener = null;
-  let pausedByUser = false;
-  let travelling = false;
-  let version = 0;
-  let animations = [];
-  let visibilityFrame = 0;
-  let resumeRequested = false;
-  let resumeTimer = 0;
-  const isPaused = () => pausedByUser || reducedMotion.matches;
-
-  const restoreSections = () => {
-    for (const [id, { node, placeholder }] of records) {
-      placeholder.removeAttribute('id');
-      node.id = id;
-      delete node.dataset.studioSection;
-      if (placeholder.parentNode) placeholder.after(node);
+  const links=[...document.querySelectorAll('[data-studio-route]')];
+  const points=[...document.querySelectorAll('.studio-point')];
+  const reducedMotion=matchMedia('(prefers-reduced-motion:reduce)');
+  const scrollPositions=new Map();
+  const priorRestoration=history.scrollRestoration;
+  let engine;
+  let ready=false;
+  let active='overview';
+  let version=0;
+  let opener;
+  let paused=false;
+  let looking=false;
+  let phoneAwake=false;
+  let resumeRequested=false;
+  let resumeTimer=0;
+  const isPaused=()=>paused || reducedMotion.matches;
+  const restoreSections=()=>{
+    for(const [id,{node,placeholder}] of records){
+      placeholder.removeAttribute('id');node.id=id;delete node.dataset.studioSection;
+      if(placeholder.parentNode)placeholder.after(node);
     }
   };
-  const updateVisibility = () => {
-    visibilityFrame = 0;
-    const bounds = view.getBoundingClientRect();
-    const inside = (rect) => rect.left >= bounds.left + 6 && rect.right <= bounds.right - 6
-      && rect.top >= bounds.top + 6 && rect.bottom <= bounds.bottom - 6;
-    for (const point of points) {
-      const inView = active === 'overview' && !travelling && inside(point.querySelector('.studio-marker').getBoundingClientRect());
-      point.dataset.inView = String(inView);
-      point.dataset.labelVisible = String(inView && inside(point.querySelector('.studio-label').getBoundingClientRect()));
-      point.tabIndex = inView ? 0 : -1;
+  const recover=()=>{
+    ++version;ready=false;engine?.dispose();restoreSections();fallback.hidden=false;
+    surface.hidden=true;host.hidden=true;find('scene-tools').hidden=true;
+    find('scene-arrows').hidden=true;find('scene-caption').hidden=true;motionButton.hidden=true;
+    delete document.body.dataset.studioReady;delete document.body.dataset.walkthrough;
+    history.scrollRestoration=priorRestoration;
+    links.forEach(link=>link.removeAttribute('aria-current'));
+    requestAnimationFrame(()=>document.getElementById(location.hash.slice(1))?.scrollIntoView());
+  };
+  const updateControls=()=>{
+    const index=order.indexOf(active);
+    for(const [key,offset] of [['previous',-1],['next',1]]){
+      const destination=order[(index+offset+order.length)%order.length];
+      find(`scene-${key}`).setAttribute('aria-label',`${key==='previous'?'Previous':'Next'} view: ${labels[destination]}`);
+      find(`${key}-label`).textContent=labels[destination];
     }
+    links.forEach(link=>{if(link.dataset.studioRoute===active)link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');});
+    find('scene-tools').hidden=active==='overview';
+    find('scene-caption').hidden=active!=='overview';
+    find('scene-number').textContent=`0${index} / 04`;
+    find('scene-caption-title').textContent='The studio';
+    find('scene-caption-text').textContent='Choose an object. Walk over and explore.';
+    toggle.setAttribute('aria-expanded',String(!looking));
+    toggle.innerHTML=looking?`Read ${labels[active].toLowerCase()} <span aria-hidden="true">↙</span>`:'Look around <span aria-hidden="true">↗</span>';
   };
-  const queueVisibility = () => {
-    if (!visibilityFrame) visibilityFrame = requestAnimationFrame(updateVisibility);
+  const failResume=()=>{
+    clearTimeout(resumeTimer);resumeFrame.hidden=true;resumeStatus.hidden=false;resumeRetry.hidden=false;
+    resumeStatus.textContent='The resume could not load. You can download the PDF or open the standalone resume.';
+    resumeView.dataset.state='error';
   };
-  const cameraTransform = (destination) => {
-    if (destination === 'overview') return 'translate(0px, 0px) scale(1)';
-    const route = routes[destination];
-    const scale = mobile.matches ? 1.3 : route.scale;
-    // Place the approached object in the visible left half, beside the reading area.
-    const stageCenter = stage.offsetLeft + stage.offsetWidth / 2 - view.scrollLeft;
-    const targetX = view.clientWidth * (mobile.matches ? 0.5 : 0.3);
-    const x = targetX - stageCenter - (route.x - 0.5) * stage.offsetWidth * scale;
-    const y = (0.5 - route.y) * stage.offsetHeight * scale;
-    return `translate(${x.toFixed(2)}px, ${y.toFixed(2)}px) scale(${scale})`;
+  const loadResume=()=>{
+    resumeRequested=true;resumeView.dataset.state='loading';resumeStatus.hidden=false;
+    resumeStatus.textContent='Loading resume…';resumeFrame.hidden=true;resumeRetry.hidden=true;
+    clearTimeout(resumeTimer);resumeTimer=setTimeout(failResume,12000);
+    resumeFrame.contentWindow.location.replace(new URL('resume.html?embed=1',location.href).href);
   };
-  const layoutStage = () => {
-    const oldRange = view.scrollWidth - view.clientWidth;
-    const fraction = previousMobile && oldRange > 0 ? view.scrollLeft / oldRange : 0.5;
-    const width = mobile.matches ? Math.max(view.clientWidth, view.clientHeight * 1672 / 941)
-      : Math.min(view.clientWidth, view.clientHeight * 1672 / 941);
-    stage.style.setProperty('--stage-width', `${Math.max(1, width)}px`);
-    view.scrollLeft = mobile.matches ? Math.max(0, stage.offsetWidth - view.clientWidth) * fraction : 0;
-    previousMobile = mobile.matches;
-    if (!travelling) stage.style.transform = cameraTransform(active);
-    queueVisibility();
-  };
-  const stopAnimations = () => {
-    const transform = getComputedStyle(stage).transform;
-    const opacity = getComputedStyle(viewpoint).opacity;
-    animations.forEach((animation) => animation.cancel());
-    animations = [];
-    stage.style.transform = transform;
-    viewpoint.style.opacity = opacity;
-  };
-  const animate = async (node, frames, duration, delay = 0) => {
-    if (isPaused()) {
-      Object.assign(node.style, frames[frames.length - 1]);
-      return;
-    }
-    const animation = node.animate(frames, { duration, delay, easing: 'cubic-bezier(.22,.65,.22,1)', fill: 'both' });
-    animations.push(animation);
-    try {
-      await animation.finished;
-      Object.assign(node.style, frames[frames.length - 1]);
-      animation.cancel();
-    } catch { /* A newer destination or motion preference cancelled this journey. */ }
-  };
-  const loadViewpoint = (destination) => {
-    if (!imageLoads.has(destination)) {
-      imageLoads.set(destination, new Promise((resolve) => {
-        const image = new Image();
-        const timer = setTimeout(() => resolve(null), 5000);
-        image.onload = () => { clearTimeout(timer); resolve(image); };
-        image.onerror = () => { clearTimeout(timer); resolve(null); };
-        image.src = `assets/studio-${destination}-angle.webp`;
-      }));
-    }
-    return imageLoads.get(destination);
-  };
-  const setReaderVisible = (visible) => {
-    reader.hidden = !visible || active === 'overview' || travelling;
-    studio.dataset.reading = String(visible && active !== 'overview');
-    toggle.setAttribute('aria-expanded', String(visible));
-    toggle.innerHTML = visible ? 'Look around <span aria-hidden="true">↗</span>'
-      : `Read ${labels[active].toLowerCase()} <span aria-hidden="true">↙</span>`;
-  };
-  const updateControls = () => {
-    const index = order.indexOf(active);
-    const previous = order[(index + order.length - 1) % order.length];
-    const next = order[(index + 1) % order.length];
-    find('scene-previous').setAttribute('aria-label', `Previous view: ${labels[previous]}`);
-    find('scene-next').setAttribute('aria-label', `Next view: ${labels[next]}`);
-    find('previous-label').textContent = labels[previous];
-    find('next-label').textContent = labels[next];
-    find('scene-number').textContent = `0${index} / 04`;
-    find('scene-caption-title').textContent = active === 'overview' ? 'The studio' : routes[active].object;
-    find('scene-caption-text').textContent = active === 'overview' ? 'Choose an object. Take a closer look.' : routes[active].text;
-    links.forEach((link) => {
-      if (link.dataset.studioRoute === active) link.setAttribute('aria-current', 'location');
-      else link.removeAttribute('aria-current');
-    });
-    tools.hidden = active === 'overview';
-  };
-  const travel = async (destination, trigger, immediate = false) => {
-    if (!ready || !order.includes(destination) || (active === destination && !immediate)) return;
-    const currentVersion = ++version;
-    const from = active;
-    if (from !== 'overview') scrollPositions.set(from, readerBody.scrollTop);
-    if (from === 'overview' && trigger) opener = trigger;
-    stopAnimations();
-    travelling = true;
-    active = destination;
-    studio.dataset.destination = destination;
-    studio.dataset.travelling = 'true';
-    reader.hidden = true;
-    updateControls();
-    updateVisibility();
-    // Each section remains a single DOM node; only its owner changes.
-    restoreSections();
-    content.replaceChildren();
-    resumeView.hidden = destination !== 'resume';
-    readerBody.dataset.resume = String(destination === 'resume');
-    if (destination !== 'overview') {
-      const route = routes[destination];
-      title.textContent = route.title;
-      find('scene-kicker').textContent = route.object;
-      route.sections.forEach((id) => {
-        const { node, placeholder } = records.get(id);
-        // Keep public fragment targets hidden. WebKit can otherwise re-anchor the
-        // visible section on later layout/input and lose the reader's position.
-        node.id = `scene-section-${id}`;
-        node.dataset.studioSection = id;
-        placeholder.id = id;
-        content.append(node);
+  resumeFrame.addEventListener('load',()=>{
+    if(!resumeRequested)return;
+    try{
+      if(!resumeFrame.contentDocument?.querySelector('.page'))return failResume();
+      clearTimeout(resumeTimer);resumeFrame.hidden=false;resumeStatus.hidden=true;resumeRetry.hidden=true;
+      resumeView.dataset.state='ready';
+      resumeFrame.contentDocument.addEventListener('keydown',event=>{
+        if(event.key==='Escape'){event.preventDefault();navigate('overview',resumeFrame);}
       });
-      if (destination === 'resume' && !resumeRequested) loadResume();
-    }
-    const target = cameraTransform(destination);
-    const imagePromise = destination === 'overview' ? Promise.resolve(null) : loadViewpoint(destination);
-    const duration = immediate || isPaused() ? 0 : 780;
-    const camera = animate(stage, [{ transform: getComputedStyle(stage).transform }, { transform: target }], duration);
-    await animate(viewpoint, [{ opacity: getComputedStyle(viewpoint).opacity }, { opacity: '0' }], duration ? 220 : 0);
-    if (version !== currentVersion) return;
-    studio.dataset.reading = String(destination !== 'overview');
-    const image = await imagePromise;
-    if (version !== currentVersion) return;
-    if (image) {
-      viewpointImage.src = image.src;
-      viewpoint.hidden = false;
-      // Crossfade near the end of the move, after approaching the original object.
-      await camera;
-      if (version !== currentVersion) return;
-      await animate(viewpoint, [{ opacity: '0' }, { opacity: '1' }], duration ? 380 : 0);
-    } else {
-      await camera;
-      if (version !== currentVersion) return;
-      viewpoint.hidden = true;
-    }
-    if (version !== currentVersion) return;
-    animations = [];
-    travelling = false;
-    stage.style.transform = cameraTransform(destination);
-    setReaderVisible(destination !== 'overview');
-    readerBody.scrollTop = scrollPositions.get(destination) || 0;
-    // Complete reader layout before restoring its position and final focus.
-    await new Promise((resolve) => requestAnimationFrame(resolve));
-    if (version !== currentVersion) return;
-    readerBody.scrollTop = scrollPositions.get(destination) || 0;
-    studio.dataset.travelling = 'false';
-    find('scene-announcement').textContent = destination === 'overview' ? 'Room overview. Choose an object to explore.' : `${labels[destination]}. ${routes[destination].object}.`;
-    updateVisibility();
-    if (trigger && (document.activeElement === trigger || document.activeElement === document.body)) {
-      if (destination === 'overview') {
-        const target = opener?.isConnected && getComputedStyle(opener).visibility !== 'hidden' ? opener : find('studio-home');
-        target?.focus({ preventScroll: true });
-      } else title.focus({ preventScroll: true });
-    }
-  };
-  const navigate = (destination, trigger) => {
-    if (!order.includes(destination)) return;
-    const hash = destination === 'overview' ? '' : `#${destination}`;
-    if (location.hash !== hash) history.pushState(null, '', `${location.pathname}${location.search}${hash}`);
-    travel(destination, trigger);
-  };
-  const fromHash = () => {
-    const hash = location.hash.slice(1);
-    return hash === 'capabilities' ? 'experience' : Object.hasOwn(routes, hash) ? hash : 'overview';
-  };
-  const handleKeys = (event) => {
-    if (!ready || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
-    if (event.key === 'Escape' && active !== 'overview') {
-      event.preventDefault();
-      navigate('overview', document.activeElement);
-    }
-    // Arrow browsing is available on the scene; do not hijack reading or form controls.
-    if (!['ArrowLeft', 'ArrowRight'].includes(event.key) || event.target.closest('a,button,input,textarea,select,summary,[data-scene-reader]')) return;
-    event.preventDefault();
-    const offset = event.key === 'ArrowLeft' ? -1 : 1;
-    navigate(order[(order.indexOf(active) + offset + order.length) % order.length]);
-  };
-  const failResume = () => {
-    clearTimeout(resumeTimer);
-    resumeFrame.hidden = true;
-    resumeStatus.hidden = false;
-    resumeStatus.textContent = 'The resume could not load. You can download the PDF or open the standalone resume.';
-    resumeRetry.hidden = false;
-    resumeView.dataset.state = 'error';
-  };
-  const loadResume = () => {
-    resumeRequested = true;
-    resumeView.dataset.state = 'loading';
-    resumeStatus.hidden = false;
-    resumeStatus.textContent = 'Loading resume…';
-    resumeRetry.hidden = true;
-    resumeFrame.hidden = true;
-    clearTimeout(resumeTimer);
-    resumeTimer = setTimeout(failResume, 12000);
-    // A frame navigation must not create another joint browser history entry.
-    resumeFrame.contentWindow.location.replace(new URL('resume.html?embed=1', location.href).href);
-  };
-  resumeFrame.addEventListener('load', () => {
-    if (!resumeRequested) return;
-    try {
-      const frameDocument = resumeFrame.contentDocument;
-      if (!frameDocument?.querySelector('.page')) return failResume();
-      clearTimeout(resumeTimer);
-      frameDocument.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') { event.preventDefault(); navigate('overview', resumeFrame); }
-      });
-      resumeFrame.hidden = false;
-      resumeStatus.hidden = true;
-      resumeRetry.hidden = true;
-      resumeView.dataset.state = 'ready';
-    } catch { failResume(); }
+    }catch{failResume();}
   });
-  resumeFrame.addEventListener('error', failResume);
-  resumeRetry.addEventListener('click', loadResume);
-
-  const updateMotion = () => {
-    document.body.dataset.motionPaused = String(isPaused());
-    motionButton.hidden = false;
-    motionButton.disabled = reducedMotion.matches;
-    motionButton.setAttribute('aria-pressed', String(isPaused()));
-    const label = reducedMotion.matches ? 'Motion off: system preference' : isPaused() ? 'Resume motion' : 'Pause motion';
-    motionButton.setAttribute('aria-label', label);
-    motionButton.title = label;
-    find('motion-label').textContent = isPaused() ? 'Motion off' : 'Pause motion';
-    find('motion-icon').textContent = isPaused() ? '▷' : 'Ⅱ';
-    if (travelling) travel(active, null, true);
-    else stage.style.transform = cameraTransform(active);
+  resumeFrame.addEventListener('error',failResume);resumeRetry.addEventListener('click',loadResume);
+  const mount=destination=>{
+    restoreSections();content.replaceChildren();resumeView.hidden=destination!=='resume';
+    readerBody.dataset.resume=String(destination==='resume');
+    if(destination==='overview')return;
+    const route=routes[destination];title.textContent=route.title;find('scene-kicker').textContent=route.object;
+    for(const id of route.sections){
+      const {node,placeholder}=records.get(id);node.id=`scene-section-${id}`;
+      node.dataset.studioSection=id;placeholder.id=id;content.append(node);
+    }
+    if(destination==='resume' && !resumeRequested)loadResume();
   };
-  document.addEventListener('click', (event) => {
-    if (!ready || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-    const link = event.target.closest('a[data-studio-route], a[data-studio-home]');
-    if (!link) return;
-    event.preventDefault();
-    navigate(link.hasAttribute('data-studio-home') ? 'overview' : link.dataset.studioRoute, link);
-  });
-  toggle.addEventListener('click', () => setReaderVisible(toggle.getAttribute('aria-expanded') !== 'true'));
-  for (const [attribute, offset] of [['scene-previous', -1], ['scene-next', 1]]) {
-    find(attribute).addEventListener('click', (event) => navigate(order[(order.indexOf(active) + offset + order.length) % order.length], event.currentTarget));
-  }
-  document.addEventListener('keydown', handleKeys);
-  window.addEventListener('popstate', () => travel(fromHash()));
-  window.addEventListener('hashchange', () => travel(fromHash()));
-  window.addEventListener('load', () => {
-    requestAnimationFrame(() => {
-      if (!ready) {
-        document.getElementById(location.hash.slice(1))?.scrollIntoView();
-        return;
+  const showObject=()=>{
+    surface.hidden=false;wake.hidden=active!=='contact' || phoneAwake;
+    reader.hidden=active==='contact' && !phoneAwake;
+    surface.dataset.awake=String(active==='contact' && phoneAwake);
+    studio.dataset.reading='true';looking=false;updateControls();
+    readerBody.scrollTop=scrollPositions.get(active)||0;
+  };
+  const go=async(destination,trigger,immediate=false,force=false)=>{
+    if(!ready || !order.includes(destination) || (destination===active && !force))return;
+    const id=++version;
+    const focusBefore=document.activeElement;
+    if(active!=='overview')scrollPositions.set(active,readerBody.scrollTop);
+    if(active==='overview' && trigger)opener=trigger;
+    active=destination;looking=false;phoneAwake=false;surface.hidden=true;
+    studio.dataset.destination=destination;studio.dataset.travelling='true';studio.dataset.phase='walking';
+    studio.dataset.reading='false';updateControls();mount(destination);
+    try{
+      if(!await engine.travel(destination,{immediate}) || id!==version)return;
+      if(destination!=='overview'){
+        studio.dataset.phase='picking-up';
+        if(!await engine.inspect(destination,{immediate}) || id!==version)return;
+        showObject();
+      }else {surface.hidden=true;reader.hidden=true;wake.hidden=true;}
+      await new Promise(resolve=>requestAnimationFrame(resolve));if(id!==version)return;
+      readerBody.scrollTop=scrollPositions.get(destination)||0;
+      studio.dataset.travelling='false';studio.dataset.phase=destination==='contact'?'phone-asleep':'ready';
+      find('scene-announcement').textContent=destination==='overview'?'Room overview. Choose an object.':destination==='contact'?'Phone picked up. Tap the screen to open contacts.':`${labels[destination]} open on ${routes[destination].object.toLowerCase()}.`;
+      if(trigger && (document.activeElement===trigger || document.activeElement===focusBefore || document.activeElement===document.body)){
+        if(destination==='overview'){
+          const target=opener?.isConnected && getComputedStyle(opener).visibility!=='hidden'?opener:find('studio-home');
+          target?.focus({preventScroll:true});
+        }else (destination==='contact'?wake:title).focus({preventScroll:true});
       }
-      window.scrollTo(0, 0);
-      readerBody.scrollTop = scrollPositions.get(active) || 0;
-    });
-  }, { once: true });
-  motionButton.addEventListener('click', () => { pausedByUser = !pausedByUser; updateMotion(); });
-  reducedMotion.addEventListener('change', updateMotion);
-  view.addEventListener('scroll', queueVisibility, { passive: true });
-  view.addEventListener('pointermove', (event) => {
-    if (active !== 'overview' || travelling || isPaused() || mobile.matches || !finePointer.matches || event.pointerType !== 'mouse') return;
-    const bounds = view.getBoundingClientRect();
-    stage.style.transform = `translate(${((event.clientX - bounds.left) / bounds.width - 0.5) * -10}px, ${((event.clientY - bounds.top) / bounds.height - 0.5) * -6}px)`;
-    queueVisibility();
+    }catch{recover();}
+  };
+  const fromHash=()=>{
+    const value=location.hash.slice(1);return value==='capabilities'?'experience':Object.hasOwn(routes,value)?value:'overview';
+  };
+  const navigate=(destination,trigger)=>{
+    if(!ready || !order.includes(destination))return;
+    if(destination===active){if(looking)toggle.click();return;}
+    const hash=destination==='overview'?'':`#${destination}`;
+    if(location.hash!==hash)history.pushState(null,'',`${location.pathname}${location.search}${hash}`);
+    go(destination,trigger);
+  };
+  wake.addEventListener('click',()=>{
+    if(active!=='contact' || !ready)return;phoneAwake=true;wake.hidden=true;reader.hidden=false;
+    surface.dataset.awake='true';studio.dataset.phase='phone-awake';
+    readerBody.scrollTop=scrollPositions.get('contact')||0;
+    find('scene-announcement').textContent='Contacts open on the phone screen.';
+    title.focus({preventScroll:true});
   });
-  view.addEventListener('pointerleave', () => {
-    if (active === 'overview' && !travelling) stage.style.transform = cameraTransform(active);
+  toggle.addEventListener('click',async()=>{
+    if(!ready || active==='overview' || studio.dataset.travelling==='true')return;
+    const id=++version;scrollPositions.set(active,readerBody.scrollTop);
+    if(!looking){
+      surface.hidden=true;looking=true;studio.dataset.reading='false';studio.dataset.phase='looking-around';
+      updateControls();await engine.look();
+    }else {
+      studio.dataset.travelling='true';
+      if(await engine.inspect(active,{immediate:isPaused()}) && id===version){showObject();studio.dataset.travelling='false';studio.dataset.phase=active==='contact'?(phoneAwake?'phone-awake':'phone-asleep'):'ready';}
+    }
   });
-  try {
-    for (const { node, placeholder } of records.values()) node.before(placeholder);
-    ready = true;
-    history.scrollRestoration = 'manual';
-    document.body.dataset.studioReady = 'true';
-    fallback.hidden = true;
-    studio.dataset.destination = 'overview';
-    studio.dataset.travelling = 'false';
-    find('scene-arrows').hidden = false;
-    find('scene-caption').hidden = false;
-    updateMotion();
-    updateControls();
-    new ResizeObserver(layoutStage).observe(view);
-    layoutStage();
-    if (fromHash() !== 'overview') travel(fromHash(), null, true);
-  } catch {
-    ready = false;
-    history.scrollRestoration = previousScrollRestoration;
-    stopAnimations();
-    restoreSections();
-    fallback.hidden = false;
-    reader.hidden = true;
-    viewpoint.hidden = true;
-    tools.hidden = true;
-    find('scene-arrows').hidden = true;
-    find('scene-caption').hidden = true;
-    delete document.body.dataset.studioReady;
-  }
+  const updateMotion=()=>{
+    if(!ready)return;
+    document.body.dataset.motionPaused=String(isPaused());motionButton.hidden=false;
+    motionButton.disabled=reducedMotion.matches;motionButton.setAttribute('aria-pressed',String(isPaused()));
+    const label=reducedMotion.matches?'Motion off: system preference':isPaused()?'Resume motion':'Pause motion';
+    motionButton.setAttribute('aria-label',label);motionButton.title=label;
+    find('motion-label').textContent=isPaused()?'Motion off':'Pause motion';find('motion-icon').textContent=isPaused()?'▷':'Ⅱ';
+    engine?.setMotion(!isPaused());
+  };
+  document.addEventListener('click',event=>{
+    if(!ready || event.button!==0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)return;
+    const link=event.target.closest('a[data-studio-route],a[data-studio-home]');if(!link)return;
+    event.preventDefault();navigate(link.hasAttribute('data-studio-home')?'overview':link.dataset.studioRoute,link);
+  });
+  for(const [name,offset] of [['scene-previous',-1],['scene-next',1]])find(name).addEventListener('click',event=>navigate(order[(order.indexOf(active)+offset+order.length)%order.length],event.currentTarget));
+  document.addEventListener('keydown',event=>{
+    if(!ready || event.ctrlKey || event.metaKey || event.altKey)return;
+    if(event.key==='Escape' && active!=='overview'){event.preventDefault();navigate('overview',document.activeElement);}
+    if(!['ArrowLeft','ArrowRight'].includes(event.key) || event.target.closest('a,button,summary,input,textarea,select,[data-object-surface]'))return;
+    event.preventDefault();navigate(order[(order.indexOf(active)+(event.key==='ArrowLeft'?-1:1)+order.length)%order.length]);
+  });
+  window.addEventListener('popstate',()=>go(fromHash()));window.addEventListener('hashchange',()=>go(fromHash()));
+  motionButton.addEventListener('click',()=>{paused=!paused;updateMotion();});reducedMotion.addEventListener('change',updateMotion);
+  try{
+    const {createWalkthrough}=await import('./room.js');
+    host.hidden=false;
+    engine=createWalkthrough({host,surface,points,onContextLost:recover});
+    for(const {node,placeholder} of records.values())node.before(placeholder);
+    ready=true;history.scrollRestoration='manual';fallback.hidden=true;
+    document.body.dataset.studioReady='true';document.body.dataset.walkthrough='true';
+    find('scene-arrows').hidden=false;find('scene-caption').hidden=false;
+    updateMotion();updateControls();
+    // Entry is a short walk; deep links go straight to the requested object.
+    const destination=fromHash();go(destination,null,destination!=='overview' || isPaused(),true);
+    window.scrollTo(0,0);
+  }catch{recover();}
 })();

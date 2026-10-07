@@ -8,6 +8,7 @@
   <title>Philipp Alimov | Quality engineer and product builder</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="studio.css">
+  <link rel="stylesheet" href="walkthrough.css">
   <script src="script.js" defer></script>
 </head>
 <body>
@@ -24,24 +25,21 @@
     </header>
     <main id="main" class="studio-main" tabindex="-1">
       <section class="studio" id="top" aria-label="Explore the interactive studio" data-studio>
-        <div class="studio-view" data-studio-view>
-          <div class="studio-stage" data-studio-stage>
-            <img class="studio-image" src="assets/studio-workspace.webp" width="1672" height="941" alt="" fetchpriority="high">
-            <div class="studio-light studio-light-monitor" aria-hidden="true"></div>
-            <div class="studio-light studio-light-lamp" aria-hidden="true"></div>
-          <a class="studio-point studio-point-work" href="#work" data-studio-route="work" aria-label="Go to the desk: Work"><span class="studio-marker"><svg class="studio-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 21h8M12 16v5"/></svg></span><span class="studio-label">Work <span aria-hidden="true">›</span></span></a>
-          <a class="studio-point studio-point-experience" href="#experience" data-studio-route="experience" aria-label="Go to the notebook: Experience"><span class="studio-marker"><svg class="studio-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 4h7a3 3 0 0 1 3 3v14a4 4 0 0 0-4-2H4zM14 7h6v12h-6"/><path d="M7 8h3M7 12h3"/></svg></span><span class="studio-label">Experience <span aria-hidden="true">›</span></span></a>
-          <a class="studio-point studio-point-resume" href="resume.html" data-studio-route="resume" aria-label="Go to the wall print: Resume"><span class="studio-marker"><svg class="studio-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 3h8l4 4v14H6zM14 3v5h4M9 12h6M9 16h6"/></svg></span><span class="studio-label">Resume <span aria-hidden="true">›</span></span></a>
-          <a class="studio-point studio-point-contact" href="#contact" data-studio-route="contact" aria-label="Go to the phone: Contact"><span class="studio-marker"><svg class="studio-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4M11 18h2"/></svg></span><span class="studio-label">Contact <span aria-hidden="true">›</span></span></a>
+        <img class="room-fallback" src="assets/studio-workspace.webp" width="1672" height="941" alt="" fetchpriority="high">
+        <div class="room-world" data-room-world hidden>
+          <div class="room-hotspots">
+          <a class="studio-point studio-point-work" href="#work" data-studio-route="work" aria-label="Walk to the monitor: Work"><span class="studio-marker"><svg class="studio-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 21h8M12 16v5"/></svg></span><span class="studio-label">Work <span aria-hidden="true">›</span></span></a>
+          <a class="studio-point studio-point-experience" href="#experience" data-studio-route="experience" aria-label="Walk to the notebook: Experience"><span class="studio-marker"><svg class="studio-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 4h7a3 3 0 0 1 3 3v14a4 4 0 0 0-4-2H4zM14 7h6v12h-6"/><path d="M7 8h3M7 12h3"/></svg></span><span class="studio-label">Experience <span aria-hidden="true">›</span></span></a>
+          <a class="studio-point studio-point-resume" href="resume.html" data-studio-route="resume" aria-label="Walk to the desk folio: Resume"><span class="studio-marker"><svg class="studio-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 3h8l4 4v14H6zM14 3v5h4M9 12h6M9 16h6"/></svg></span><span class="studio-label">Resume <span aria-hidden="true">›</span></span></a>
+          <a class="studio-point studio-point-contact" href="#contact" data-studio-route="contact" aria-label="Pick up the phone: Contact"><span class="studio-marker"><svg class="studio-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4M11 18h2"/></svg></span><span class="studio-label">Contact <span aria-hidden="true">›</span></span></a>
           </div>
-        </div>
-        <div class="scene-viewpoint" aria-hidden="true" data-viewpoint hidden>
-          <img class="scene-viewpoint-image" width="1672" height="941" alt="" data-viewpoint-image>
         </div>
         <div class="scene-tools" data-scene-tools hidden>
           <a href="#top" class="scene-back" data-studio-home><span aria-hidden="true">↖</span> Room overview</a>
-          <button type="button" class="scene-read-toggle" data-reader-toggle aria-controls="scene-reader" aria-expanded="true">Look around <span aria-hidden="true">↗</span></button>
+          <button type="button" class="scene-read-toggle" data-reader-toggle aria-controls="object-surface" aria-expanded="true">Look around <span aria-hidden="true">↗</span></button>
         </div>
+        <div class="object-surface" id="object-surface" data-object-surface hidden>
+          <button class="phone-wake" type="button" data-phone-wake hidden aria-label="Wake phone and show contact details"><span class="phone-avatar" aria-hidden="true">PA</span><strong>Philipp Alimov</strong><span>Tap to open contacts</span><span class="phone-tap" aria-hidden="true">◉</span></button>
         <aside class="scene-reader" id="scene-reader" data-scene-reader aria-labelledby="scene-reader-title" hidden>
           <header class="scene-reader-heading"><p data-scene-kicker>At the desk</p><h2 id="scene-reader-title" data-scene-title tabindex="-1">Work</h2></header>
           <div class="scene-reader-body" data-reader-body tabindex="0" aria-label="Scrollable scene content">
@@ -57,18 +55,19 @@
         </section>
           </div>
         </aside>
-        <div class="scene-caption" data-scene-caption hidden><p data-scene-number>00 / 04</p><h2 data-scene-caption-title>The studio</h2><span data-scene-caption-text>Choose an object. Take a closer look.</span></div>
+        </div>
+        <div class="scene-caption" data-scene-caption hidden><p data-scene-number>00 / 04</p><h2 data-scene-caption-title>The studio</h2><span data-scene-caption-text>Choose an object. Walk over and explore.</span></div>
         <nav class="scene-arrows" aria-label="Move through the studio" data-scene-arrows hidden>
           <button type="button" data-scene-previous aria-label="Previous view: Contact"><span aria-hidden="true">←</span><span data-previous-label>Contact</span></button>
           <button type="button" data-scene-next aria-label="Next view: Work"><span data-next-label>Work</span><span aria-hidden="true">→</span></button>
         </nav>
         <p class="scene-announcement" role="status" data-scene-announcement></p>
-        <p class="studio-swipe-hint" data-swipe-hint aria-hidden="true">Swipe to explore <span>↔</span></p>
+        <p class="studio-swipe-hint" data-swipe-hint aria-hidden="true">Drag to look around <span>↔</span></p>
       </section>
       <nav class="studio-dock" aria-label="Studio destinations">
             <a class="" href="#work" data-studio-route="work" aria-label="Go to the desk: Work"><svg class="studio-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 21h8M12 16v5"/></svg><span>Work</span></a>
             <a class="" href="#experience" data-studio-route="experience" aria-label="Go to the notebook: Experience"><svg class="studio-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 4h7a3 3 0 0 1 3 3v14a4 4 0 0 0-4-2H4zM14 7h6v12h-6"/><path d="M7 8h3M7 12h3"/></svg><span>Experience</span></a>
-            <a class="" href="resume.html" data-studio-route="resume" aria-label="Go to the wall print: Resume"><svg class="studio-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 3h8l4 4v14H6zM14 3v5h4M9 12h6M9 16h6"/></svg><span>Resume</span></a>
+            <a class="" href="resume.html" data-studio-route="resume" aria-label="Walk to the desk folio: Resume"><svg class="studio-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 3h8l4 4v14H6zM14 3v5h4M9 12h6M9 16h6"/></svg><span>Resume</span></a>
             <a class="" href="#contact" data-studio-route="contact" aria-label="Go to the phone: Contact"><svg class="studio-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4M11 18h2"/></svg><span>Contact</span></a>
       </nav>
       <div class="studio-fallback" data-studio-fallback>
