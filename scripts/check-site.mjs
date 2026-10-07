@@ -10,7 +10,7 @@ const requiredFiles = [
   'scripts/check-studio.mjs',
   'assets/hero-workspace.jpg',
   'assets/studio-workspace.webp',
-  ...['work', 'experience', 'resume', 'contact'].map((name) => `assets/studio-${name}.webp`),
+  ...['work', 'experience', 'resume', 'contact'].map((name) => `assets/studio-${name}-angle.webp`),
   'assets/Philipp_Alimov_Resume.pdf',
 ];
 const failures = [];

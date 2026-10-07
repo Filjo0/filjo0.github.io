@@ -48,7 +48,8 @@ npm test
 For visual changes, run a local HTTP server and inspect `index.html` and `resume.html` at 390x844 and 1440x1000. Confirm no overflow, browser errors, inaccessible navigation or unintended extra PDF pages.
 
 Studio changes need actual camera-travel and viewpoint checks, rapid interrupted
-navigation, focus restoration, Escape (including inside the resume frame), motion
+navigation, desktop hover/focus labels, touch label discovery and single-tap access,
+focus restoration, Escape (including inside the resume frame), motion
 pause/system reduced motion, mobile panning and responsive reading. Test the
 1100px overview-panning and 720px stacked-reader breakpoints separately.
 
@@ -56,7 +57,12 @@ The enhanced studio uses linked image viewpoints and a non-modal scene reader.
 There are no dialogs. Move canonical sections from the fallback wrapper; never
 clone content with duplicate IDs or hide fallback content before initialization.
 Preserve hash routes, browser Back/Forward, reader scroll positions and manual
-history scroll restoration. Arrow keys must not hijack content or control input.
+history scroll restoration. Mounted sections use `scene-section-*` IDs and
+`data-studio-section` to identify canonical content; hidden source anchors keep the
+original public hash targets. Restore original IDs when returning nodes to fallback.
+Do not make public hashes target visible mounted sections: WebKit can re-anchor
+those on later layout/input and lose reader scroll. Arrow keys must not hijack
+content or control input.
 
 Resume uses the approved same-origin document in embedded screen mode. Use frame
 location replacement so loading the frame does not add a joint history entry.
@@ -67,3 +73,8 @@ reading content available using the zoomed overview instead of a blank destinati
 ignored screenshots in `validation-artifacts/`. Inspect screenshots as well as
 assertions. Runtime verification is local proof; merging and deployment need their
 own authorization and evidence.
+
+Destination routes currently use `assets/studio-*-angle.webp`; previous wider views
+remain available for comparison. Angle changes come from the artwork, not the
+scale/translate transition. Inspect actual object perspective and room continuity,
+not just distinct image filenames, before claiming a visual navigation improvement.

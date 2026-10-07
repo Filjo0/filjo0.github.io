@@ -245,10 +245,10 @@ body[data-studio-ready="true"] .studio {
   place-items: center;
   width: 46px;
   height: 46px;
-  border: 1px solid #f4cfa8;
+  border: 1px solid #f9eddb99;
   border-radius: 50%;
-  background: #14201dec;
-  box-shadow: 0 2px 12px #0004;
+  background: #10191b38;
+  box-shadow: 0 2px 10px #0002;
   transition: background 180ms, color 180ms, box-shadow 180ms;
 }
 
@@ -292,17 +292,18 @@ body[data-studio-ready="true"] .studio {
   transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
-  gap: 18px;
-  min-height: 36px;
-  padding: 7px 12px;
+  gap: 10px;
+  min-height: 32px;
+  padding: 6px 10px;
   white-space: nowrap;
-  background: #10191bef;
-  border: 1px solid #e5b78b52;
+  background: #10191b99;
+  backdrop-filter: blur(6px);
+  border: 1px solid #e5b78b28;
   border-radius: 5px;
   color: #f8edde;
   font-size: 12px;
   font-weight: 650;
-  transition: border-color 180ms;
+  transition: opacity 160ms ease, border-color 160ms ease;
 }
 
 .studio-label > span {
@@ -458,9 +459,9 @@ body[data-studio-ready="true"] .studio {
   object-fit: cover;
   object-position: 35% center;
 }
-.studio[data-destination="resume"] .scene-viewpoint-image { object-position: 50% center; }
-.studio[data-reading="true"] .scene-viewpoint-image { width: 56%; object-position: 25% center; }
-.studio[data-destination="resume"][data-reading="true"] .scene-viewpoint-image { object-position: 70% center; }
+.studio[data-destination="resume"] .scene-viewpoint-image { object-position: 38% center; }
+.studio[data-reading="true"] .scene-viewpoint-image { width: 56%; object-position: 12% center; }
+.studio[data-destination="resume"][data-reading="true"] .scene-viewpoint-image { object-position: 38% center; }
 .studio[data-destination]:not([data-destination="overview"]) .studio-point,
 .studio[data-travelling="true"] .studio-point { visibility: hidden; }
 .studio[data-destination]:not([data-destination="overview"]) .studio-view { overflow: hidden; }
@@ -603,6 +604,7 @@ body[data-studio-ready="true"] .studio {
 .scene-tools[hidden], .scene-reader[hidden], .scene-viewpoint[hidden], .scene-caption[hidden], .scene-arrows[hidden],
 .studio-resume-view[hidden], .studio-resume-frame[hidden], .studio-resume-status[hidden], .studio-resume-retry[hidden] { display: none; }
 .studio[data-travelling="true"] .scene-caption { opacity: 0; }
+.studio[data-reading="true"] .scene-caption { display: none; }
 .studio[data-travelling="true"] .scene-read-toggle { visibility: hidden; }
 @keyframes studio-pulse {
   0% { transform: scale(1); opacity: .5; }
@@ -649,7 +651,7 @@ body[data-motion-paused="true"] .studio-shell *, body[data-motion-paused="true"]
   .scene-viewpoint-image { object-position: 24% center; }
   .studio[data-reading="true"] .scene-viewpoint { height: 32%; }
   .studio[data-reading="true"] .scene-viewpoint-image { width: 100%; object-position: 28% 62%; transform: scale(1.35); transform-origin: 25% 65%; }
-  .studio[data-destination="resume"][data-reading="true"] .scene-viewpoint-image { object-position: 50% 25%; transform-origin: 60% 25%; }
+  .studio[data-destination="resume"][data-reading="true"] .scene-viewpoint-image { object-position: 38% 25%; transform-origin: 40% 25%; }
   .studio[data-reading="true"] .scene-caption { display: none; }
   .studio[data-reading="true"] .scene-arrows { bottom: auto; top: calc(32% + 17px); left: auto; right: 22px; gap: 6px; }
   .studio[data-reading="true"] .scene-arrows button { min-width: 40px; min-height: 40px; padding: 8px; }
@@ -691,4 +693,25 @@ body[data-motion-paused="true"] .studio-shell *, body[data-motion-paused="true"]
   .scene-reader-heading p { display: none; }
   .scene-reader-heading h2 { font-size: 23px; }
   .scene-reader-body { padding-top: 10px; }
+}
+
+/* Desktop discovery is quiet; touch layouts keep names available without hover. */
+@media (hover: hover) and (pointer: fine) and (min-width: 1101px) {
+  .studio-marker { width: 28px; height: 28px; }
+  .studio-marker .studio-icon { width: 13px; height: 13px; }
+  .studio-label { opacity: 0; pointer-events: none; }
+  .studio-point:is(:hover, :focus-visible) .studio-label { opacity: 1; pointer-events: auto; }
+}
+@media (max-width: 1100px), (hover: none), (pointer: coarse) {
+  .studio-label, .studio-point-contact .studio-label, .studio-point-resume .studio-label {
+    top: calc(50% + 29px);
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    min-height: 30px;
+    font-size: 10px;
+    padding: 5px 9px;
+    gap: 0;
+  }
+  .studio-label > span { display: none; }
 }

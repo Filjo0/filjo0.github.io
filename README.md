@@ -12,7 +12,9 @@ Open `http://127.0.0.1:8080`.
 
 The homepage is a navigable studio. Choose the monitor (Work), notebook
 (Experience), wall print (Resume) or phone (Contact). The camera approaches that
-object, then blends into an original closer viewpoint of the same room. These are
+object with a restrained approach, then blends into a differently angled view of
+the same room. The notebook and phone are seen from above, the wall print from
+in front, and the desk from a seated position facing the monitor. These are
 linked photographic views, with camera travel in HTML/CSS/JavaScript.
 
 Each destination has live reading content integrated into the scene, with **Look
@@ -22,7 +24,10 @@ the persistent destination dock provide clear ways to move. Browser Back/Forward
 and direct hash links restore the view; reader scroll positions are remembered.
 
 The ordinary project, experience, capabilities, education and contact sections
-are canonical DOM nodes moved into the scene reader. With JavaScript disabled or
+are canonical DOM nodes moved into the scene reader. Mounted sections use
+`scene-section-*` IDs while hidden fallback anchors keep the public hashes stable;
+this prevents WebKit from repeatedly scrolling the visible content to its fragment.
+With JavaScript disabled or
 initialization unavailable, normal section links and the standalone resume work.
 The enhanced scene has no second page of repeated content beneath it.
 
@@ -46,12 +51,17 @@ original and generated; no reference-site images or branding are included.
 | Original asset | Purpose |
 | --- | --- |
 | `assets/studio-workspace.webp` | Room overview, loaded first |
-| `assets/studio-work.webp` | Closer desk viewpoint |
-| `assets/studio-experience.webp` | Notebook/table viewpoint |
-| `assets/studio-resume.webp` | Wall-print viewpoint |
-| `assets/studio-contact.webp` | Phone/table viewpoint |
+| `assets/studio-work-angle.webp` | Closer desk viewpoint |
+| `assets/studio-experience-angle.webp` | Notebook/table viewpoint |
+| `assets/studio-resume-angle.webp` | Wall-print viewpoint |
+| `assets/studio-contact-angle.webp` | Phone/table viewpoint |
 
-The five images are WebP files. Destination images load on demand, with a five-second
+Desktop hotspots are translucent; their labels appear on hover and keyboard
+focus. Touch and narrow layouts retain short visible names, centered below their
+markers, and enter a destination with one tap. The dock remains available.
+
+The five active images are WebP files. Earlier `studio-{destination}.webp`
+viewpoints are retained for comparison; routes use the newer `-angle.webp` assets. Destination images load on demand, with a five-second
 failure timeout; if one fails, the zoomed overview and live text remain usable.
 
 <details>
@@ -65,20 +75,24 @@ notebook; right side table with smartphone and lamp; framed abstract wall print,
 futsal ball and plants. Entire room visible, no people, readable text, logos, UI,
 hotspots or watermarks. Landscape 16:9.
 
-All closer viewpoints use the overview as their image reference: move the camera
+The angle viewpoints use the overview as their image reference: move the camera
 inside the same room while preserving architecture, materials, warm lighting,
 skyline, furniture and personal objects. Photoreal architectural visualization,
-landscape 16:9, no people, text, logos or UI. Main object on the left, quieter detail
-on the right for live HTML. Per-view camera instructions:
+landscape 16:9, no people, text, logos or UI. Main object large in the left foreground, quieter detail
+on the right for live HTML. Change perspective, occlusion and the foreground/
+background relationship; avoid a crop of the overview. Per-view camera instructions:
 
-- Work: approach the left desk; monitor, keyboard and lamp in the foreground,
-  seen from the room center, with abstract code on screen and skyline behind.
-- Experience: approach the coffee table; open notebook, pen, books and mug in
-  the foreground at seated eye level, looking towards the window.
-- Resume: approach the framed abstract print on the right wall; frame prominent,
-  warm textured wall, with a sliver of the shelf and sofa.
-- Contact: approach the right side table; flat phone, copper lamp and plant in
-  the foreground, looking down from the sofa.
+- Work: camera in the desk chair facing the left-wall desk, rotated roughly left
+  from the overview. Large monitor/keyboard in front; wall behind the screen,
+  skyline window off to the right; seated eye level rather than a chair-back view.
+- Experience: camera beside the right edge of the coffee table, rotated left and
+  looking down at roughly 65 degrees. Large open notebook and pen from above;
+  mug/books beside it, rug and ottoman beyond.
+- Resume: camera in front of the right wall, facing it at print eye level. Large
+  geometric artwork nearly front-on; warm wall texture, peripheral shelf/sofa.
+- Contact: camera next to the right side table, looking down at the flat phone
+  from roughly 70 degrees. Large phone, table grain and copper lamp base in the
+  foreground; sofa and rug behind.
 
 </details>
 

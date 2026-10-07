@@ -35,10 +35,10 @@
     || !window.ResizeObserver || !stage.animate) return;
 
   const routes = {
-    work: { title: 'Work', object: 'At the desk', text: 'Products, from idea to release.', sections: ['work'], x: 0.205, y: 0.395, scale: 2.35 },
-    experience: { title: 'Experience', object: 'At the notebook', text: 'The work behind the products.', sections: ['experience', 'capabilities', 'resume'], x: 0.502, y: 0.625, scale: 2.45 },
-    resume: { title: 'Resume', object: 'At the wall print', text: 'The full picture.', sections: [], x: 0.905, y: 0.25, scale: 2.5 },
-    contact: { title: 'Contact', object: 'At the phone', text: 'Start a conversation.', sections: ['contact'], x: 0.798, y: 0.585, scale: 2.7 },
+    work: { title: 'Work', object: 'At the desk', text: 'Products, from idea to release.', sections: ['work'], x: 0.205, y: 0.395, scale: 1.45 },
+    experience: { title: 'Experience', object: 'At the notebook', text: 'The work behind the products.', sections: ['experience', 'capabilities', 'resume'], x: 0.502, y: 0.625, scale: 1.5 },
+    resume: { title: 'Resume', object: 'At the wall print', text: 'The full picture.', sections: [], x: 0.905, y: 0.25, scale: 1.5 },
+    contact: { title: 'Contact', object: 'At the phone', text: 'Start a conversation.', sections: ['contact'], x: 0.798, y: 0.585, scale: 1.6 },
   };
   const order = ['overview', ...Object.keys(routes)];
   const labels = { overview: 'Room', ...Object.fromEntries(Object.entries(routes).map(([key, route]) => [key, route.title])) };
@@ -47,7 +47,9 @@
     for (const id of route.sections) {
       const node = document.getElementById(id);
       if (!node) return;
-      records.set(id, { node, placeholder: document.createComment(`Source: ${id}`) });
+      const placeholder = document.createElement('span');
+      placeholder.hidden = true;
+      records.set(id, { node, placeholder });
     }
   }
   const links = [...document.querySelectorAll('[data-studio-route]')];
@@ -72,7 +74,10 @@
   const isPaused = () => pausedByUser || reducedMotion.matches;
 
   const restoreSections = () => {
-    for (const { node, placeholder } of records.values()) {
+    for (const [id, { node, placeholder }] of records) {
+      placeholder.removeAttribute('id');
+      node.id = id;
+      delete node.dataset.studioSection;
       if (placeholder.parentNode) placeholder.after(node);
     }
   };
@@ -94,7 +99,7 @@
   const cameraTransform = (destination) => {
     if (destination === 'overview') return 'translate(0px, 0px) scale(1)';
     const route = routes[destination];
-    const scale = mobile.matches ? 1.9 : route.scale;
+    const scale = mobile.matches ? 1.3 : route.scale;
     // Place the approached object in the visible left half, beside the reading area.
     const stageCenter = stage.offsetLeft + stage.offsetWidth / 2 - view.scrollLeft;
     const targetX = view.clientWidth * (mobile.matches ? 0.5 : 0.3);
@@ -141,7 +146,7 @@
         const timer = setTimeout(() => resolve(null), 5000);
         image.onload = () => { clearTimeout(timer); resolve(image); };
         image.onerror = () => { clearTimeout(timer); resolve(null); };
-        image.src = `assets/studio-${destination}.webp`;
+        image.src = `assets/studio-${destination}-angle.webp`;
       }));
     }
     return imageLoads.get(destination);
@@ -193,7 +198,15 @@
       const route = routes[destination];
       title.textContent = route.title;
       find('scene-kicker').textContent = route.object;
-      route.sections.forEach((id) => content.append(records.get(id).node));
+      route.sections.forEach((id) => {
+        const { node, placeholder } = records.get(id);
+        // Keep public fragment targets hidden. WebKit can otherwise re-anchor the
+        // visible section on later layout/input and lose the reader's position.
+        node.id = `scene-section-${id}`;
+        node.dataset.studioSection = id;
+        placeholder.id = id;
+        content.append(node);
+      });
       if (destination === 'resume' && !resumeRequested) loadResume();
     }
     const target = cameraTransform(destination);
@@ -211,7 +224,7 @@
       // Crossfade near the end of the move, after approaching the original object.
       await camera;
       if (version !== currentVersion) return;
-      await animate(viewpoint, [{ opacity: '0', transform: 'scale(1.06)' }, { opacity: '1', transform: 'scale(1)' }], duration ? 380 : 0);
+      await animate(viewpoint, [{ opacity: '0' }, { opacity: '1' }], duration ? 380 : 0);
     } else {
       await camera;
       if (version !== currentVersion) return;
@@ -223,8 +236,7 @@
     stage.style.transform = cameraTransform(destination);
     setReaderVisible(destination !== 'overview');
     readerBody.scrollTop = scrollPositions.get(destination) || 0;
-    // WebKit can defer native fragment scrolling until the reader becomes visible.
-    // Restore after that layout frame, before declaring the journey settled.
+    // Complete reader layout before restoring its position and final focus.
     await new Promise((resolve) => requestAnimationFrame(resolve));
     if (version !== currentVersion) return;
     readerBody.scrollTop = scrollPositions.get(destination) || 0;
