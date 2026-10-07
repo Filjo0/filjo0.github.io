@@ -530,6 +530,12 @@
         font-size: 8.5pt;
       }
     }
+    /* Embedded screen presentation only; the approved print layout is unchanged. */
+    @media screen {
+      html[data-resume-embedded="true"] .resume-toolbar { display: none; }
+      html[data-resume-embedded="true"] body { padding: 0; }
+      html[data-resume-embedded="true"] .page { margin-top: 12px; margin-bottom: 12px; }
+    }
   </style>
 </head>
 <body>

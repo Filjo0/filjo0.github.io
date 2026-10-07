@@ -5,7 +5,8 @@
   "description": "Static portfolio and public resume for Philipp Alimov",
   "scripts": {
     "test": "node scripts/check-site.mjs",
-    "resume": "python scripts/render_resume.py"
+    "resume": "python scripts/render_resume.py",
+    "test:studio": "node scripts/check-studio.mjs"
   },
   "engines": {
     "node": ">=20"

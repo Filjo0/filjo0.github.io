@@ -7,8 +7,10 @@ const htmlFiles = ['index.html', 'resume.html'];
 const requiredFiles = [
   ...textFiles,
   '.nojekyll',
+  'scripts/check-studio.mjs',
   'assets/hero-workspace.jpg',
   'assets/studio-workspace.webp',
+  ...['work', 'experience', 'resume', 'contact'].map((name) => `assets/studio-${name}.webp`),
   'assets/Philipp_Alimov_Resume.pdf',
 ];
 const failures = [];
@@ -50,6 +52,8 @@ if (/private_inputs|Personality Library/i.test(allText)) {
 
 for (const path of htmlFiles) {
   const html = contents.get(path) || '';
+  const ids = [...html.matchAll(/\sid="([^"]+)"/gi)].map((match) => match[1]);
+  if (new Set(ids).size !== ids.length) fail(`${path} contains duplicate element IDs.`);
   const h1Count = (html.match(/<h1\b/gi) || []).length;
   if (h1Count !== 1) fail(`${path} must contain exactly one h1; found ${h1Count}.`);
   if (!/<meta name="description" content="[^"]+">/i.test(html)) {

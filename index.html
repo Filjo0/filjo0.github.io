@@ -12,101 +12,66 @@
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
-
-  <header class="site-header" data-site-header>
-    <nav class="shell site-nav" aria-label="Primary navigation">
-      <a class="site-mark" href="#top" aria-label="Philipp Alimov, home"><span aria-hidden="true">PA</span></a>
-      <button class="menu-button" type="button" aria-expanded="false" aria-controls="site-links" data-menu-button>Menu</button>
-      <div class="site-links" id="site-links" data-site-links>
-        <a href="#work">Selected work</a>
-        <a href="#experience">Experience</a>
-        <a href="resume.html">Resume</a>
-        <a href="#contact">Contact</a>
+  <div class="studio-shell" data-studio-shell>
+    <header class="studio-header">
+      <a class="studio-home" href="#top" aria-label="Return to the studio" data-studio-home><span aria-hidden="true">PA</span></a>
+      <div class="studio-identity">
+        <h1>Philipp Alimov</h1>
+        <p>Senior software test engineer &amp; product builder</p>
+        <span>Perth, Western Australia</span>
       </div>
-    </nav>
-  </header>
-
-  <main id="main">
-    <section class="studio" id="top" aria-labelledby="studio-title" data-studio>
-      <div class="studio-view" data-studio-view>
-        <div class="studio-stage" data-studio-stage>
-          <img class="studio-image" src="assets/studio-workspace.webp" width="1672" height="941" alt="" fetchpriority="high">
-          <div class="studio-light studio-light-monitor" aria-hidden="true"></div>
-          <div class="studio-light studio-light-lamp" aria-hidden="true"></div>
-          <a class="studio-point studio-point-work" href="#work" data-studio-open="studio-work" aria-label="Explore selected projects">
-            <span class="studio-marker" aria-hidden="true">+</span>
-            <span class="studio-label"><small>01 / On the screen</small><strong>Selected work <span aria-hidden="true">↗</span></strong></span>
-          </a>
-          <a class="studio-point studio-point-experience" href="#experience" data-studio-open="studio-experience" aria-label="Explore experience">
-            <span class="studio-marker" aria-hidden="true">+</span>
-            <span class="studio-label"><small>02 / In the notebook</small><strong>Experience <span aria-hidden="true">↗</span></strong></span>
-          </a>
-          <a class="studio-point studio-point-contact" href="#contact" data-studio-open="studio-contact" aria-label="Open contact details">
-            <span class="studio-marker" aria-hidden="true">+</span>
-            <span class="studio-label"><small>03 / Pick up the phone</small><strong>Let's talk <span aria-hidden="true">↗</span></strong></span>
-          </a>
-          <a class="studio-point studio-point-resume" href="resume.html" aria-label="Read full resume">
-            <span class="studio-marker" aria-hidden="true">+</span>
-            <span class="studio-label"><small>04 / The full picture</small><strong>Resume <span aria-hidden="true">↗</span></strong></span>
-          </a>
+      <button class="studio-motion" type="button" data-studio-motion aria-pressed="false" aria-label="Pause motion" title="Pause motion" hidden><span data-motion-icon aria-hidden="true">Ⅱ</span><span class="studio-motion-text" data-motion-label>Pause motion</span></button>
+    </header>
+    <main id="main" class="studio-main" tabindex="-1">
+      <section class="studio" id="top" aria-label="Explore the interactive studio" data-studio>
+        <div class="studio-view" data-studio-view>
+          <div class="studio-stage" data-studio-stage>
+            <img class="studio-image" src="assets/studio-workspace.webp" width="1672" height="941" alt="" fetchpriority="high">
+            <div class="studio-light studio-light-monitor" aria-hidden="true"></div>
+            <div class="studio-light studio-light-lamp" aria-hidden="true"></div>
+          <a class="studio-point studio-point-work" href="#work" data-studio-route="work" aria-label="Go to the desk: Work"><span class="studio-marker"><svg class="studio-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 21h8M12 16v5"/></svg></span><span class="studio-label">Work <span aria-hidden="true">›</span></span></a>
+          <a class="studio-point studio-point-experience" href="#experience" data-studio-route="experience" aria-label="Go to the notebook: Experience"><span class="studio-marker"><svg class="studio-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 4h7a3 3 0 0 1 3 3v14a4 4 0 0 0-4-2H4zM14 7h6v12h-6"/><path d="M7 8h3M7 12h3"/></svg></span><span class="studio-label">Experience <span aria-hidden="true">›</span></span></a>
+          <a class="studio-point studio-point-resume" href="resume.html" data-studio-route="resume" aria-label="Go to the wall print: Resume"><span class="studio-marker"><svg class="studio-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 3h8l4 4v14H6zM14 3v5h4M9 12h6M9 16h6"/></svg></span><span class="studio-label">Resume <span aria-hidden="true">›</span></span></a>
+          <a class="studio-point studio-point-contact" href="#contact" data-studio-route="contact" aria-label="Go to the phone: Contact"><span class="studio-marker"><svg class="studio-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4M11 18h2"/></svg></span><span class="studio-label">Contact <span aria-hidden="true">›</span></span></a>
+          </div>
         </div>
-      </div>
-      <div class="studio-intro">
-        <p class="studio-kicker"><span aria-hidden="true"></span> Perth, Western Australia</p>
-        <h1 id="studio-title">Philipp<br>Alimov<span aria-hidden="true">.</span></h1>
-        <p>Senior software test engineer<br>and product builder.</p>
-      </div>
-      <div class="studio-footer">
-        <p class="studio-hint"><span aria-hidden="true">✳</span> A little space for the things I build.<small>Explore the markers. Swipe the room on mobile.</small></p>
-        <button class="studio-motion" type="button" data-studio-motion aria-pressed="false" hidden>Pause motion <span aria-hidden="true">Ⅱ</span></button>
-        <a class="studio-scroll" href="#work">Meet the work <span aria-hidden="true">↓</span></a>
-      </div>
-      <nav class="studio-shortcuts" aria-label="Explore the studio">
-        <a href="#work" data-studio-open="studio-work">01 <span>Work</span></a>
-        <a href="#experience" data-studio-open="studio-experience">02 <span>Experience</span></a>
-        <a href="#contact" data-studio-open="studio-contact">03 <span>Contact</span></a>
-        <a href="resume.html">04 <span>Resume</span></a>
+        <div class="scene-viewpoint" aria-hidden="true" data-viewpoint hidden>
+          <img class="scene-viewpoint-image" width="1672" height="941" alt="" data-viewpoint-image>
+        </div>
+        <div class="scene-tools" data-scene-tools hidden>
+          <a href="#top" class="scene-back" data-studio-home><span aria-hidden="true">↖</span> Room overview</a>
+          <button type="button" class="scene-read-toggle" data-reader-toggle aria-controls="scene-reader" aria-expanded="true">Look around <span aria-hidden="true">↗</span></button>
+        </div>
+        <aside class="scene-reader" id="scene-reader" data-scene-reader aria-labelledby="scene-reader-title" hidden>
+          <header class="scene-reader-heading"><p data-scene-kicker>At the desk</p><h2 id="scene-reader-title" data-scene-title tabindex="-1">Work</h2></header>
+          <div class="scene-reader-body" data-reader-body tabindex="0" aria-label="Scrollable scene content">
+            <div data-scene-content></div>
+        <section class="studio-resume-view" aria-label="Resume viewer" data-resume-view hidden>
+          <div class="studio-resume-actions">
+            <a href="assets/Philipp_Alimov_Resume.pdf" download>Download PDF <span aria-hidden="true">↓</span></a>
+            <a href="resume.html" data-standalone-resume>Open standalone resume <span aria-hidden="true">↗</span></a>
+          </div>
+          <p class="studio-resume-status" role="status" data-resume-status hidden></p>
+          <button class="studio-resume-retry" type="button" data-resume-retry hidden>Try loading again</button>
+          <iframe class="studio-resume-frame" title="Resume of Philipp Alimov" data-resume-frame hidden></iframe>
+        </section>
+          </div>
+        </aside>
+        <div class="scene-caption" data-scene-caption hidden><p data-scene-number>00 / 04</p><h2 data-scene-caption-title>The studio</h2><span data-scene-caption-text>Choose an object. Take a closer look.</span></div>
+        <nav class="scene-arrows" aria-label="Move through the studio" data-scene-arrows hidden>
+          <button type="button" data-scene-previous aria-label="Previous view: Contact"><span aria-hidden="true">←</span><span data-previous-label>Contact</span></button>
+          <button type="button" data-scene-next aria-label="Next view: Work"><span data-next-label>Work</span><span aria-hidden="true">→</span></button>
+        </nav>
+        <p class="scene-announcement" role="status" data-scene-announcement></p>
+        <p class="studio-swipe-hint" data-swipe-hint aria-hidden="true">Swipe to explore <span>↔</span></p>
+      </section>
+      <nav class="studio-dock" aria-label="Studio destinations">
+            <a class="" href="#work" data-studio-route="work" aria-label="Go to the desk: Work"><svg class="studio-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 21h8M12 16v5"/></svg><span>Work</span></a>
+            <a class="" href="#experience" data-studio-route="experience" aria-label="Go to the notebook: Experience"><svg class="studio-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 4h7a3 3 0 0 1 3 3v14a4 4 0 0 0-4-2H4zM14 7h6v12h-6"/><path d="M7 8h3M7 12h3"/></svg><span>Experience</span></a>
+            <a class="" href="resume.html" data-studio-route="resume" aria-label="Go to the wall print: Resume"><svg class="studio-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 3h8l4 4v14H6zM14 3v5h4M9 12h6M9 16h6"/></svg><span>Resume</span></a>
+            <a class="" href="#contact" data-studio-route="contact" aria-label="Go to the phone: Contact"><svg class="studio-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4M11 18h2"/></svg><span>Contact</span></a>
       </nav>
-    </section>
-
-    <dialog class="studio-dialog" id="studio-work" aria-labelledby="studio-work-title">
-      <div class="studio-panel">
-        <button class="studio-close" type="button" data-studio-close autofocus aria-label="Close selected work">Close <span aria-hidden="true">×</span></button>
-        <p class="studio-panel-eyebrow">01 / Selected work</p>
-        <h2 id="studio-work-title">From idea<br>to the real world.</h2>
-        <p class="studio-panel-intro">Independent products I build and operate, from data and APIs to web and native releases.</p>
-        <article class="studio-project"><span>Sports technology</span><h3>FUTSL</h3><p>A competition companion for futsal supporters. Fixtures, results, standings and player histories on web and iOS.</p><a href="https://perth-futsal.onrender.com/about">Explore FUTSL <span aria-hidden="true">↗</span></a></article>
-        <article class="studio-project"><span>Public data</span><h3>Aqua Local</h3><p>Discover pools, lessons and water activities, with visible source provenance and a native iOS release.</p><a href="https://aqualocal.com.au">Explore Aqua Local <span aria-hidden="true">↗</span></a></article>
-        <a class="studio-panel-link" href="#work" data-studio-detail>Read the project details <span aria-hidden="true">↓</span></a>
-      </div>
-    </dialog>
-
-    <dialog class="studio-dialog" id="studio-experience" aria-labelledby="studio-experience-title">
-      <div class="studio-panel">
-        <button class="studio-close" type="button" data-studio-close autofocus aria-label="Close experience">Close <span aria-hidden="true">×</span></button>
-        <p class="studio-panel-eyebrow">02 / Experience</p>
-        <h2 id="studio-experience-title">Quality, with<br>product context.</h2>
-        <p class="studio-panel-intro">I turn product risk into focused quality strategy, practical automation and reliable releases.</p>
-        <article class="studio-project"><span>Jul 2026 – present · Acquire Technology Solutions</span><h3>Senior Software Test Engineer</h3><p>Risk-based quality, acceptance criteria, defect triage, automation review and release decisions.</p></article>
-        <article class="studio-project"><span>2024 – present · Independent product work</span><h3>Builder. Owner. Operator.</h3><p>Public web and mobile products, covering discovery, architecture, data quality, infrastructure and native releases.</p></article>
-        <a class="studio-panel-link" href="#experience" data-studio-detail>Explore my experience <span aria-hidden="true">↓</span></a>
-        <a class="studio-panel-link" href="resume.html">Read full resume <span aria-hidden="true">↗</span></a>
-      </div>
-    </dialog>
-
-    <dialog class="studio-dialog" id="studio-contact" aria-labelledby="studio-contact-title">
-      <div class="studio-panel">
-        <button class="studio-close" type="button" data-studio-close autofocus aria-label="Close contact">Close <span aria-hidden="true">×</span></button>
-        <p class="studio-panel-eyebrow">03 / Contact</p>
-        <h2 id="studio-contact-title">Good things start<br>with a conversation.</h2>
-        <p class="studio-panel-intro">Discuss quality engineering, product delivery or sports technology. Based in Perth, Western Australia.</p>
-        <a class="studio-panel-link" href="mailto:philalimov.apps@gmail.com">Email me <span aria-hidden="true">↗</span><small>philalimov.apps@gmail.com</small></a>
-        <a class="studio-panel-link" href="https://www.linkedin.com/in/philalimov">LinkedIn <span aria-hidden="true">↗</span></a>
-        <a class="studio-panel-link" href="https://github.com/Filjo0">GitHub <span aria-hidden="true">↗</span></a>
-        <a class="studio-panel-link" href="assets/Philipp_Alimov_Resume.pdf" download>Download resume <span aria-hidden="true">↓</span></a>
-      </div>
-    </dialog>
-
+      <div class="studio-fallback" data-studio-fallback>
     <section class="proof-band" aria-label="Professional focus">
       <div class="shell proof-grid">
         <p><strong>Quality engineering</strong><span>Risk-based strategy, automation and release decisions</span></p>
@@ -131,14 +96,14 @@
               <h3>FUTSL</h3>
               <p class="project-lede">An independent competition companion that turns fragmented futsal data into a fast supporter experience on web and iOS, with Android release preparation.</p>
               <p>I own product direction, data ingestion, API design, identity reconciliation, frontend and native delivery, privacy controls, operational diagnostics and release quality.</p>
-              <dl class="project-facts">
+              <details class="project-details"><summary>Engineering and delivery details</summary><dl class="project-facts">
                 <div><dt>Experience</dt><dd>Fixtures, results, standings, teams, player histories, favourites, notifications and global futsal coverage</dd></div>
                 <div><dt>Engineering</dt><dd>Python, Flask, PostgreSQL, React, Playwright, Capacitor and scheduled data pipelines</dd></div>
                 <div><dt>Operations</dt><dd>Web and native releases, MFA-protected administration, auditability, scraper recovery and production monitoring</dd></div>
-              </dl>
+              </dl></details>
               <div class="project-links">
-                <a href="https://perth-futsal.onrender.com/about">View product</a>
-                <a href="https://apps.apple.com/au/app/perth-futsal/id6758882763">App Store</a>
+                <a href="https://perth-futsal.onrender.com/about">Visit website <span aria-hidden="true">↗</span></a>
+                <a href="https://apps.apple.com/au/app/perth-futsal/id6758882763">App Store <span aria-hidden="true">↗</span></a>
               </div>
             </div>
           </article>
@@ -150,14 +115,14 @@
               <h3>Aqua Local</h3>
               <p class="project-lede">A public swimming and water-activity product for discovering pools, lessons, recovery facilities and venue availability with visible source provenance.</p>
               <p>The product combines a national venue catalogue with source freshness, mobile discovery, privacy-light analytics, operator controls and a native iOS release.</p>
-              <dl class="project-facts">
+              <details class="project-details"><summary>Engineering and delivery details</summary><dl class="project-facts">
                 <div><dt>Experience</dt><dd>Pool discovery, nearby sorting, lessons, opening context, saved venues and direct venue actions</dd></div>
                 <div><dt>Engineering</dt><dd>FastAPI, React, structured ingestion, source-quality controls, Capacitor and Oracle deployment</dd></div>
                 <div><dt>Quality</dt><dd>Provenance rules, stale and unknown states, secure administration and release-gated native delivery</dd></div>
-              </dl>
+              </dl></details>
               <div class="project-links">
-                <a href="https://aqualocal.com.au">View product</a>
-                <a href="https://apps.apple.com/au/app/aqua-local/id6773764070">App Store</a>
+                <a href="https://aqualocal.com.au">Visit website <span aria-hidden="true">↗</span></a>
+                <a href="https://apps.apple.com/au/app/aqua-local/id6773764070">App Store <span aria-hidden="true">↗</span></a>
               </div>
             </div>
           </article>
@@ -171,7 +136,7 @@
           <p class="eyebrow">Experience</p>
           <h2>Quality ownership with product context</h2>
           <p>My core work is software quality engineering. Independent products add direct experience with users, scope, operations and release consequences.</p>
-          <a class="text-action" href="resume.html">Open full resume</a>
+          <a class="text-action" href="resume.html" data-studio-route="resume">Open full resume</a>
         </div>
 
         <div class="timeline">
@@ -252,7 +217,6 @@
         </div>
       </div>
     </section>
-  </main>
 
   <footer class="site-footer">
     <div class="shell footer-inner">
@@ -260,5 +224,9 @@
       <p>&copy; <span data-current-year>2026</span></p>
     </div>
   </footer>
+
+      </div>
+    </main>
+  </div>
 </body>
 </html>
