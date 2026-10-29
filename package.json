@@ -5,8 +5,21 @@
   "description": "Static portfolio and public resume for Philipp Alimov",
   "scripts": {
     "test": "node scripts/check-site.mjs",
-    "resume": "python scripts/render_resume.py",
-    "test:studio": "node scripts/check-studio.mjs"
+    "test:privacy": "node --test scripts/test-public-content-guard.mjs",
+    "test:release:browser": "node scripts/check-release-boundaries.mjs",
+    "share:render": "node scripts/render-share-card.mjs",
+    "test:studio": "node scripts/check-studio.mjs",
+    "test:room": "node scripts/check-room-experience.mjs",
+    "test:activities": "node --test scripts/test-room-activities.mjs scripts/test-device-juggling.mjs scripts/test-juggling-art.mjs",
+    "test:world": "node --test scripts/test-world.mjs scripts/test-world-stations.mjs",
+    "test:world:browser": "npm run test:concept:browser",
+    "build:demo": "node scripts/build-treadfront-demo.mjs",
+    "test:surfaces": "node --test scripts/test-world-surfaces.mjs scripts/test-object-plates.mjs",
+    "capture:previews": "node scripts/capture-previews.mjs",
+    "test:concept": "node --test scripts/test-concept-scenes.mjs scripts/test-seed-spirals.mjs scripts/test-maths-patterns.mjs",
+    "test:concept:browser": "node scripts/check-object-scenes.mjs && node scripts/check-world-surfaces.mjs && node scripts/check-world-discoveries.mjs && node scripts/check-object-experiences.mjs && node scripts/check-presentation-followup.mjs && node scripts/check-treadfront-presentation.mjs && node scripts/check-site-navigation.mjs && node scripts/check-creative-objects.mjs && node scripts/check-final-review.mjs && node scripts/check-about-copy.mjs && node scripts/check-navigation-redesign.mjs && node scripts/check-stage2-objects.mjs && node scripts/check-reading-book.mjs && node scripts/check-maths-notebook.mjs && node scripts/check-maths-pages.mjs && node scripts/check-fallback-diagnostics.mjs && node scripts/check-simplified-portfolio.mjs && node scripts/check-simplification-review.mjs && node scripts/check-object-highlights.mjs",
+    "test:legacy-world:browser": "node scripts/check-legacy-world.mjs",
+    "test:walk:browser": "node scripts/check-concept-scenes.mjs && node scripts/check-world-character.mjs"
   },
   "engines": {
     "node": ">=20"

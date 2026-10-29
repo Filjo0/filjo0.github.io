@@ -1,0 +1,78 @@
+{
+  "date": "2026-10-16",
+  "tool": "built-in imagegen",
+  "fictional_places": true,
+  "lazy_loaded": true,
+  "assets": {
+    "coast": {
+      "path": "assets/outdoor/concept-coast-dusk-v2.webp",
+      "source": "exec-c5b57211-da82-4f89-804d-2a5191a58152.png",
+      "size": [
+        1672,
+        941
+      ],
+      "bytes": 225726,
+      "sha256": "d9775a72a1ba2c482d6e48ca78b2b94b7832e105f4c31f983bd2ed9d10a14e59"
+    },
+    "winter": {
+      "path": "assets/outdoor/concept-winter-dusk-v2.webp",
+      "source": "exec-5540d9d0-cab6-4dbc-bb38-8daaac87cd96.png",
+      "size": [
+        1672,
+        941
+      ],
+      "bytes": 277258,
+      "sha256": "ea5218142cfbf41077b9bb6bd139a5757af00377d12168e48aae9dd4da4fa2bc"
+    }
+  },
+  "prompts": "art/outdoor/dusk-prompts.json",
+  "previous_assets": {
+    "coast": {
+      "path": "assets/outdoor/concept-coast-dusk-v1.webp",
+      "source": "C:\\Users\\filjo\\.codex\\generated_images\\01a1142f-b394-7f31-ad9a-04bb49066c23\\exec-428a3665-d2d2-4f39-aeb4-0163e4eea085.png",
+      "bytes": 332558,
+      "sha256": "198c6633d5bffebc5d339ff35be4672f62b5eac7cf11b0c9cd81fe81ce65e55f",
+      "size": [
+        1672,
+        941
+      ]
+    },
+    "winter": {
+      "path": "assets/outdoor/concept-winter-dusk-v1.webp",
+      "source": "C:\\Users\\filjo\\.codex\\generated_images\\01a1142f-b394-7f31-ad9a-04bb49066c23\\exec-c11e48f0-631c-433d-8b11-cc9963793c69.png",
+      "bytes": 384986,
+      "sha256": "a7a451d1ada2fff32e09c452e5d3e96dff06a413b90db33d31699becfbaf4faa",
+      "size": [
+        1672,
+        941
+      ]
+    }
+  },
+  "revision_prompts": "art/outdoor/redesign-stage2-prompts.json",
+  "surfboard_previous_asset": {
+    "path": "assets/outdoor/concept-coast-dusk-v2.webp",
+    "source": "exec-c5b57211-da82-4f89-804d-2a5191a58152.png",
+    "size": [
+      1672,
+      941
+    ],
+    "bytes": 225726,
+    "sha256": "d9775a72a1ba2c482d6e48ca78b2b94b7832e105f4c31f983bd2ed9d10a14e59"
+  },
+  "surfboard_prompts": "art/outdoor/surfboard-prompts.json",
+  "retired_surfboard_asset": {
+    "path": "assets/outdoor/concept-coast-dusk-v3.webp",
+    "source": "exec-b83d9445-cfe1-413e-8e95-382d1af3f180.png",
+    "size": [
+      1672,
+      941
+    ],
+    "bytes": 288496,
+    "sha256": "8762bfd83dc465c3a5ea98d5af3c53ee7a74d82e54a2c0dd9be58aab077df0dc",
+    "role": "Approved pavilion with a decorative surfboard; no surfing activity."
+  },
+  "current_revision": {
+    "date": "2026-10-19",
+    "change": "Restored the approved coastal plate without the surfboard, following simplification review."
+  }
+}

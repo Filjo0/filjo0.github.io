@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-18",
+  "tool": "built-in imagegen",
+  "intent": "precise-object-edit",
+  "sunset": {
+    "target": "concept-coast-v2.webp",
+    "source": "exec-e503a2cc-24dc-4532-a42b-6d924fb3b5ef.png",
+    "prompt": "Use case: precise-object-edit. Edit target: the supplied approved coastal portfolio scene. Make a very small local edit: add ONE realistic cream surfboard with a single subtle faded teal stripe, no text or logos, leaning naturally against the OUTER timber pavilion post immediately to the right of the desk, between the desk/globe/clipboard and the black bag on the bench. Keep the black bag fully visible. The surfboard should be about 1.8m tall relative to the pavilion, its bottom grounded on the timber floor beside the bench, naturally supported by the post, with correct perspective and warm sunset contact shadow. Match the original scene's photographic painterly rendering and rich material detail. ABSOLUTE invariants: preserve the EXACT image dimensions, camera, crop, coastal landscape, shoreline, boardwalk, goal, sofa, foliage, roof, desk and all desktop objects and their pixel positions. In particular do not move/redraw the laptop, phone, snow globe, printed r\u00e9sum\u00e9 clipboard, book stack, maths notebook or bag. Change only the small region occupied by the added surfboard and its immediate shadow. No people, interface elements, labels or extra objects. This is a production background plate with calibrated clickable object positions; any camera or composition shift is unacceptable.",
+    "output": "assets/outdoor/concept-coast-v3.webp"
+  },
+  "night": {
+    "target": "concept-coast-dusk-v2.webp",
+    "supporting_reference": "exec-e503a2cc-24dc-4532-a42b-6d924fb3b5ef.png",
+    "source": "exec-b83d9445-cfe1-413e-8e95-382d1af3f180.png",
+    "prompt": "Use case: precise-object-edit. Image 1 is the ONLY edit target, the approved NIGHT scene. Image 2 is a supporting insert reference showing the exact surfboard and position already approved in the sunset variant. Add that SAME single cream surfboard with faded teal stripe to image 1 at the EXACT same pixel position, dimensions and tilt as image 2, leaning against the outer timber post between the desk and black bag. Match the NIGHT lighting of image 1: warm spill from pavilion lamps and soft cool moonlight, grounded contact shadow. Do NOT turn the image into sunset. Preserve image 1 camera, resolution, crop, EVERYTHING outside this small local surfboard area, moon, sky, dark sea, coast, plants, lights, desk, laptop, phone, globe, notebook, clipboard, books and bag at their precise pixel positions. No extra objects, no lettering, no interface or people. The surfboard is the only change.",
+    "output": "assets/outdoor/concept-coast-dusk-v3.webp"
+  },
+  "conversion": {
+    "format": "WebP",
+    "quality": 88,
+    "method": 6,
+    "resize": false
+  },
+  "winter": "Existing approved winter plates unchanged."
+}

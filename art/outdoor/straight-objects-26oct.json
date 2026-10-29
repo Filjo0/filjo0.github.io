@@ -1,0 +1,56 @@
+{
+  "date": "2026-10-26",
+  "tool": "built-in imagegen",
+  "conversion": "RGB WebP quality 84 method 6; original 1672x941 dimensions retained; no crop, warp or retouch.",
+  "measurement": "Visual native-resolution paper corner locations, approximately +/-2 pixels; maximum edge deviation must be <=1 degree. Live reading rectangles are inset and axis-aligned.",
+  "images": {
+    "books": {
+      "reference": "assets/outdoor/concept-book-closeup-v2.webp",
+      "output": "assets/outdoor/concept-book-closeup-v3.webp",
+      "source": "exec-e51248a6-df11-4e10-998f-9b3aa899dc38.png",
+      "physical_corners": [
+        [
+          188,
+          144
+        ],
+        [
+          1489,
+          144
+        ],
+        [
+          1491,
+          795
+        ],
+        [
+          185,
+          795
+        ]
+      ],
+      "instructions": "Preserve the reference warm sunset lighting, realistic painterly materials and surrounding still life. Correct camera to strict orthographic top-down, horizontal top/bottom, vertical sides, no taper/tilt/curls. Keep paper blank for HTML. Two flat ivory pages, green cover, central vertical fold."
+    },
+    "resume": {
+      "reference": "assets/outdoor/concept-resume-closeup-v2.webp",
+      "output": "assets/outdoor/concept-resume-closeup-v3.webp",
+      "source": "exec-8da24902-65dd-4417-81b5-4aa0ac4abf28.png",
+      "physical_corners": [
+        [
+          554,
+          101
+        ],
+        [
+          1105,
+          101
+        ],
+        [
+          1106,
+          845
+        ],
+        [
+          554,
+          845
+        ]
+      ],
+      "instructions": "Preserve the reference warm sunset lighting, realistic painterly materials and surrounding still life. Correct camera to strict orthographic top-down, horizontal top/bottom, vertical sides, no taper/tilt/curls. Keep paper blank for HTML. Single rectangular ivory paper on the same wood clipboard with brass clip."
+    }
+  }
+}

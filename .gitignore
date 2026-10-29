@@ -1,3 +1,21 @@
 validation-artifacts/
 .DS_Store
 Thumbs.db
+
+# Blender authoring scripts import shared Python helpers.
+__pycache__/
+*.pyc
+
+# Reproducible CC0 source downloads for the coastal rebuild.
+art/outdoor/.cache/
+
+# Internal multi-session plans stay local.
+tasks/
+
+# Reproducible CC0 sports rig and intermediate Blender frames.
+art/games/.cache/
+
+# Retired PDF downloads and incomplete exports must never enter a release.
+assets/Philipp_Alimov_Resume.pdf
+assets/resume-render-*/
+assets/.resume-*.pdf

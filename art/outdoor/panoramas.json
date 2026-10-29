@@ -1,0 +1,28 @@
+{
+  "role": "Distant scenery behind the live 3D foreground; not a replacement for walkable geometry.",
+  "generated": "2026-10-10",
+  "tool": "built-in imagegen",
+  "fictional_landscapes": true,
+  "assets": {
+    "coast": {
+      "path": "assets/outdoor/coast-landscape.webp",
+      "source": "01a1142f-b394-7f31-ad9a-04bb49066c23/exec-d743da47-962c-452a-b529-2b8f95781974.png",
+      "dimensions": [
+        1774,
+        887
+      ],
+      "bytes": 336050,
+      "sha256": "8e992f276c44881bd93a680799b36b00eff7f8765851c166c5cea17b8e8578d0"
+    },
+    "winter": {
+      "path": "assets/outdoor/winter-landscape.webp",
+      "source": "01a1142f-b394-7f31-ad9a-04bb49066c23/exec-0156fb6a-e10d-462f-9539-1c7bd39aa933.png",
+      "dimensions": [
+        1774,
+        887
+      ],
+      "bytes": 243780,
+      "sha256": "3dd0f86154d9d67499af86f2ef8af9967a3e44bc134655eb98f62e3dc24f2ba5"
+    }
+  }
+}

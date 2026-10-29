@@ -1,0 +1,78 @@
+{
+  "date": "2026-10-16",
+  "generator": "built-in imagegen",
+  "mode": "precise-object-edit for four overview variants; referenced object close-up for phone",
+  "encoding": "Pillow WebP quality 83 method 6; file-format conversion only; native 1672x941 output, no retouching",
+  "records": {
+    "coast": {
+      "path": "assets/outdoor/concept-coast-v2.webp",
+      "source": "exec-2e97e7ac-5715-474d-a078-69aad0d40894.png",
+      "size": [
+        1672,
+        941
+      ],
+      "bytes": 264996,
+      "sha256": "bc435391d3496756f260dcf3cbdf63784774c1132b1c304991ee9c10f035b61c"
+    },
+    "winter": {
+      "path": "assets/outdoor/concept-winter-v2.webp",
+      "source": "exec-7df5f292-57c7-40d6-bc39-f4746ce1853c.png",
+      "size": [
+        1672,
+        941
+      ],
+      "bytes": 309082,
+      "sha256": "3f04d1b0a4fe368c6eb26d0a11c92292954bee3692826a343ca23df87a91635c"
+    },
+    "coast_night": {
+      "path": "assets/outdoor/concept-coast-dusk-v2.webp",
+      "source": "exec-c5b57211-da82-4f89-804d-2a5191a58152.png",
+      "size": [
+        1672,
+        941
+      ],
+      "bytes": 225726,
+      "sha256": "d9775a72a1ba2c482d6e48ca78b2b94b7832e105f4c31f983bd2ed9d10a14e59"
+    },
+    "winter_night": {
+      "path": "assets/outdoor/concept-winter-dusk-v2.webp",
+      "source": "exec-5540d9d0-cab6-4dbc-bb38-8daaac87cd96.png",
+      "size": [
+        1672,
+        941
+      ],
+      "bytes": 277258,
+      "sha256": "ea5218142cfbf41077b9bb6bd139a5757af00377d12168e48aae9dd4da4fa2bc"
+    },
+    "contact": {
+      "path": "assets/outdoor/concept-contact-closeup-v2.webp",
+      "source": "exec-d0dc8c15-04e1-4578-a19b-cb7c9f3dd3a6.png",
+      "size": [
+        1672,
+        941
+      ],
+      "bytes": 188556,
+      "sha256": "8a84c246a1671e66e1238018ca24427932e9468cd45fda30599a77698b1574a0"
+    }
+  },
+  "invariants": [
+    "Preserve the approved composition, camera, furniture, dense landscaping and all existing desk props.",
+    "Add only one wood/brass résumé clipboard right of the globe, same coordinates in all seasons/light variants.",
+    "Phone identity: existing graphite phone on timber between laptop, notebook and globe.",
+    "No invented contact details; screen artwork is blank for live HTML."
+  ],
+  "references": [
+    "assets/outdoor/concept-coast-v1.webp",
+    "assets/outdoor/concept-winter-v1.webp",
+    "assets/outdoor/concept-coast-dusk-v1.webp",
+    "assets/outdoor/concept-winter-dusk-v1.webp",
+    "assets/outdoor/concept-resume-closeup-v2.webp"
+  ],
+  "prompts": {
+    "coast": "Add ONLY ONE small realistic wooden clipboard with brass clip holding a printed résumé to the clear tabletop immediately RIGHT of the snow globe. Approximate footprint (431,558),(502,551),(546,571),(469,592). Match the reference clipboard, with ivory paper, tiny navy header Philipp Alimov and grey lines, soft sunset contact shadow. Inpaint only this empty tabletop. Preserve everything else and exact 1672x941 framing. No people/UI/extra props.",
+    "winter": "Image 1 is winter edit target, Image 2 is generated Coast clipboard placement only. Transfer the single clipboard to the identical coordinates and scale. Preserve winter scenery and lighting, all props and framing. Only inpaint the small free tabletop patch.",
+    "coast_night": "Image 1 is night Coast edit target, Image 2 is generated sunset clipboard placement only. Transfer clipboard at identical coordinates/scale. Keep nighttime moon, ocean, pendant pools, all scenery and framing. Do not transfer sunset lighting. Inpaint only the clipboard patch.",
+    "winter_night": "Image 1 is winter night edit target, Image 2 is generated Winter clipboard placement only. Transfer clipboard identically. Preserve winter night sky, moon, snow and light pools. Only inpaint small free tabletop patch.",
+    "contact": "Photorealistic linked close-up of the actual graphite desk phone, directly overhead, nearly axis-aligned portrait device centred in opaque 1672x941 landscape. Body x615..1055 y48..894, blank dark charcoal display x633..1037 y82..857, rounded corners, graphite rim, discreet camera dot. Same warm worn timber and sunset/pendant lighting; tiny cropped existing laptop/notebook/globe references. No UI, text, people, hands, new decor or green screen. Active display clear for calibrated live HTML."
+  }
+}

@@ -1,0 +1,173 @@
+{
+  "header": [
+    "Philipp Alimov",
+    "Senior Software Test Engineer",
+    "Quality Engineering | C#/.NET Automation | Product Development",
+    "Perth, Western Australia | Australian citizen | philalimov@gmail.com linkedin.com/in/philalimov | github.com/Filjo0 | filjo0.github.io"
+  ],
+  "summary": "Senior Software Test Engineer with experience since 2021 and hands-on ownership of released web and iOS products. Combines C#/.NET automation, API and database testing, and risk-based release decisions with full-stack product development. Builds maintainable test coverage and gives developers and product stakeholders clear evidence of defects, coverage gaps, and remaining risks.",
+  "roles": [
+    {
+      "employer_or_project": "Acquire Technology Solutions",
+      "role": "Senior Software Test Engineer",
+      "date": "Jul 2026 - Present",
+      "before": [
+        "Define risk-based coverage for web and mobile changes, linking acceptance criteria to automated and manual checks and documenting remaining release risks.",
+        "Review automation and test evidence to identify coverage gaps and prioritise regression work around higher-risk changes.",
+        "Coordinate defect triage with developers and product stakeholders, making reproduction evidence, dependencies, and release trade-offs explicit.",
+        "Review automation code and mentor colleagues on test design, reproducible defect reports, and handover quality."
+      ],
+      "after": [
+        "Define risk-based coverage for web and mobile changes, linking acceptance criteria to automated and manual checks and documenting remaining release risks.",
+        "Coordinate defect triage with developers and product stakeholders, making reproduction evidence, dependencies, and release trade-offs explicit.",
+        "Review automation code and mentor colleagues on test design, reproducible defect reports, and handover quality."
+      ],
+      "stack": [],
+      "paragraphs": []
+    },
+    {
+      "employer_or_project": "Acquire Technology Solutions",
+      "role": "Software Test Engineer",
+      "date": "2021 - Jun 2026",
+      "before": [
+        "Built and maintained reusable C#/.NET test frameworks with NUnit, Selenium, Appium, and TestComplete for web and mobile regression testing.",
+        "Validated API behaviour and database changes with Postman, Microsoft SQL Server, and T-SQL.",
+        "Investigated complex defects with developers and produced reproducible reports backed by API and database evidence.",
+        "Worked with Product, Support, and Learning teams to turn client-reported issues into focused testing and usability feedback."
+      ],
+      "after": [
+        "Built and maintained reusable C#/.NET test frameworks with NUnit, Selenium, Appium, and TestComplete for web and mobile regression testing.",
+        "Validated API behaviour and database changes with Postman, Microsoft SQL Server, and T-SQL."
+      ],
+      "stack": [],
+      "paragraphs": []
+    },
+    {
+      "employer_or_project": "FUTSL",
+      "role": "Product Owner & Full-Stack Developer",
+      "date": "2024 - Present",
+      "before": [
+        "Released a web, iOS, and Android competition companion bringing fixtures, results, standings, player histories, favourites, and notifications into one product.",
+        "Built scheduled Playwright data-ingestion pipelines and PostgreSQL-backed APIs to turn published league records into searchable team and player views.",
+        "Own product priorities and release quality, using automated regression checks, staged database rehearsals, and production smoke tests before iterative updates."
+      ],
+      "after": [
+        "Released a web, iOS, and Android competition companion bringing fixtures, results, standings, player histories, favourites, and notifications into one product.",
+        "Own product priorities and release quality, using automated regression checks, staged database rehearsals, and production smoke tests before iterative updates."
+      ],
+      "stack": [
+        "Python / Flask, React, PostgreSQL, Playwright, Capacitor"
+      ],
+      "paragraphs": []
+    },
+    {
+      "employer_or_project": "Aqua Local",
+      "role": "Product Owner & Full-Stack Developer",
+      "date": "2026 - Present",
+      "before": [
+        "Built and released a web and iOS discovery product for swimming pools, published lane schedules, lessons, recovery venues, and water activities across Australia.",
+        "Implemented source attribution and freshness checks so expired schedules and unknown availability are labelled rather than presented as confirmed.",
+        "Delivered API and browser regression checks, protected administration, and release-gated deployment for the web and native app."
+      ],
+      "after": [
+        "Built and released a web and iOS discovery product for swimming pools, published lane schedules, lessons, recovery venues, and water activities across Australia.",
+        "Implemented source attribution and freshness checks so expired schedules and unknown availability are labelled rather than presented as confirmed."
+      ],
+      "stack": [
+        "Python / FastAPI, React, Capacitor, Oracle Cloud"
+      ],
+      "paragraphs": []
+    },
+    {
+      "employer_or_project": "Legal Advice Services, Russia",
+      "role": "Lawyer",
+      "date": "2017",
+      "before": [
+        "Drafted and reviewed legal documents, advised clients on compliance, and represented matters requiring structured analysis and clear communication under pressure."
+      ],
+      "after": [],
+      "stack": [],
+      "paragraphs": []
+    },
+    {
+      "employer_or_project": "Floreat Athena FC",
+      "role": "Head Coach, Youth (U9-U14)",
+      "date": "2020 - Present",
+      "before": [],
+      "after": [],
+      "stack": [],
+      "paragraphs": [
+        "Lead player development, training and match preparation over multiple seasons. Football Australia C Licence."
+      ]
+    }
+  ],
+  "other_sections": [
+    {
+      "title": "Core Expertise",
+      "lines": [
+        "Risk-based test strategy",
+        "Test planning and acceptance criteria",
+        "Release risk and quality signals",
+        "Defect triage and investigation",
+        "Web and mobile quality",
+        "Mentoring and code review"
+      ]
+    },
+    {
+      "title": "Automation",
+      "lines": [
+        "Languages and frameworks C#/.NET, NUnit",
+        "Web and mobile Selenium, Appium, Playwright, TestComplete"
+      ]
+    },
+    {
+      "title": "Product Engineering",
+      "lines": [
+        "APIs and frontend Python, Flask, FastAPI, JavaScript, React",
+        "Mobile delivery Capacitor, iOS release workflows"
+      ]
+    },
+    {
+      "title": "Data & Delivery",
+      "lines": [
+        "Data and API Microsoft SQL Server (T-SQL), PostgreSQL, Postman",
+        "Delivery tooling Azure DevOps, Jira, Bamboo, Git, Docker, CI/CD"
+      ]
+    },
+    {
+      "title": "Education",
+      "lines": [
+        "Graduate Certificate in Business Curtin University, 2025",
+        "Diploma of Software Development North Metropolitan TAFE 2020 - 2021 C#/.NET, Python, and SQL",
+        "Master's in Quality Management Tomsk State University, 2017 ISO standards and process management",
+        "Bachelor of Laws (LLB) Tomsk State University 2011 - 2017"
+      ]
+    },
+    {
+      "title": "Professional Development",
+      "lines": [
+        "Hugging Face AI Agents Fundamentals, 2025",
+        "Acquire Technology GIM Suite Professional and Practitioner",
+        "Stepik Test Automation Using Python and Selenium"
+      ]
+    },
+    {
+      "title": "Languages",
+      "lines": [
+        "English: Full professional",
+        "Russian: Native",
+        "Spanish: Elementary"
+      ]
+    }
+  ],
+  "bullet_counts": {
+    "before": 15,
+    "after": 9
+  },
+  "bullet_words": [
+    274,
+    170
+  ],
+  "source_sha256": "957b840a27b8252c4effca2e8f2ab978e7d398ce20daba1beb383e243a1c1b28",
+  "approval_note": "26 October 2026: owner explicitly approved the reviewed one-page PDF replacement and generator update, with unchanged About, and no commit or publication."
+}

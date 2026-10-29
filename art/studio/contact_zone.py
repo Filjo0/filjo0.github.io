@@ -5,12 +5,15 @@ Run headless:  blender -b --factory-startup --python art/studio/contact_zone.py 
 Coordinates: Blender is Z-up, so a Three.js point (x, y, z) is Blender (x, -z, y). The glTF
 exporter converts back, so exported meshes sit at the room's existing world coordinates.
 Static furniture receives a full Cycles diffuse bake (direct + indirect + albedo) that the
-runtime shows unlit. Floor/wall decals store how much the furniture darkens the existing
+runtime retains alongside normal/roughness maps and live specular. Floor/wall decals store how much the furniture darkens the existing
 procedural surfaces. The copper lamp stays a live PBR material for reflections.
 """
 import math
 import sys
 from pathlib import Path
+
+sys.path.insert(0,str(Path(__file__).resolve().parent))
+from surface_bake import organic_leaf_mesh, add_leaf_surface, prepare_lightmap_uv, capture_surface_maps, attach_surface_maps, add_woven_surface
 
 import bmesh
 import bpy
@@ -334,28 +337,8 @@ stem_mat = principled('stem', srgb('#4f6a37'), 0.6)
 
 
 def leaf_mesh(length, width):
-    """Heart-shaped leaf with a folded midrib and slight cupping."""
-    bm = bmesh.new()
-    rows, cols = 12, 6
-    grid = []
-    for r in range(rows + 1):
-        u = r / rows
-        half = width * (math.sin(math.pi * min(1, u * 1.08)) ** 0.85) * (1.1 - 0.45 * u) + 1e-4
-        row = []
-        for c in range(cols + 1):
-            v = c / cols * 2 - 1
-            x = v * half
-            y = length * u - 0.18 * width * (1 - abs(v)) * (1 - u) ** 6  # notch at the stem
-            z = 0.32 * abs(x) - 0.12 * x * x / max(width, 1e-3)
-            row.append(bm.verts.new((x, y, z)))
-        grid.append(row)
-    for r in range(rows):
-        for c in range(cols):
-            bm.faces.new((grid[r][c], grid[r][c + 1], grid[r + 1][c + 1], grid[r + 1][c]))
-    data = bpy.data.meshes.new('leaf')
-    bm.to_mesh(data)
-    bm.free()
-    return data
+    return organic_leaf_mesh(length,width)
+
 
 
 for i in range(30):
@@ -381,7 +364,7 @@ for i in range(30):
     bpy.ops.object.convert(target='MESH')
     plant_parts.append(bpy.context.active_object)
     size = rng.uniform(0.07, 0.105)
-    leaf = link(bpy.data.objects.new('leaf', leaf_mesh(size, size * 0.4)))
+    leaf = link(bpy.data.objects.new('leaf', leaf_mesh(size, size * 0.25)))
     droop = rng.uniform(0.35, 0.95)
     leaf.matrix_world = (Matrix.Translation(tip) @ Matrix.Rotation(yaw - math.pi / 2, 4, 'Z')
                          @ Matrix.Rotation(-droop, 4, 'X') @ Matrix.Rotation(rng.uniform(-0.4, 0.4), 4, 'Y'))
@@ -400,7 +383,9 @@ bpy.ops.mesh.primitive_cylinder_add(vertices=48, radius=0.222, depth=0.006, loca
 planter_soil = bpy.context.active_object
 planter_soil.data.materials.append(textured('planter_soil', srgb('#2b2018'), 200, 0.6, 1.0, 0.3))
 big_parts = [planter, planter_soil]
+for mat in leaf_mats:add_leaf_surface(mat)
 big_leaf = [textured(f'big_leaf_{i}', srgb(c), 18, 0.03, 0.45, 0.07) for i, c in enumerate(('#2c4f2a', '#355c30', '#41683a'))]
+for mat in big_leaf:add_leaf_surface(mat)
 for s_index in range(7):
     yaw = s_index * 0.9 + rng.uniform(-0.25, 0.25)
     lean = rng.uniform(0.08, 0.28)
@@ -425,7 +410,7 @@ for s_index in range(7):
         at = base.lerp(tip, t) + Vector((0, 0, 0.0))
         leaf_yaw = yaw + rng.uniform(-1.6, 1.6)
         size = rng.uniform(0.22, 0.33) * (1.15 - 0.3 * t)
-        leaf = link(bpy.data.objects.new('big_leaf', leaf_mesh(size, size * 0.4)))
+        leaf = link(bpy.data.objects.new('big_leaf', leaf_mesh(size, size * 0.25)))
         leaf.matrix_world = (Matrix.Translation(at) @ Matrix.Rotation(leaf_yaw - math.pi / 2, 4, 'Z')
                              @ Matrix.Rotation(-rng.uniform(0.5, 1.4), 4, 'X') @ Matrix.Rotation(rng.uniform(-0.6, 0.6), 4, 'Y'))
         leaf.data.materials.append(big_leaf[(s_index + k) % 3])
@@ -463,7 +448,7 @@ for index, z in enumerate(levels):
         thick, tall, deep = rng.uniform(0.018, 0.05), rng.uniform(0.19, 0.31), rng.uniform(0.15, 0.23)
         lean = rng.uniform(-0.04, 0.04) if rng.random() < 0.8 else 0.18
         book = rounded_box('book', (SX0 + 0.03, y, z + 0.028), (SX0 + 0.03 + deep, y + thick, z + 0.028 + tall), 0.0025, 0,
-                           cloth[int(rng.integers(len(cloth)))], bevel_segments=2)
+                           cloth[int(rng.integers(len(cloth)))], bevel_segments=1)
         pivot = Vector((SX0 + 0.03, y, z + 0.028))
         book.data.transform(Matrix.Translation(pivot) @ Matrix.Rotation(lean, 4, 'X') @ Matrix.Translation(-pivot))
         shelf_parts.append(book)
@@ -471,8 +456,10 @@ for index, z in enumerate(levels):
 bookshelf = join('bookshelf', shelf_parts)
 
 # --- Sofa: plinth on oak feet, rounded arms/back, sagging seat and back cushions. ------
-fabric = textured('fabric', srgb('#4a4c40'), 520, 0.22, 1.0, 0.18)
-accent = textured('cushion', srgb('#8f7a5c'), 420, 0.25, 1.0, 0.15)
+fabric = textured('fabric', srgb('#42463d'), 5, 0.18, 1.0, 0.25)
+add_woven_surface(fabric,.009)
+accent = textured('cushion', srgb('#697057'), 5, 0.2, 1.0, 0.2)
+add_woven_surface(accent,.009)
 feet = principled('sofa_feet', srgb('#4b3220'), 0.5)
 X0, X1, Y0, Y1 = 2.79, 3.69, -1.35, 1.05
 sofa_parts = []
@@ -491,6 +478,8 @@ sofa_parts.append(rounded_box('back', (X1 - 0.21, Y0 + 0.17, 0.28), (X1, Y1 - 0.
 
 def cushion(name, lo, hi, radius, mat, sag=0.0, lean=0.0):
     obj = rounded_box(name, lo, hi, radius, 1, mat)
+    # The bounds and rotation pivots below are world coordinates.
+    obj.data.transform(obj.matrix_world);obj.matrix_world.identity()
     lo, hi = Vector(lo), Vector(hi)
     centre, half = (lo + hi) / 2, (hi - lo) / 2
     for vertex in obj.data.vertices:
@@ -561,14 +550,7 @@ scene.render.bake.use_clear = True
 
 
 def lightmap_uv(obj, margin=0.004):
-    select_only(obj)
-    while obj.data.uv_layers:
-        obj.data.uv_layers.remove(obj.data.uv_layers[0])
-    obj.data.uv_layers.new(name='bake')
-    bpy.ops.object.mode_set(mode='EDIT')
-    bpy.ops.mesh.select_all(action='SELECT')
-    bpy.ops.uv.smart_project(angle_limit=math.radians(60), island_margin=margin)
-    bpy.ops.object.mode_set(mode='OBJECT')
+    prepare_lightmap_uv(obj,select_only,margin)
 
 
 def bake(obj, size, passes, samples=256):
@@ -612,10 +594,12 @@ def save(name, rgb, alpha=None):
 
 
 baked = {}
+surfaces = {}
 for obj, size, samples in ((table, 1024, 320), (plant, 1024, 256), (floor_plant, 1024, 224), (bookshelf, 1536, 160), (sofa, 1536, 192)):
     print('BAKING', obj.name, size, samples, flush=True)
     lightmap_uv(obj, 0.003 if obj is sofa else 0.004)
     baked[obj.name] = bake(obj, size, {'DIRECT', 'INDIRECT', 'COLOR'}, samples)[..., :3]
+    surfaces[obj.name]=capture_surface_maps(obj,OUT,256)
 EXPOSURE = 4.0
 print('BAKE exposure', EXPOSURE)
 
@@ -665,6 +649,7 @@ for obj in (table, plant, floor_plant, bookshelf, sofa):
     node = tree.new('ShaderNodeTexImage')
     node.image = image
     links.new(node.outputs['Color'], tree.get('Principled BSDF').inputs['Base Color'])
+    attach_surface_maps(obj,mat,surfaces[obj.name])
     obj.data.materials.append(mat)
 for decal, image in decals:
     mat = principled('decal_' + decal.name, (1, 1, 1), 1.0)

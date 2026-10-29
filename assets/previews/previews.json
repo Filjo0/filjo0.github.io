@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "projects": {
+    "futsl": {
+      "name": "FUTSL",
+      "capturedAt": "2026-10-09T15:49:52.040Z",
+      "start": "fixtures",
+      "screens": [
+        {
+          "id": "fixtures",
+          "label": "Fixtures and results",
+          "alt": "FUTSL public fixtures and results on the capture date",
+          "width": 390,
+          "height": 744,
+          "image": "assets/previews/futsl-fixtures.webp",
+          "sourceUrl": "https://perth-futsal.onrender.com/",
+          "sha256": "99569e91cb36da60a408fe68ceb477a02c9176cd64f59584baad9046cbcec13e",
+          "bytes": 30076,
+          "hotspots": [
+            {
+              "label": "Open league standings",
+              "target": "league",
+              "sourceLabel": "League",
+              "rect": {
+                "x": 78,
+                "y": 683,
+                "width": 78,
+                "height": 61
+              }
+            }
+          ]
+        },
+        {
+          "id": "league",
+          "label": "League standings",
+          "alt": "FUTSL public league standings on the capture date",
+          "width": 390,
+          "height": 744,
+          "image": "assets/previews/futsl-league.webp",
+          "sourceUrl": "https://perth-futsal.onrender.com/",
+          "sha256": "fc4fd094bb08c6bbcac85f685daa04d5da1f0ab5701d9e12e8b3d3f596a0309b",
+          "bytes": 25648,
+          "hotspots": [
+            {
+              "label": "Back to fixtures",
+              "target": "fixtures",
+              "sourceLabel": "All games",
+              "rect": {
+                "x": 0,
+                "y": 683,
+                "width": 78,
+                "height": 61
+              }
+            }
+          ]
+        }
+      ],
+      "provenance": "First-party public app screens; anonymous optional onboarding, no names or player pages."
+    },
+    "aqua": {
+      "name": "Aqua Local",
+      "capturedAt": "2026-10-09T15:49:52.040Z",
+      "start": "home",
+      "screens": [
+        {
+          "id": "home",
+          "label": "Discover swimming",
+          "alt": "Aqua Local public home screen on the capture date",
+          "width": 390,
+          "height": 744,
+          "image": "assets/previews/aqua-home.webp",
+          "sourceUrl": "https://aqualocal.com.au/",
+          "sha256": "41b5614f85daea21a09103ba864bda64f28937caf64c1750bf129a205bb1c6e2",
+          "bytes": 35506,
+          "hotspots": [
+            {
+              "label": "Find lane times",
+              "target": "pools",
+              "sourceLabel": "Find lane times",
+              "rect": {
+                "x": 24,
+                "y": 191.5,
+                "width": 342,
+                "height": 44
+              }
+            }
+          ]
+        },
+        {
+          "id": "pools",
+          "label": "Published lane schedules",
+          "alt": "Aqua Local public pool list with published schedules",
+          "width": 390,
+          "height": 744,
+          "image": "assets/previews/aqua-pools.webp",
+          "sourceUrl": "https://aqualocal.com.au/pools",
+          "sha256": "468876d90384e04768d9efd3f6932ea9978c3995bdfa0c61158cfab55f170d09",
+          "bytes": 26848,
+          "hotspots": [
+            {
+              "label": "Read Aqua Jetty details",
+              "target": "venue",
+              "sourceLabel": "View details for Aqua Jetty",
+              "rect": {
+                "x": 25,
+                "y": 503,
+                "width": 340,
+                "height": 241
+              }
+            },
+            {
+              "label": "Back to discovery",
+              "target": "home",
+              "sourceLabel": "Home",
+              "rect": {
+                "x": 21,
+                "y": 675,
+                "width": 66.390625,
+                "height": 56
+              }
+            }
+          ]
+        },
+        {
+          "id": "venue",
+          "label": "Aqua Jetty",
+          "alt": "Aqua Jetty public venue details as shown in Aqua Local",
+          "width": 390,
+          "height": 744,
+          "image": "assets/previews/aqua-venue.webp",
+          "sourceUrl": "https://aqualocal.com.au/pools/aquajetty",
+          "sha256": "ecfb186749d336aa92321c6f0141a3801bff96af37c67e5c1614ca6fcd9f9b5a",
+          "bytes": 29738,
+          "hotspots": [
+            {
+              "label": "Back to pool list",
+              "target": "pools",
+              "sourceLabel": "Back",
+              "rect": {
+                "x": 14,
+                "y": 12,
+                "width": 72.4375,
+                "height": 44
+              }
+            }
+          ]
+        }
+      ],
+      "provenance": "First-party public app screens; analytics declined, no location permission or saved venues."
+    }
+  }
+}

@@ -1,0 +1,282 @@
+{
+  "version": 2,
+  "lazy_loaded": true,
+  "budget_bytes": 2000000,
+  "views": {
+    "work": {
+      "image": "concept-laptop-closeup-v2.webp",
+      "width": 1672,
+      "height": 941,
+      "corners": [
+        [
+          372,
+          132
+        ],
+        [
+          1288,
+          132
+        ],
+        [
+          1301,
+          655
+        ],
+        [
+          371,
+          655
+        ]
+      ],
+      "kind": "kiosk",
+      "bytes": 165086,
+      "sha256": "3ad45053f006f9ce5d51af1b837ae70bc77070fa1eb245a27de87a52d8934fc1",
+      "source": "exec-9af651ef-7778-495c-9c1d-7852780f4644.png",
+      "generator": "built-in imagegen"
+    },
+    "books": {
+      "image": "concept-book-closeup-v3.webp",
+      "width": 1672,
+      "height": 941,
+      "corners": [
+        [
+          238,
+          168
+        ],
+        [
+          1420,
+          168
+        ],
+        [
+          1420,
+          738
+        ],
+        [
+          238,
+          738
+        ]
+      ],
+      "kind": "booklet",
+      "bytes": 162420,
+      "sha256": "f8a8a714bc1d35496d55c1cabaa19a381e05045e98ed048f6e570ba26f82b725",
+      "source": "exec-e51248a6-df11-4e10-998f-9b3aa899dc38.png",
+      "generator": "built-in imagegen",
+      "mobile_corners": [
+        [
+          248,
+          168
+        ],
+        [
+          795,
+          168
+        ],
+        [
+          795,
+          738
+        ],
+        [
+          248,
+          738
+        ]
+      ],
+      "physical_corners": [
+        [
+          188,
+          144
+        ],
+        [
+          1489,
+          144
+        ],
+        [
+          1491,
+          795
+        ],
+        [
+          185,
+          795
+        ]
+      ],
+      "prompts": "art/outdoor/straight-objects-26oct.json",
+      "reading_area": "Axis-aligned rectangle inset into the native photographed paper; all four measured paper edges are within 1 degree."
+    },
+    "resume": {
+      "image": "concept-resume-closeup-v3.webp",
+      "width": 1672,
+      "height": 941,
+      "corners": [
+        [
+          570,
+          148
+        ],
+        [
+          1085,
+          148
+        ],
+        [
+          1085,
+          790
+        ],
+        [
+          570,
+          790
+        ]
+      ],
+      "kind": "board",
+      "bytes": 232530,
+      "sha256": "13c81508a2e19130a62c5454a056b608f2f4ee374ee6f215cfaba266f3418436",
+      "source": "exec-8da24902-65dd-4417-81b5-4aa0ac4abf28.png",
+      "generator": "built-in imagegen",
+      "physical_corners": [
+        [
+          554,
+          101
+        ],
+        [
+          1105,
+          101
+        ],
+        [
+          1106,
+          845
+        ],
+        [
+          554,
+          845
+        ]
+      ],
+      "prompts": "art/outdoor/straight-objects-26oct.json",
+      "reading_area": "Axis-aligned rectangle inset into the native photographed paper; all four measured paper edges are within 1 degree."
+    },
+    "ball": {
+      "image": "concept-juggling-phone-v2.webp",
+      "width": 1672,
+      "height": 941,
+      "corners": [
+        [
+          650,
+          95
+        ],
+        [
+          1004,
+          95
+        ],
+        [
+          1007,
+          789
+        ],
+        [
+          649,
+          789
+        ]
+      ],
+      "kind": "phone",
+      "bytes": 238810,
+      "sha256": "8f87827bae8dae2574099f0b784ba17af0a11ce49b5a3ad86d6c791f4009ce43",
+      "source": "exec-e5bae0ca-991d-45f1-827d-85d033d71241.png",
+      "generator": "built-in imagegen"
+    },
+    "ball_winter": {
+      "image": "concept-juggling-phone-winter-v2.webp",
+      "width": 1672,
+      "height": 941,
+      "corners": [
+        [
+          650,
+          95
+        ],
+        [
+          1004,
+          95
+        ],
+        [
+          1007,
+          789
+        ],
+        [
+          649,
+          789
+        ]
+      ],
+      "kind": "phone",
+      "bytes": 250812,
+      "sha256": "abfc2aec2bceaaa0d948ee4ec7cd11140cccee3dc380f9c2ba437e83284da773",
+      "source": "exec-90c19cab-e84b-40b4-8e0f-9e898051619d.png",
+      "generator": "built-in imagegen"
+    },
+    "contact": {
+      "image": "concept-contact-closeup-v2.webp",
+      "width": 1672,
+      "height": 941,
+      "corners": [
+        [
+          638,
+          76
+        ],
+        [
+          1020,
+          76
+        ],
+        [
+          1030,
+          837
+        ],
+        [
+          635,
+          837
+        ]
+      ],
+      "kind": "phone",
+      "bytes": 188556,
+      "sha256": "8a84c246a1671e66e1238018ca24427932e9468cd45fda30599a77698b1574a0",
+      "source": "exec-d0dc8c15-04e1-4578-a19b-cb7c9f3dd3a6.png",
+      "generator": "built-in imagegen",
+      "prompts": "art/outdoor/redesign-stage2-prompts.json",
+      "mobile_corners": [
+        [
+          638,
+          110
+        ],
+        [
+          1020,
+          110
+        ],
+        [
+          1030,
+          837
+        ],
+        [
+          635,
+          837
+        ]
+      ]
+    },
+    "experience": {
+      "image": "concept-about-closeup-v3.webp",
+      "width": 1672,
+      "height": 941,
+      "corners": [
+        [
+          679,
+          109
+        ],
+        [
+          1407,
+          109
+        ],
+        [
+          1407,
+          811
+        ],
+        [
+          679,
+          811
+        ]
+      ],
+      "kind": "profile",
+      "bytes": 269070,
+      "sha256": "e7dd072027137a977011be16b03915169671fb42eed4677bebfeab56ce40e398",
+      "source": "exec-1caa2e59-7907-46c7-9976-f4f8a4ef88c0.png",
+      "generator": "built-in imagegen",
+      "prompts": "art/outdoor/about-bag-prompts-25oct.json",
+      "reading_area": "A straight rectangle inset 24px from the top/bottom and left/right photographed paper edges; live padding adds even reading margins."
+    }
+  }
+}

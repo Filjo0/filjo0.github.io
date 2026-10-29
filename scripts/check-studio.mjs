@@ -37,7 +37,7 @@ try {
     const room=document.querySelector('[data-studio]');return document.body.dataset.studioReady==='true'&&room.dataset.destination===route&&room.dataset.travelling==='false';
   },route);
   const open=async route=>{await page.locator(`.studio-dock [data-studio-route="${route}"]`).click();await settled(route);};
-  const home=async()=>{await page.goto(url);await settled('overview');};
+  const home=async()=>{await page.goto(`${url}/validation-artifacts/legacy-studio/studio.html`);await settled('overview');};
   const screenshot=name=>page.screenshot({path:resolve(artifacts,`${name}.png`)});
   const unique=async()=>check(await page.evaluate(()=>{const ids=[...document.querySelectorAll('[id]')].map(n=>n.id);return new Set(ids).size===ids.length;}),'Canonical IDs stay unique');
   const fits=async()=>{
@@ -124,10 +124,10 @@ try {
   check(await page.evaluate(()=>window.studioFrameRequests)===requests,'Idle room requests no ongoing render frames');
   await page.emulateMedia({reducedMotion:'reduce'});await page.waitForFunction(()=>document.querySelector('[data-studio-motion]').disabled);check(await page.locator('[data-studio-motion]').isDisabled(),'System reduced motion takes precedence');
   for(const hash of ['work','experience','resume','contact','capabilities']){
-    await page.goto(`${url}/#${hash}`);await settled(hash==='capabilities'?'experience':hash);await unique();await fits();
+    await page.goto(`${url}/validation-artifacts/legacy-studio/studio.html#${hash}`);await settled(hash==='capabilities'?'experience':hash);await unique();await fits();
   }
   for(const viewport of [{width:320,height:844},{width:390,height:844},{width:720,height:900},{width:1100,height:800},{width:720,height:500},{width:844,height:390}]){
-    await page.setViewportSize(viewport);await page.goto(url);await settled('overview');await fits();
+    await page.setViewportSize(viewport);await page.goto(`${url}/validation-artifacts/legacy-studio/studio.html`);await settled('overview');await fits();
     for(const route of ['work','experience','resume','contact']){
       await open(route);if(route==='contact')await page.locator('[data-phone-wake]').click();
       await fits();await unique();
@@ -142,7 +142,7 @@ try {
     if(viewport.width===844)check(await page.locator('[data-object-surface]').getAttribute('data-orientation')==='landscape','Short landscape phone rotates with upright UI');
   }
   const touch=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'});
-  await touch.goto(url);await settled('overview',touch);
+  await touch.goto(`${url}/validation-artifacts/legacy-studio/studio.html`);await settled('overview',touch);
   await touch.locator('.studio-dock [data-studio-route="contact"]').tap();await settled('contact',touch);
   check(await touch.locator('[data-phone-wake]').isVisible(),'Touch destination reaches sleeping phone');
   await touch.screenshot({path:resolve(artifacts,'phone-asleep.png')});
@@ -155,7 +155,7 @@ try {
     const p=await browser.newPage({viewport:{width:390,height:844},javaScriptEnabled:!noJS,reducedMotion:'reduce'});
     if(block)await p.route(block,r=>r.abort());
     if(webglFailure)await p.addInitScript(()=>{const getContext=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(kind,...args){return kind.startsWith('webgl')?null:getContext.call(this,kind,...args);};});
-    await p.goto(url);
+    await p.goto(`${url}/validation-artifacts/legacy-studio/studio.html`);
     if(contextLoss){await settled('overview',p);await p.locator('.studio-dock [data-studio-route="work"]').click();await settled('work',p);await p.locator('canvas').evaluate(n=>n.dispatchEvent(new Event('webglcontextlost',{cancelable:true})));}
     await p.waitForFunction(()=>!document.querySelector('[data-studio-fallback]').hidden);
     // Initialization may still be attempting module import before fallback checks.
@@ -166,29 +166,31 @@ try {
     await p.close();
   };
   await fallback({noJS:true});await fallback({block:'**/room.js'});await fallback({block:'**/assets/vendor/three.module.js'});await fallback({webglFailure:true});await fallback({contextLoss:true});
-  const missing=await browser.newPage({reducedMotion:'reduce'});await missing.route('**/assets/studio-workspace.webp',r=>r.abort());await missing.goto(url);await settled('overview',missing);
+  const missing=await browser.newPage({reducedMotion:'reduce'});await missing.route('**/assets/studio-workspace.webp',r=>r.abort());await missing.goto(`${url}/validation-artifacts/legacy-studio/studio.html`);await settled('overview',missing);
   check(await missing.locator('canvas.room-canvas').isVisible(),'Missing exterior texture still leaves full room geometry');await missing.close();
-  const corner=await browser.newPage({reducedMotion:'reduce'});await corner.goto(url);await settled('overview',corner);
-  await corner.waitForFunction(()=>document.querySelector('canvas.room-canvas')?.dataset.artCorner==='loaded');
-  check(true,'Authored contact corner loads');await corner.close();
-  for(const [label,handler] of [['missing',r=>r.abort()],['corrupt',r=>r.fulfill({status:200,contentType:'model/gltf-binary',body:'not a model'})]]){
-    const p=await browser.newPage({reducedMotion:'reduce'});const pageErrors=[];p.on('pageerror',e=>pageErrors.push(e.message));
-    await p.route('**/assets/studio/contact-zone.glb',handler);await p.goto(`${url}/#contact`);await settled('contact',p);
-    await p.waitForFunction(()=>document.querySelector('canvas.room-canvas')?.dataset.artCorner==='fallback');
-    check(await p.locator('[data-object-surface]').isVisible() && pageErrors.length===0,`${label} authored corner keeps the procedural phone corner usable`);await p.close();
+  const corner=await browser.newPage({reducedMotion:'reduce'});await corner.goto(`${url}/validation-artifacts/legacy-studio/studio.html`);await settled('overview',corner);
+  await corner.waitForFunction(()=>{const d=document.querySelector('canvas.room-canvas')?.dataset;return d?.artCorner==='loaded'&&d?.artDesk==='loaded';});
+  check(true,'Authored contact corner and desk zone load');await corner.close();
+  for(const [file,state,route] of [['contact-zone.glb','artCorner','contact'],['desk-zone.glb','artDesk','work']]){
+    for(const [label,handler] of [['missing',r=>r.abort()],['corrupt',r=>r.fulfill({status:200,contentType:'model/gltf-binary',body:'not a model'})]]){
+      const p=await browser.newPage({reducedMotion:'reduce'});const pageErrors=[];p.on('pageerror',e=>pageErrors.push(e.message));
+      await p.route(`**/assets/studio/${file}`,handler);await p.goto(`${url}/validation-artifacts/legacy-studio/studio.html#${route}`);await settled(route,p);
+      await p.waitForFunction(state=>document.querySelector('canvas.room-canvas')?.dataset[state]==='fallback',state);
+      check(await p.locator('[data-object-surface]').isVisible() && pageErrors.length===0,`${label} ${file} keeps the procedural ${route} zone usable`);await p.close();
+    }
   }
-  const resumeFailure=await browser.newPage({reducedMotion:'reduce'});await resumeFailure.route('**/resume.html?embed=1',r=>r.fulfill({status:404,contentType:'text/html',body:'Missing document'}));await resumeFailure.goto(`${url}/#resume`);await settled('resume',resumeFailure);
+  const resumeFailure=await browser.newPage({reducedMotion:'reduce'});await resumeFailure.route('**/resume.html?embed=1',r=>r.fulfill({status:404,contentType:'text/html',body:'Missing document'}));await resumeFailure.goto(`${url}/validation-artifacts/legacy-studio/studio.html#resume`);await settled('resume',resumeFailure);
   await resumeFailure.waitForFunction(()=>document.querySelector('[data-resume-view]').dataset.state==='error');
   check(await resumeFailure.locator('[data-resume-retry]').isVisible(),'Resume failure offers retry');
   check(await resumeFailure.locator('[data-standalone-resume]').isVisible(),'Resume failure retains standalone link');
   check(await resumeFailure.locator('.studio-resume-actions a[download]').isVisible(),'Resume failure retains PDF');await resumeFailure.close();
-  const walker=await browser.newPage({viewport:{width:1440,height:1000}});await walker.goto(url);await settled('overview',walker);
+  const walker=await browser.newPage({viewport:{width:1440,height:1000}});await walker.goto(`${url}/validation-artifacts/legacy-studio/studio.html`);await settled('overview',walker);
   await walker.locator('.studio-dock [data-studio-route="contact"]').click();
   await walker.waitForFunction(()=>Number(document.querySelector('canvas.room-canvas').dataset.cameraPosition.split(',')[2])<1.4);
   const pitch=await walker.evaluate(()=>{const [x,y,z,w]=document.querySelector('canvas.room-canvas').dataset.cameraRotation.split(',').map(Number);return 2*(w*x-y*z);});
   check(pitch>-.2,`Walker faces the path with a level gaze mid-walk: ${pitch.toFixed(3)}`);
   await settled('contact',walker);await walker.close();
-  const narrow=await browser.newPage({viewport:{width:390,height:844},hasTouch:true});await narrow.goto(url);await settled('overview',narrow);
+  const narrow=await browser.newPage({viewport:{width:390,height:844},hasTouch:true});await narrow.goto(`${url}/validation-artifacts/legacy-studio/studio.html`);await settled('overview',narrow);
   // The hint is click-through; probe its stacking with hit-testing briefly enabled.
   check(await narrow.evaluate(()=>{const node=document.querySelector('[data-swipe-hint]');node.style.pointerEvents='auto';const hint=node.getBoundingClientRect();const top=document.elementFromPoint(hint.x+hint.width/2,hint.y+hint.height/2);node.style.pointerEvents='';return Boolean(top?.closest('[data-swipe-hint]'));}),'Mobile look-around hint is drawn above the room');
   const caption=await narrow.locator('[data-scene-caption]').boundingBox(),notebook=await narrow.locator('.studio-point-experience').boundingBox();

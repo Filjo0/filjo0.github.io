@@ -1,0 +1,7 @@
+{
+  "project": "Treadfront",
+  "source_file": "src/core.js",
+  "source_sha256": "7b6685179b2807a7e0926ac1019a2e579593a666fa128e8b0009b419f85da335",
+  "allowed_sector": "outer-wall",
+  "export": "First campaign sector; special-mission maps removed; optional mode options disabled."
+}

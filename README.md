@@ -1,154 +1,76 @@
 # Philipp Alimov Portfolio
 
-Static developer portfolio, public resume and contact site for Philipp Alimov.
+A static portfolio with a coastal pavilion, matching Siberian winter, and linked object close-ups. The conventional page remains available without JavaScript or WebGL. No analytics, contact backend, runtime CDN or publishing build step is required.
 
-## Local Preview
+## Current experience
 
-```powershell
-python -m http.server 8080
-```
+- My apps: FUTSL, Aqua Local and Treadfront, with dated public screenshots, an enlarged flat screenshot viewer, case studies and verified external links. Treadfront includes only the approved one-sector demo.
+- About: a straight profile sheet beside the bag, with a visible scroll cue.
+- Résumé: a straight clipboard and read-only HTML page with browser Print. The approved wording and one-page A4 print layout are preserved; no PDF download is required or offered.
+- Contact: a phone screen with email, LinkedIn, GitHub and Copy email.
+- Maths notebook: live sunflower-angle, Fibonacci-square and Pascal-row sliders, with tappable drawings. The reading book contains 30 sourced recommendations.
+- Objects open with one click or tap. Hover and keyboard focus reveal their outlines and names. Main navigation stays available without needing to discover objects.
+- Settings contain Coast/Winter, Sunset/Night, Reduce motion and Simple page view. Night settings use dark chrome. The globe changes the season.
 
-Open `http://127.0.0.1:8080`.
+Sports, planting, private project descriptions and the testing demo are not part of the public portfolio. Old activity hashes return to the main scene. `qa-lab/` must remain absent.
 
-The homepage is one real-time 3D studio. Selecting an object walks the camera
-along an aisle, turns toward it, and then opens its own reading surface:
+## Preview
 
-- **Work:** projects appear on the monitor.
-- **Experience:** the notebook is lifted from the coffee table and its page shows
-  experience, capabilities and education.
-- **Resume:** a document folio is lifted from the desk. Its page embeds the approved
-  two-page resume; the wall artwork is decoration.
-- **Contact:** approach the side table, pick up the phone, then tap its screen to
-  reveal the business email, LinkedIn and GitHub links on the glass.
-
-This replaces the earlier photographic angle tour. Geometry, furniture, lighting
-and object positions belong to the same world throughout each journey. The lens
-stays constant; camera translation, turning, occlusion and a subtle walking bob
-create movement. Objects return to their original positions before leaving.
-**Look around** puts a held object down; **Read** picks it up again. This is a
-first-person experience without a visible avatar or animated hands.
-
-The current room uses original procedural models and materials. It establishes
-continuous navigation and physical object interactions; it is not a photoreal
-architectural scene. Custom detailed models and authored PBR materials would be
-needed for a substantially higher level of realism.
-
-Desktop hotspots have translucent markers and reveal names on hover or keyboard
-focus. Touch layouts retain compact names, and the destination dock is always
-available. Drag the overview to look left/right. Room overview, Escape, previous/
-next buttons and the dock provide return paths. Public hash routes, Back/Forward,
-keyboard focus and reader scroll restoration remain available.
-
-Live HTML is projected onto the actual object planes, keeping links, scroll areas
-and the resume iframe usable. Canonical sections move into these surfaces; they
-are never cloned. Hidden anchors preserve public hashes while mounted sections
-use `scene-section-*` IDs, avoiding WebKit fragment re-anchoring. There is no
-second page of duplicate content beneath the enhanced room.
-
-Narrow screens move closer to the monitor's readable centre instead of fitting
-its entire width. The notebook and folio have portrait pages. On short landscape
-screens held objects turn sideways and their reading interface stays upright. PDF and
-standalone resume links remain available when the document needs more space.
-The approved resume facts and print layout are unchanged.
-
-Pause motion immediately completes an interrupted movement and disables subsequent
-travel animation. System reduced motion takes precedence. The renderer draws only
-when the camera, props, viewport or textures change, with a pixel-ratio cap of 1.6;
-there is no continuous idle render loop. WebGL2 is required for the enhanced room.
-If JavaScript, the room module, WebGL initialization or the rendering context fails,
-the ordinary HTML portfolio and standalone resume remain usable. A failed window
-texture leaves the modeled room intact.
-
-The interaction direction is inspired by
-[Epic Sports](https://www.epicsports.football/epic-sports), using original room
-geometry and artwork. No reference-site imagery or branding is included.
-`assets/studio-workspace.webp` supplies the fallback hero and a cropped exterior
-window texture. Earlier `studio-*-angle.webp` files are retained for comparison;
-they no longer drive navigation.
-
-## Renderer provenance
-
-`room.js` imports the locally bundled **Three.js 0.186.1** from
-`assets/vendor/three.module.js`. Its MIT notice is retained in
-`assets/vendor/THREE-LICENSE.txt` and the bundle. The bundle was produced from the
-official `three@0.186.1` npm package with esbuild
-`--bundle --minify --format=esm --legal-comments=inline`, from an entry that re-exports
-`three` plus the same package's `examples/jsm/loaders/GLTFLoader.js`:
-
-```js
-export * from 'three';
-export { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-```
-
-Bundling `build/three.module.js` alone with the same flags reproduces the previous
-vendored file byte for byte; the loader adds about 44 KB and shares the one library.
-No runtime CDN, npm
-installation or build step is needed to preview or publish this static site.
-Three.js is the one runtime library, necessary for real perspective geometry and
-continuous camera movement. No analytics, cookies, database or contact backend.
-
-## Authored contact corner
-
-The phone corner (side table, copper lamp, small and floor plants, bookshelf, sofa) is
-original artwork modelled by `art/studio/contact_zone.py`, a Blender script that builds
-the geometry in the room's exact coordinates, bakes Cycles diffuse lighting (lamp,
-dusk window, ceiling wash, bounce light) into the textures, bakes floor/wall shadow
-decals, and exports `assets/studio/contact-zone.glb`. Regenerate it with Blender 5.2:
+From this directory:
 
 ```powershell
-& "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" -b --factory-startup --python art/studio/contact_zone.py -- <out_dir>
+python scripts/serve.py
 ```
 
-Add `--preview` for two Cycles preview renders, `--fast` for a quick low-sample
-bake, `--gpu` for an available CUDA device, or `--inspect` for mesh counts without
-baking. CPU is the default; copy `<out_dir>/contact-zone.glb` into `assets/studio/`.
-No third-party models or textures are used; materials are procedural Blender nodes. Baked meshes render
-unlit through the room's tone mapping, decals darken the live floor and walls, and
-the copper lamp and phone keep live PBR materials with a one-off room reflection.
-The oak uses irregular stretched noise with microscopic bump rather than repeating
-wave bands. Book bevels and sofa subdivisions are limited to visible detail. The
-GLB is about 1.91 MB; `npm test` enforces a 2,000,000-byte budget and validates its
-binary header. Until the model loads, or if it fails, the procedural stand-ins
-remain. The rest of the room is still procedural and visibly less realistic than this corner.
+Open `http://127.0.0.1:8765/`. The server is fixed to loopback, with persistent connections and a 128-connection queue for parallel module loading. It is visible only on this computer. For a phone test, serve a separate allowlisted public copy on the private LAN; do not expose this entire working folder, its notes or validation output. Stop the phone server after testing.
+
+## Source map
+
+| Area | Sources |
+| --- | --- |
+| Canonical content and plain-page fallback | `index.html`, `styles.css` |
+| Navigation, focus, routes and settings | `world-controller.js`, `world/object-experience.js` |
+| Scene framing and object outlines | `world/concept-world.js`, `world/concept-scene.js`, `world/concept-camera.js`, `world/scene-hotspots.js` |
+| Object artwork and HTML alignment | `world/plate-views.js`, `world/surfaces.js`, `art/outdoor/` manifests |
+| Shared design | `design-tokens.css`, `concept.css`, `world.css`, `resume-chrome.css` |
+| Apps and screenshot viewer | `world-projects.js`, `assets/previews/` |
+| Reading and maths | `room-reading.js`, `world/stations/books.js`, `world/stations/seeds.js`, `world/stations/maths-*.js`, `world/stations/sunflower.js` |
+| Résumé | `resume.html`, `world/resume.js`, `script.js` |
+| Isolated demo | `world/demo.js`, `demo/treadfront/` |
+
+The coast artwork loads first. Winter, night and object close-ups load when requested. Navigation cancels obsolete season requests. The scene stops rendering when idle and respects reduced motion. Rendering failure restores the full conventional portfolio and logs a diagnostic reason locally.
 
 ## Validation
 
 ```powershell
 npm test
-npm run test:studio
+npm run test:privacy
+node scripts/check-resume-one-page.mjs
+npm run test:release:browser
+npm run test:concept
+npm run test:activities
+npm run test:world
+npm run test:surfaces
+npm run test:concept:browser
 ```
 
-Browser checks use development Node Playwright and write ignored screenshots to
-`validation-artifacts/`. Set `PLAYWRIGHT_MODULE` to an external installation's
-`index.mjs` file URL if needed. `STUDIO_BROWSER` chooses `chromium` (default) or
-`webkit`; `STUDIO_BROWSER_EXECUTABLE` can select an existing Chrome executable.
-The suite enables software WebGL for headless Chromium only; the website does not
-set browser flags. Development tooling is not shipped with the site.
+Browser checks use development Playwright. `PLAYWRIGHT_MODULE` may point to an existing installation's `index.mjs` file URL. `STUDIO_BROWSER` selects `chromium` or `webkit`; `STUDIO_BROWSER_EXECUTABLE` optionally selects installed Chrome. `STUDIO_URL` defaults to the local preview above. Clear the executable override when switching to WebKit. Evidence is written to ignored `validation-artifacts/`.
 
-The suite checks actual camera translation with constant FOV, object surfaces,
-phone activation, canonical content, rapid interruptions, routes/history/scroll,
-focus and Escape inside the resume, motion settings, idle rendering, responsive
-layouts, document failure and ordinary fallback after module/WebGL/context failure.
-Inspect its screenshots as well as assertions. Local Chrome and WebKit evidence
-does not establish physical iOS/Android GPU performance or production deployment.
+The public experience has 19 browser suites. Inspect native screenshots as well as assertions at desktop, 390px, 320px and short landscape. Check first-Tab navigation, Escape/focus return, single-tap opening, slider dragging, screenshot viewer, browser printing, errors, interrupted loading and no-JavaScript fallback. A real iPhone/Android pass remains separate from browser emulation.
 
-Run `npm run resume` when `resume.html` changes. PDF generation requires development
-Python Playwright with Chromium and verifies exactly two pages.
+Windows WebKit builds before the fix in build 2371 can omit WebGL artwork from screenshots after a drawing-buffer resize. This also reproduces with a plain red canvas, without portfolio code. Use a matching corrected Playwright/WebKit pair; do not alter the website or weaken visual checks to hide that tool defect. See [the upstream fix](https://github.com/microsoft/playwright/pull/43085).
 
-## GitHub Pages
+## Generated files and provenance
 
-1. Create the public repository `Filjo0/filjo0.github.io`.
-2. Commit these files to the repository's `main` branch.
-3. In repository settings, open **Pages** and choose **Deploy from a branch**.
-4. Select `main` and `/ (root)`.
-5. Confirm `https://filjo0.github.io` serves the site over HTTPS.
+- `resume.html` is the canonical readable and printable résumé. The Print button invokes browser printing; with JavaScript disabled, use the browser menu. `check-resume-one-page.mjs` verifies approved facts, clipping and A4 geometry in both engines, and actual one-page Chromium print output. The former PDF download and exporter are retired. `assets/Philipp_Alimov_Resume.pdf` must remain absent; static and HTTP checks enforce this. Browser-print proofs belong only in ignored validation output. Include the tracked PDF deletion in the next authorized release so its old public address returns 404.
+- Edit the Treadfront source wrapper/core, then run `npm run build:demo`. `ESBUILD_MODULE` may select a development esbuild installation. Preserve its opaque-origin sandbox, MessageChannel validation and one-sector export boundary; never add purchase, save or customer modules.
+- `npm run share:render` produces the 1200×630 social preview. Verify the live social card after publication.
+- `art/README.md` retains renderer/build recipes. Keep source licences and manifests. Three.js 0.186.1 is locally bundled with its MIT notice.
 
-Add a custom domain only after it is registered and the Pages DNS records are configured. Keep relative links so the site works on both the GitHub address and a future custom domain.
+The old room lives only in the ignored `validation-artifacts/legacy-studio/` archive. Retained comparison modes (`?navigation=walk`, `?world=legacy`) and their source/tests are separate from the approved homepage. Do not restore retired room assets to the public root. Shared modules remain where current maths/reading code imports them.
 
-## Public Content Boundary
+## Publication boundary
 
-- Employment, education and project claims must remain supported by the current resume or project repositories.
-- Use the business email on the portfolio contact page and retain the original email on the approved resume. Do not add a personal phone number, home address, credentials or private adviser data.
-- Do not publish private screenshots, production logs, customer data or employer-confidential material.
-- Regenerate the PDF after changing `resume.html`; the generator removes the
-  previous artifact and verifies that the replacement contains two pages.
+The existing site is `https://filjo0.github.io/`. Publication requires the owner's explicit request. Do not create a pull request. Review the precise staged diff, public file list, approved résumé, asset provenance, relative links and tests before a direct release. Keep `tasks/`, `validation-artifacts/`, source download caches and local credentials out of Git and the served release.
+
+Only approved public products and résumé facts belong in this repository, including documentation and tests. The portfolio uses `philalimov.apps@gmail.com`; the approved résumé keeps its existing personal email. No personal phone number, street address or private employer implementation details should be added.

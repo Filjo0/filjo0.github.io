@@ -1,0 +1,96 @@
+{
+  "date": "2026-10-16",
+  "tool": "built-in imagegen",
+  "fictional_places": true,
+  "assets": {
+    "coast": {
+      "path": "assets/outdoor/concept-coast-v2.webp",
+      "source": "exec-2e97e7ac-5715-474d-a078-69aad0d40894.png",
+      "size": [
+        1672,
+        941
+      ],
+      "bytes": 264996,
+      "sha256": "bc435391d3496756f260dcf3cbdf63784774c1132b1c304991ee9c10f035b61c",
+      "role": "Approved composition with one added desk r\u00e9sum\u00e9 clipboard; all other scene elements preserved."
+    },
+    "winter": {
+      "path": "assets/outdoor/concept-winter-v2.webp",
+      "source": "exec-7df5f292-57c7-40d6-bc39-f4746ce1853c.png",
+      "size": [
+        1672,
+        941
+      ],
+      "bytes": 309082,
+      "sha256": "3f04d1b0a4fe368c6eb26d0a11c92292954bee3692826a343ca23df87a91635c",
+      "role": "Approved composition with one added desk r\u00e9sum\u00e9 clipboard; all other scene elements preserved."
+    }
+  },
+  "edit_prompt": "Remove only the visitor, their shadow, and header/footer interface from the owner-approved reference. Preserve the exact camera, layout, architecture, furniture, tabletop objects, dense landscaping, shoreline, materials, colours and lighting. Fill removed areas with matching scenery. Opaque background. No redesign.",
+  "closeup": {
+    "source": "01a1142f-b394-7f31-ad9a-04bb49066c23/exec-9373cc30-0d96-4f16-ab8d-2b5cb9a787eb.png",
+    "path": "assets/outdoor/concept-desk-closeup-v1.webp",
+    "bytes": 328112,
+    "sha256": "0d7cc08c6e019b2684258eec74ac54f93702913883c88c3e19711fbc9ea3555e",
+    "role": "Linked sitting-at-desk reading view"
+  },
+  "winter_closeup": {
+    "source": "01a1142f-b394-7f31-ad9a-04bb49066c23/exec-93e70e43-1c16-44c0-afb6-71a5af898c5f.png",
+    "path": "assets/outdoor/concept-winter-desk-closeup-v1.webp",
+    "bytes": 360010,
+    "sha256": "d5b0e1bae441ee8af2d99e40ceaa6bec89a0292aefc7687d3378be3443434f19"
+  },
+  "prompts": "art/outdoor/concept-prompts.json",
+  "previous_assets": {
+    "coast": {
+      "path": "assets/outdoor/concept-coast-v1.webp",
+      "source": "01a1142f-b394-7f31-ad9a-04bb49066c23/exec-b3f57820-2627-418e-985e-b219f70eed2e.png",
+      "size": [
+        1672,
+        941
+      ],
+      "bytes": 539166,
+      "sha256": "f1982ea893fda43eb50afbce2c4dd1286ca9fb71e5c6ae27193db3018cc2e219",
+      "role": "Approved scene edited only to remove visitor and interface; camera-matched rendered environment."
+    },
+    "winter": {
+      "path": "assets/outdoor/concept-winter-v1.webp",
+      "source": "01a1142f-b394-7f31-ad9a-04bb49066c23/exec-a06abc6b-0608-465e-ba10-6311e781775b.png",
+      "size": [
+        1672,
+        941
+      ],
+      "bytes": 606098,
+      "sha256": "436b6aa21f1aa5fef1342c3d930e7e53735901d1565ee40866a98eddfc2a2141",
+      "role": "Approved scene edited only to remove visitor and interface; camera-matched rendered environment."
+    }
+  },
+  "revision_prompts": "art/outdoor/redesign-stage2-prompts.json",
+  "surfboard_previous_asset": {
+    "path": "assets/outdoor/concept-coast-v2.webp",
+    "source": "exec-2e97e7ac-5715-474d-a078-69aad0d40894.png",
+    "size": [
+      1672,
+      941
+    ],
+    "bytes": 264996,
+    "sha256": "bc435391d3496756f260dcf3cbdf63784774c1132b1c304991ee9c10f035b61c",
+    "role": "Approved composition with one added desk r\u00e9sum\u00e9 clipboard; all other scene elements preserved."
+  },
+  "surfboard_prompts": "art/outdoor/surfboard-prompts.json",
+  "retired_surfboard_asset": {
+    "path": "assets/outdoor/concept-coast-v3.webp",
+    "source": "exec-e503a2cc-24dc-4532-a42b-6d924fb3b5ef.png",
+    "size": [
+      1672,
+      941
+    ],
+    "bytes": 301594,
+    "sha256": "fcbc6c43e7a67994f88733054a2151f4e949273497d38c1e5882d351a031ea81",
+    "role": "Approved pavilion with a decorative surfboard; no surfing activity."
+  },
+  "current_revision": {
+    "date": "2026-10-19",
+    "change": "Restored the approved coastal plate without the surfboard, following simplification review."
+  }
+}

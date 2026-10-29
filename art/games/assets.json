@@ -1,0 +1,95 @@
+{
+  "verified": "2026-10-18",
+  "runtime_budget_bytes": 1500000,
+  "character": {
+    "author": "Quaternius",
+    "source": "https://opengameart.org/content/universal-animation-library",
+    "official_source": "https://quaternius.com/packs/universalanimationlibrary.html",
+    "licence": "CC0 1.0",
+    "archive": "https://opengameart.org/sites/default/files/universal_animation_librarystandard.zip",
+    "archive_sha256": "18ff1a7215f4852b320203e8aaf02a1578b5c8eef9027fbaedfcedc7b85a3ac2",
+    "rig_sha256": "1b7bf67866360665426bb99e4c71bd619f19b408453c24e30f0c3071601eee5c",
+    "retarget": "Weighted body skeleton fitted to existing licensed MakeHuman human and clothing; original idle, kick-height poses and miss.",
+    "human_source": "art/outdoor/assets.json#assets/makehuman_base",
+    "human_asset": "assets/outdoor/person.glb",
+    "human_sha256": "0d49ee347b41ea7dbc04ce41c15043ae071a6cf2b374378949719fd44c0a8f97"
+  },
+  "kit": {
+    "source": "CC0 MakeHuman male_casualsuit04 adapted to jersey/shorts; original socks",
+    "licence_source": "https://static.makehumancommunity.org/assets/assetpacks/makehuman_system_assets.html",
+    "textures": {
+      "source": "https://files2.makehumancommunity.org/asset_packs/makehuman_system_assets/makehuman_system_assets_cc0.zip",
+      "licence": "CC0 1.0",
+      "files": {
+        "skins/young_caucasian_male/young_lightskinned_male_diffuse.png": {
+          "sha256": "862a26e335e958b70534cb5f0d7c47ef30ab148a56c42b3e9da969cf76f12963",
+          "bytes": 3693828
+        },
+        "hair/short01/short01_diffuse.png": {
+          "sha256": "f34a0957184e3d1e911ed59245f874f8d4843f61ee44ff49f43edb4be0196949",
+          "bytes": 2354146
+        }
+      }
+    },
+    "materials": "Textured skin with subsurface and micro-roughness; alpha hair; original knit fabrics and gum-soled indoor trainers"
+  },
+  "lighting": {
+    "sun": "Back-left warm directional light",
+    "fill": "Soft cool sky and weak warm court bounce",
+    "shadow": "Per-pose Cycles shadow catcher, separate transparent atlas"
+  },
+  "court": {
+    "tool": "built-in imagegen",
+    "reference": "assets/outdoor/concept-coast-v2.webp",
+    "source": "exec-9e05d33f-25fc-42c4-b366-06ce50a0be2f.png",
+    "prompt_file": "art/games/juggling-court-prompt.txt"
+  },
+  "render": {
+    "blender": "5.2.2 LTS",
+    "engine": "Cycles",
+    "samples": 32,
+    "gpu": "OptiX",
+    "frame_size": [
+      480,
+      720
+    ],
+    "camera": [
+      3.799999952316284,
+      -7.0,
+      1.649999976158142
+    ],
+    "anchors": {
+      "source": "evaluated shoe mesh vertices",
+      "toe_vertex": 1380,
+      "plant_vertex": 60
+    },
+    "scripts": [
+      "art/games/futsal_kit.py",
+      "art/games/render_juggling.py",
+      "art/games/render_ball.py",
+      "art/games/pack_juggling.py"
+    ]
+  },
+  "runtime_files": {
+    "juggling-court-v1.webp": {
+      "bytes": 336768,
+      "sha256": "4e84c3d235f3037c7a96fd9f14ae420d633e6c9ced1e3994f26e9b00dbd63475"
+    },
+    "juggling-player-v2.webp": {
+      "bytes": 375304,
+      "sha256": "0b23f5636660ed1eeaecb75cacdb8bd70e299f2e6015eef4d9e084e60ed2735f"
+    },
+    "juggling-ball-v2.webp": {
+      "bytes": 2222,
+      "sha256": "f619dcee3ba276fa9015f3d972165cda8b3770ac945e3dda3534b2c18a6dc8ce"
+    },
+    "juggling-shadow-v2.webp": {
+      "bytes": 235058,
+      "sha256": "499159fad64b803c5e761523acb7139545261f13dd2726b7d028f9f59b2df949"
+    },
+    "juggling-v2.json": {
+      "bytes": 10625,
+      "sha256": "1c0575abe5f18cb024b506d7aa3ec0094fc04bf2255de8d78552a5a281381660"
+    }
+  }
+}

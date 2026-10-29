@@ -1,20 +1,16 @@
 :root {
   color-scheme: light;
-  --ink: #141817;
-  --muted: #5e6864;
-  --paper: #ffffff;
-  --soft: #f1f3f1;
-  --line: #d7ddd9;
-  --dark: #111413;
-  --dark-muted: #c1c8c4;
-  --orange: #ef6a3a;
-  --orange-dark: #bd4320;
-  --blue: #2463eb;
-  --blue-dark: #1744a6;
-  --focus: #f4b728;
+  --ink: var(--color-ink);
+  --muted: var(--color-ink-muted);
+  --paper: var(--color-paper);
+  --soft: var(--color-green-soft);
+  --line: var(--color-line);
+  --dark: var(--color-green-deep);
+  --dark-muted: var(--color-green-soft);
+  --focus: var(--color-copper);
   --shell: 1180px;
   --header-height: 68px;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-ui);
   font-synthesis: none;
 }
 
@@ -32,7 +28,7 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-size: 16px;
+  font-size: var(--text-base);
   line-height: 1.6;
   text-rendering: optimizeLegibility;
 }
@@ -95,9 +91,9 @@ select {
   top: 0;
   z-index: 100;
   height: var(--header-height);
-  background: rgba(17, 20, 19, 0.96);
-  color: #ffffff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  background: color-mix(in srgb,var(--color-green-deep) 96%,transparent);
+  color: var(--color-paper);
+  border-bottom: 1px solid color-mix(in srgb,var(--color-paper) 16%,transparent);
 }
 
 .site-nav {
@@ -114,10 +110,10 @@ select {
   width: 42px;
   height: 42px;
   flex: 0 0 42px;
-  background: var(--orange);
-  color: #111413;
+  background: var(--color-green);
+  color: var(--color-paper);
   text-decoration: none;
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: 950;
   border-radius: 4px;
 }
@@ -132,14 +128,14 @@ select {
   min-height: 44px;
   display: inline-flex;
   align-items: center;
-  color: #f5f7f6;
+  color: var(--color-paper);
   text-decoration: none;
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: 700;
 }
 
 .site-links a:hover {
-  color: #ffffff;
+  color: var(--color-paper);
   text-decoration: underline;
 }
 
@@ -147,12 +143,12 @@ select {
   display: none;
   min-width: 44px;
   min-height: 44px;
-  border: 1px solid rgba(255, 255, 255, 0.34);
+  border: 1px solid color-mix(in srgb,var(--color-paper) 34%,transparent);
   border-radius: 4px;
   background: transparent;
-  color: #ffffff;
+  color: var(--color-paper);
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: 800;
 }
 
@@ -164,7 +160,7 @@ select {
   isolation: isolate;
   display: flex;
   align-items: center;
-  background: #f3f0e9;
+  background: var(--color-paper);
   color: var(--ink);
 }
 
@@ -184,8 +180,8 @@ select {
 
 .eyebrow {
   margin: 0 0 12px;
-  color: var(--orange-dark);
-  font-size: 12px;
+  color: var(--color-copper);
+  font-size: var(--text-xs);
   line-height: 1.4;
   font-weight: 900;
   text-transform: uppercase;
@@ -194,7 +190,7 @@ select {
 .hero h1 {
   margin: 0;
   max-width: 610px;
-  font-size: 68px;
+  font-size: var(--text-hero);
   line-height: 1.02;
   font-weight: 950;
 }
@@ -202,7 +198,7 @@ select {
 .hero-role {
   margin: 16px 0 0;
   max-width: 590px;
-  font-size: 27px;
+  font-size: var(--text-heading);
   line-height: 1.28;
   font-weight: 750;
 }
@@ -210,8 +206,8 @@ select {
 .hero-summary {
   max-width: 570px;
   margin: 22px 0 0;
-  color: #46504c;
-  font-size: 18px;
+  color: var(--color-ink-muted);
+  font-size: var(--text-lg);
   line-height: 1.65;
 }
 
@@ -231,38 +227,39 @@ select {
   justify-content: center;
   padding: 11px 18px;
   border: 1px solid transparent;
-  border-radius: 5px;
+  border-radius: var(--radius-control);
   text-decoration: none;
-  font-size: 14px;
-  font-weight: 850;
+  font-size: var(--text-sm);
+  font-weight: 600;
 }
 
 .button-primary {
-  background: var(--orange);
-  color: #111413;
+  background: var(--color-green);
+  color: var(--color-paper);
 }
 
 .button-primary:hover {
-  background: #ff8559;
+  background: var(--color-green-deep);
 }
 
 .button-quiet {
-  border-color: #7c8581;
+  border-width:1.5px;
+  border-color: var(--color-green);
   color: var(--ink);
-  background: rgba(255, 255, 255, 0.72);
+  background: color-mix(in srgb,var(--color-paper) 72%,transparent);
 }
 
 .button-quiet:hover {
   border-color: var(--ink);
-  background: #ffffff;
+  background: var(--color-paper);
 }
 
 .text-action {
   min-height: 44px;
   display: inline-flex;
   align-items: center;
-  color: var(--blue-dark);
-  font-size: 14px;
+  color: var(--color-green);
+  font-size: var(--text-sm);
   font-weight: 850;
 }
 
@@ -293,14 +290,14 @@ select {
 }
 
 .proof-grid strong {
-  font-size: 15px;
+  font-size: var(--text-base);
   line-height: 1.4;
 }
 
 .proof-grid span {
   margin-top: 8px;
   color: var(--muted);
-  font-size: 14px;
+  font-size: var(--text-sm);
   line-height: 1.55;
 }
 
@@ -321,7 +318,7 @@ select {
 .contact h2,
 .education-grid h2 {
   margin: 0;
-  font-size: 42px;
+  font-size: var(--text-hero);
   line-height: 1.13;
   font-weight: 920;
 }
@@ -329,49 +326,49 @@ select {
 .section-heading > p:last-child {
   margin: 18px 0 0;
   color: var(--muted);
-  font-size: 17px;
+  font-size: var(--text-lg);
   line-height: 1.7;
 }
 
 .project-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   border-block: 1px solid var(--line);
 }
 
 .project {
   min-width: 0;
-  padding: 52px 54px 54px 0;
+  padding: 40px 24px 40px 0;
 }
 
 .project + .project {
-  padding-inline: 54px 0;
+  padding-inline: 24px;
   border-left: 1px solid var(--line);
 }
 
 .project-index {
   margin-bottom: 20px;
-  color: var(--orange-dark);
-  font-size: 13px;
+  color: var(--color-copper);
+  font-size: var(--text-sm);
   font-weight: 900;
 }
 
 .project-type {
   margin: 0 0 8px;
-  color: var(--blue-dark);
-  font-size: 13px;
+  color: var(--color-green);
+  font-size: var(--text-sm);
   font-weight: 850;
 }
 
 .project h3 {
   margin: 0;
-  font-size: 34px;
+  font-size: var(--text-display);
   line-height: 1.15;
 }
 
 .project-lede {
   margin: 18px 0 0;
-  font-size: 18px;
+  font-size: var(--text-lg);
   line-height: 1.55;
   font-weight: 650;
 }
@@ -395,14 +392,14 @@ select {
 }
 
 .project-facts dt {
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 850;
 }
 
 .project-facts dd {
   margin: 0;
   color: var(--muted);
-  font-size: 14px;
+  font-size: var(--text-sm);
 }
 
 .project-links {
@@ -416,8 +413,8 @@ select {
   min-height: 44px;
   display: inline-flex;
   align-items: center;
-  color: var(--blue-dark);
-  font-size: 14px;
+  color: var(--color-green);
+  font-size: var(--text-sm);
   font-weight: 850;
 }
 
@@ -439,12 +436,12 @@ select {
 }
 
 .timeline {
-  border-top: 1px solid #cbd2ce;
+  border-top: 1px solid var(--color-line);
 }
 
 .timeline-entry {
   padding: 30px 0 34px;
-  border-bottom: 1px solid #cbd2ce;
+  border-bottom: 1px solid var(--color-line);
 }
 
 .timeline-meta {
@@ -452,18 +449,18 @@ select {
   justify-content: space-between;
   gap: 16px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 700;
 }
 
 .timeline-entry h3 {
   margin: 8px 0 0;
-  font-size: 22px;
+  font-size: var(--text-xl);
 }
 
 .timeline-entry p {
   margin: 12px 0 0;
-  color: #4f5955;
+  color: var(--color-ink-muted);
 }
 
 .capability-grid {
@@ -485,7 +482,7 @@ select {
 
 .capability-grid h3 {
   margin: 0;
-  font-size: 22px;
+  font-size: var(--text-xl);
 }
 
 .capability-grid p {
@@ -495,15 +492,15 @@ select {
 
 .capability-grid .capability-tools {
   color: var(--ink);
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 750;
   line-height: 1.8;
 }
 
 .section-education {
   padding-block: 86px;
-  background: #edf3ff;
-  border-block: 1px solid #c9d7f6;
+  background: var(--color-green-soft);
+  border-block: 1px solid var(--color-line);
 }
 
 .education-grid {
@@ -514,7 +511,7 @@ select {
 }
 
 .education-list {
-  border-top: 1px solid #b9c9eb;
+  border-top: 1px solid var(--color-line);
 }
 
 .education-list p {
@@ -523,18 +520,18 @@ select {
   gap: 24px;
   margin: 0;
   padding: 17px 0;
-  border-bottom: 1px solid #b9c9eb;
+  border-bottom: 1px solid var(--color-line);
 }
 
 .education-list span {
-  color: #53617d;
-  font-size: 14px;
+  color: var(--color-ink-muted);
+  font-size: var(--text-sm);
 }
 
 .contact {
   padding-block: 100px;
   background: var(--dark);
-  color: #ffffff;
+  color: var(--color-paper);
 }
 
 .contact-inner {
@@ -552,15 +549,15 @@ select {
 
 .site-footer {
   padding-block: 26px;
-  background: #090b0a;
-  color: #aeb7b2;
+  background: var(--color-green-deep);
+  color: var(--color-green-soft);
 }
 
 .footer-inner {
   display: flex;
   justify-content: space-between;
   gap: 28px;
-  font-size: 13px;
+  font-size: var(--text-sm);
 }
 
 .footer-inner p {
@@ -569,7 +566,7 @@ select {
 
 /* Resume screen and print */
 .resume-page {
-  background: #e7ebe8;
+  background: var(--color-green-soft);
 }
 
 .resume-toolbar {
@@ -583,7 +580,7 @@ select {
   gap: 20px;
   padding: 8px max(20px, calc((100% - 900px) / 2));
   background: var(--dark);
-  color: #ffffff;
+  color: var(--color-paper);
 }
 
 .resume-toolbar > a,
@@ -593,9 +590,9 @@ select {
   display: inline-flex;
   align-items: center;
   padding: 8px 12px;
-  color: #ffffff;
+  color: var(--color-paper);
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.38);
+  border: 1px solid color-mix(in srgb,var(--color-paper) 38%,transparent);
   border-radius: 4px;
   text-decoration: none;
   font-size: 13px;
@@ -618,9 +615,9 @@ select {
   min-height: 297mm;
   margin: 0 auto 24px;
   padding: 15mm 16mm 13mm;
-  background: #ffffff;
-  box-shadow: 0 12px 44px rgba(30, 38, 34, 0.16);
-  color: #1c2320;
+  background: var(--color-paper);
+  box-shadow: 0 12px 44px color-mix(in srgb,var(--color-ink) 16%,transparent);
+  color: var(--color-ink);
   font-family: Arial, Helvetica, sans-serif;
   font-size: 10.2pt;
   line-height: 1.42;
@@ -631,7 +628,7 @@ select {
   grid-template-columns: minmax(0, 1.35fr) minmax(210px, 0.65fr);
   gap: 30px;
   padding-bottom: 7mm;
-  border-bottom: 2px solid #1c2320;
+  border-bottom: 2px solid var(--color-ink);
 }
 
 .resume-identity h1 {
@@ -648,7 +645,7 @@ select {
 
 .resume-focus {
   margin: 2mm 0 0;
-  color: #4c5853;
+  color: var(--color-ink-muted);
   font-size: 9.4pt;
   font-weight: 700;
 }
@@ -663,7 +660,7 @@ select {
 
 .resume-identity a,
 .resume-sheet a {
-  color: #1649ad;
+  color: var(--color-green);
 }
 
 .resume-section {
@@ -673,8 +670,8 @@ select {
 .resume-section h2 {
   margin: 0 0 3mm;
   padding-bottom: 1.5mm;
-  border-bottom: 1px solid #b6c0bb;
-  color: #b23f1e;
+  border-bottom: 1px solid var(--color-line);
+  color: var(--color-copper);
   font-size: 11pt;
   line-height: 1.2;
   text-transform: uppercase;
@@ -697,7 +694,7 @@ select {
 
 .resume-skill-grid span {
   margin-top: 1mm;
-  color: #4c5853;
+  color: var(--color-ink-muted);
   font-size: 9.1pt;
 }
 
@@ -719,13 +716,13 @@ select {
 
 .resume-role header p {
   margin-top: 0.6mm;
-  color: #4c5853;
+  color: var(--color-ink-muted);
   font-weight: 700;
 }
 
 .resume-role time {
   flex: 0 0 auto;
-  color: #4c5853;
+  color: var(--color-ink-muted);
   font-size: 9.1pt;
   font-weight: 700;
 }
@@ -761,7 +758,7 @@ select {
 }
 
 .resume-education span {
-  color: #4c5853;
+  color: var(--color-ink-muted);
   font-size: 9.2pt;
 }
 
@@ -780,7 +777,7 @@ select {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 9mm;
   padding-top: 4mm;
-  border-top: 1px solid #b6c0bb;
+  border-top: 1px solid var(--color-line);
 }
 
 @media (max-width: 900px) {
@@ -789,11 +786,11 @@ select {
   }
 
   .hero h1 {
-    font-size: 54px;
+    font-size: var(--text-hero);
   }
 
   .hero-role {
-    font-size: 24px;
+    font-size: var(--text-heading);
   }
 
   .project-grid {
@@ -855,7 +852,7 @@ select {
     gap: 0;
     padding: 8px 14px 16px;
     background: var(--dark);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+    border-bottom: 1px solid color-mix(in srgb,var(--color-paper) 22%,transparent);
   }
 
   .site-links[data-open="true"] {
@@ -865,7 +862,7 @@ select {
   .site-links a {
     min-height: 52px;
     padding-inline: 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    border-bottom: 1px solid color-mix(in srgb,var(--color-paper) 14%,transparent);
   }
 
   .hero {
@@ -878,16 +875,16 @@ select {
   }
 
   .hero h1 {
-    font-size: 44px;
+    font-size: var(--text-hero);
     line-height: 1.04;
   }
 
   .hero-role {
-    font-size: 22px;
+    font-size: var(--text-xl);
   }
 
   .hero-summary {
-    font-size: 16px;
+    font-size: var(--text-base);
   }
 
   .hero-actions,
@@ -930,7 +927,7 @@ select {
   .section-heading h2,
   .contact h2,
   .education-grid h2 {
-    font-size: 34px;
+    font-size: var(--text-display);
   }
 
   .project {
@@ -938,11 +935,11 @@ select {
   }
 
   .project h3 {
-    font-size: 32px;
+    font-size: var(--text-display);
   }
 
   .project-lede {
-    font-size: 18px;
+    font-size: var(--text-lg);
   }
 
   .project-facts div {
@@ -1070,7 +1067,7 @@ select {
 
 @media print {
   body.resume-page {
-    background: #ffffff;
+    background: var(--color-paper);
   }
 
   .resume-toolbar,
@@ -1100,7 +1097,26 @@ select {
   }
 
   .resume-sheet a {
-    color: #1649ad;
+    color: var(--color-green);
     text-decoration: none;
   }
 }
+
+/* Experience wording is copied verbatim from the approved résumé. */
+.timeline-entry ul {margin:10px 0 0;padding-left:22px;}
+.timeline-entry li {margin:0 0 8px;line-height:1.55;}
+
+/* Shared D2 typography and controls. D3 owns the page surfaces and grid. */
+h1,h2,h3 {font-family:var(--font-reading);}
+.button {font-family:var(--font-ui);font-size:var(--text-ui);font-weight:600;min-height:var(--control-min);}
+.button-quiet {color:var(--color-green);background:transparent;}
+.button-quiet:hover {background:var(--color-green-soft);border-color:var(--color-green);}
+.text-action {color:var(--color-green);text-decoration:underline;text-underline-offset:3px;}
+
+/* Inverse controls retain a clear boundary on the green contact band. */
+.contact .button-primary {background:var(--color-paper);color:var(--color-green-deep);}
+.contact .button-primary:hover {background:var(--color-green-soft);}
+.contact .text-action {color:var(--color-paper);}
+.contact .eyebrow {color:var(--color-green-soft);}
+.site-footer {border-top:1px solid color-mix(in srgb,var(--color-paper) 20%,transparent);}
+.contact :is(a,button):focus-visible {outline-color:var(--color-paper);}

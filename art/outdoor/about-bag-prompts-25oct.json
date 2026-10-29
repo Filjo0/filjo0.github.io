@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-25",
+  "tool": "built-in imagegen",
+  "references": [
+    "assets/outdoor/concept-about-closeup-v2.webp",
+    "assets/outdoor/concept-coast-v2.webp",
+    "assets/outdoor/concept-resume-closeup-v2.webp"
+  ],
+  "source": "C:\\Users\\filjo\\.codex\\generated_images\\01a1142f-b394-7f31-ad9a-04bb49066c23\\exec-1caa2e59-7907-46c7-9976-f4f8a4ef88c0.png",
+  "output": "assets/outdoor/concept-about-closeup-v3.webp",
+  "conversion": "RGB WebP, quality 84, method 6; original dimensions retained; no crop, warp or retouch.",
+  "prompt": "Create a replacement About close-up for this portfolio. Use the first reference for the actual open black canvas/leather duffel bag and the second/third for the approved warm coastal pavilion, honey timber and sunset lighting. Make a polished realistic painterly still life, widescreen 16:9, seen from a TRUE ORTHOGRAPHIC TOP-DOWN camera. A clearly recognizable open black duffel with leather handles and visible zipper fills the left third. To its right lies one large, clean blank ivory rectangular profile sheet on the timber, as if taken out of the bag. CRITICAL: the paper is perfectly square to the image frame: top and bottom EXACTLY HORIZONTAL, both side edges EXACTLY VERTICAL. Absolutely NO perspective keystone, tilt, diagonal edges, curled or folded paper, or overlapping straps on the reading area. All four paper corners are visible. The paper occupies approximately x=34% to93% of image width and y=7% to93% of image height, a single simple blank ivory rectangle with subtle paper texture and soft shadow only. The bag remains clearly visible next to it. Keep both objects composed together, the bag may extend just beyond the left edge; paper must be complete. Timber grain and warm raking light match the clipboard reference. Peripheral coastal greenery and a little linen are fine but keep the scene quiet and realistic. No horizon is needed in this top-down close-up. NO printed text, letters, lines, pictures, controls, borders or UI on the sheet: live web text will be overlaid later. Generate the finished artwork, not a mock-up of a browser. Preserve the beautiful material/light detail of the reference while strictly correcting the sheet geometry.",
+  "paper_corners_native_pixels": [
+    [
+      655,
+      85
+    ],
+    [
+      1431,
+      85
+    ],
+    [
+      1437,
+      835
+    ],
+    [
+      655,
+      835
+    ]
+  ],
+  "measurement": "Visual native-resolution edge locations; maximum edge deviation approximately 0.46 degrees. Runtime reading plane is a true rectangle inside all four edges."
+}

@@ -1,0 +1,353 @@
+* {
+  box-sizing:border-box
+}
+body {
+  margin:0;
+  background:var(--color-paper);
+  color:var(--color-ink);
+  font:14px/1.4 var(--font-ui)
+}
+header {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  border-bottom:1px solid var(--color-line)
+}
+header span {
+  font-size:11px;
+  flex:1
+}
+main {
+  max-width:460px;
+  margin:auto;
+  padding:8px 12px
+}
+p {
+  margin:4px 0 8px;
+  font-size:12px
+}
+button {
+  min-width:44px;
+  min-height:44px;
+  background:var(--color-green);
+  color:var(--color-paper);
+  border:1px solid var(--color-green);
+  border-radius:7px;
+  font:600 13px var(--font-ui);
+  cursor:pointer
+}
+button:focus-visible,.arena:focus-visible {
+  outline:3px solid var(--color-copper);
+  outline-offset:2px
+}
+button[aria-pressed=true] {
+  background:var(--color-green-deep)
+}
+button:disabled {
+  opacity:.5
+}
+.arena {
+  position:relative;
+  height:410px;
+  max-height:calc(100dvh - 240px);
+  min-height:180px;
+  background:#2c382b;
+  touch-action:none
+}
+.arena canvas {
+  display:block;
+  width:100%;
+  height:100%
+}
+.start {
+  position:absolute;
+  inset:0;
+  display:grid;
+  align-content:center;
+  justify-items:center;
+  background:color-mix(in srgb,var(--color-paper) 94%,transparent);
+  padding:20px;
+  gap:12px;
+  text-align:center
+}
+.start p {
+  font-size:14px;
+  line-height:1.7
+}
+.start[hidden] {
+  display:none
+}
+.hud {
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  padding:8px 0
+}
+.controls {
+  display:flex;
+  gap:16px;
+  justify-content:space-between
+}
+.dpad {
+  display:grid;
+  grid-template-columns:repeat(3,44px);
+  gap:4px
+}
+.dpad [data-direction=up] {
+  grid-column:2
+}
+.dpad [data-direction=left] {
+  grid-column:1;
+  grid-row:2
+}
+.dpad [data-direction=down] {
+  grid-column:2;
+  grid-row:2
+}
+.dpad [data-direction=right] {
+  grid-column:3;
+  grid-row:2
+}
+.commands {
+  display:grid;
+  gap:4px;
+  flex:1
+}
+.commands>div {
+  display:flex;
+  gap:4px
+}
+.commands>div button {
+  flex:1
+}
+.note {
+  font-size:10px;
+  color:var(--color-ink-muted);
+  margin-top:8px
+}
+@media(max-height:480px) {
+  header {
+  padding:4px 8px
+}
+.arena {
+  min-height:150px;
+  height:240px;
+  max-height:none
+}
+.controls {
+  margin-bottom:8px
+}
+
+}
+
+header h1 {
+  margin:0;
+  font-size:17px;
+  line-height:1.2
+}
+
+
+.skip-link {
+  position:absolute;
+  left:8px;
+  top:-80px;
+  z-index:5;
+  padding:10px;
+  background:var(--color-green);
+  color:var(--color-paper)
+}
+.skip-link:focus {
+  top:8px
+}
+
+
+/* The embedded demo owns its viewport;
+   no nested scrolling on phones. */
+html,body  {
+   height:100%;
+
+}
+
+body  {
+   display:flex;
+   flex-direction:column;
+   overflow:hidden;
+
+}
+
+header  {
+   flex:none;
+
+}
+
+main  {
+   display:flex;
+   flex-direction:column;
+   flex:1;
+   min-height:0;
+   width:100%;
+
+}
+
+.arena  {
+   flex:1;
+   height:auto;
+   min-height:160px;
+   max-height:none;
+
+}
+
+.start  {
+   padding:8px;
+   gap:8px;
+
+}
+
+.start p  {
+   font-size:13px;
+   line-height:1.4;
+
+}
+
+.hud,.controls,.note  {
+   flex:none;
+
+}
+
+@media(max-height:480px)  {
+
+  main  {
+   display:grid;
+   grid-template-columns:minmax(0,1fr) 240px;
+   grid-template-rows:auto minmax(0,1fr) auto;
+
+    gap:4px 12px;
+   max-width:900px;
+
+}
+
+  [data-status]  {
+   grid-column:1 / -1;
+
+}
+
+  .arena  {
+   grid-column:1;
+   grid-row:2;
+   min-height:150px;
+   height:100%;
+
+}
+
+  .controls  {
+   grid-column:2;
+   grid-row:2;
+   align-self:center;
+
+}
+
+  .hud  {
+   grid-column:1;
+   grid-row:3;
+   padding:2px 0;
+
+}
+
+  .note  {
+   grid-column:2;
+   grid-row:3;
+   margin:0;
+
+}
+
+
+}
+
+
+html[data-embedded="true"] header  {
+   display:none;
+
+}
+
+
+@media(max-height:480px) {
+  .controls { gap:8px; }
+  .commands { min-width:0; }
+  .commands button { white-space:normal; }
+}
+
+/* Keep the battlefield visible before starting; instructions are a top banner. */
+.start {inset:8px 8px auto;display:flex;align-items:center;justify-content:space-between;background:color-mix(in srgb,var(--color-paper) 94%,transparent);
+  color:var(--color-ink);padding:10px 12px;text-align:left;border-radius:7px;}
+.start p {font-size:12px;margin:0;line-height:1.4;}
+main {max-width:780px;}
+@media(min-width:460px) {
+  main {display:grid;grid-template-columns:minmax(0,1fr) 190px;grid-template-rows:auto minmax(0,1fr) auto;gap:4px 12px;}
+  [data-status] {grid-column:1/-1;}
+  .arena {grid-column:1;grid-row:2;min-height:100px;height:100%;}
+  .controls {grid-column:2;grid-row:2;align-self:center;gap:8px;}
+  .hud {grid-column:1;grid-row:3;}
+  .note {grid-column:2;grid-row:3;}
+}
+@media(max-width:459px) {
+  .arena {min-height:105px;}
+  main {padding:6px 8px;}
+  .start {gap:8px;}
+  .start p {font-size:11px;}
+  .note {display:none;}
+  .controls {gap:8px;}
+}
+
+@media(max-width:459px) {
+  main {display:flex;flex-direction:column;gap:0;}
+  .arena {width:100%;flex:1;min-height:105px;}
+  .hud {display:flex;justify-content:space-between;gap:8px;}
+  .controls {width:100%;align-self:auto;flex:none;}
+}
+
+@media(min-width:460px) and (max-width:759px) {
+  .controls {gap:6px;}
+  .dpad {grid-template-columns:repeat(2,44px);}
+  .dpad [data-direction=up] {grid-column:1;grid-row:1;}
+  .dpad [data-direction=down] {grid-column:2;grid-row:1;}
+  .dpad [data-direction=left] {grid-column:1;grid-row:2;}
+  .dpad [data-direction=right] {grid-column:2;grid-row:2;}
+}
+@media(min-width:760px) {
+  main {grid-template-columns:minmax(0,1fr) 250px;}
+  .controls {gap:6px;}
+}
+
+/* A handheld game owns its viewport; only the start/result banner carries instructions. */
+html[data-handheld="true"] main {display:flex;flex-direction:column;max-width:none;padding:6px 8px;gap:0;}
+html[data-handheld="true"] [data-status] {
+  position:absolute;width:1px;height:1px;margin:0;padding:0;overflow:hidden;clip-path:inset(50%);
+}
+html[data-handheld="true"] .arena {flex:1;width:100%;min-height:0;}
+html[data-handheld="true"] .hud {flex:none;padding:8px 0;}
+html[data-handheld="true"] .controls {width:100%;flex:none;align-self:auto;gap:8px;padding-bottom:4px;}
+html[data-handheld="true"] .controls[data-playing="false"] > :not([data-start]) {display:none;}
+html[data-handheld="true"] .controls [data-start] {flex:1;min-height:48px;}
+html[data-handheld="true"] .controls [data-start][hidden] {display:none;}
+html[data-handheld="true"] .note {display:none;}
+html[data-handheld="true"] .start {display:block;}
+html[data-handheld="true"] .start[hidden] {display:none;}
+html[data-handheld="true"] .start p {font-size:14px;line-height:1.5;text-align:center;}
+html[data-handheld="true"] .dpad {grid-template-columns:repeat(3,44px);gap:4px;}
+html[data-handheld="true"] .dpad [data-direction="up"] {grid-column:2;grid-row:1;}
+html[data-handheld="true"] .dpad [data-direction="left"] {grid-column:1;grid-row:2;}
+html[data-handheld="true"] .dpad [data-direction="down"] {grid-column:2;grid-row:2;}
+html[data-handheld="true"] .dpad [data-direction="right"] {grid-column:3;grid-row:2;}
+@media(max-height:500px) and (min-width:600px) {
+  html[data-handheld="true"] .controls {align-items:center;}
+  html[data-handheld="true"] .dpad {grid-template-columns:repeat(4,44px);}
+  html[data-handheld="true"] .dpad [data-direction] {grid-column:auto;grid-row:auto;}
+  html[data-handheld="true"] .dpad [data-direction="left"] {order:1;}
+  html[data-handheld="true"] .dpad [data-direction="up"] {order:2;}
+  html[data-handheld="true"] .dpad [data-direction="down"] {order:3;}
+  html[data-handheld="true"] .dpad [data-direction="right"] {order:4;}
+  html[data-handheld="true"] .commands {display:flex;}
+  html[data-handheld="true"] .commands > button {flex:1;padding:8px;}
+  html[data-handheld="true"] .start p {font-size:12px;line-height:1.3;}
+}

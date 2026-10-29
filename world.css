@@ -1,0 +1,1105 @@
+/* Readable surfaces sit around the world;
+   controls never rely on hover. */
+:root  {
+   --park-ink:var(--color-ink);
+   --park-paper:var(--color-paper);
+   --park-line:var(--color-line);
+
+}
+
+.world-header  {
+   display:flex;
+   align-items:center;
+   gap:14px;
+   padding:14px 24px;
+   background:var(--park-paper);
+   color:var(--park-ink);
+
+}
+
+.world-brand  {
+   display:grid;
+   place-items:center;
+   width:44px;
+   height:44px;
+   border-radius:50%;
+   background:var(--color-green);
+   color:var(--color-white);
+   font-weight:750;
+   text-decoration:none;
+
+}
+
+.world-header h1  {
+   margin:0;
+   font-size:var(--text-lg);
+   line-height:1.3;
+
+}
+.world-header p  {
+   margin:3px 0 0;
+   font-size:var(--text-xs);
+
+}
+
+.world-settings  {
+   margin-left:auto;
+   display:flex;
+   gap:8px;
+
+}
+.world-settings[hidden]  {
+   display:none;
+
+}
+
+.world-stage  {
+   position:relative;
+   height:calc(100dvh - 150px);
+   min-height:360px;
+   background:var(--art-sky-day);
+   overflow:hidden;
+
+}
+.world-stage[hidden]  {
+   display:none;
+
+}
+
+body[data-world-ready="true"]  {
+   overflow:hidden;
+
+}
+body[data-world-ready="true"] main  {
+   position:relative;
+
+}
+
+.world-render  {
+   position:absolute;
+   inset:0;
+   outline-offset:-4px;
+   touch-action:none;
+
+}
+.world-render canvas  {
+   width:100%;
+   height:100%;
+   display:block;
+
+}
+
+.world-intro  {
+   position:absolute;
+   top:22px;
+   left:24px;
+   max-width:370px;
+   padding:16px 20px;
+   background:color-mix(in srgb,var(--color-paper) 92.9412%,transparent);
+   border-radius:12px;
+   pointer-events:none;
+
+}
+.world-intro p  {
+   margin:0;
+   font-size:var(--text-xs);
+
+}
+.world-intro h2  {
+   font:var(--text-heading)/1.2 var(--font-reading);
+   margin:8px 0;
+
+}
+.world-intro span  {
+   font-size:var(--text-xs);
+   line-height:1.5;
+   display:block;
+
+}
+
+.world-dock  {
+   display:flex;
+   justify-content:center;
+   gap:12px;
+   min-height:66px;
+   align-items:center;
+   padding:10px 16px;
+   background:var(--park-paper);
+   border-top:1px solid var(--park-line);
+
+}
+.world-dock a  {
+   min-height:44px;
+   display:grid;
+   place-items:center;
+   padding:8px 20px;
+   border-radius:8px;
+   text-decoration:none;
+   font-weight:650;
+   font-size:var(--text-sm);
+   color:var(--park-ink);
+
+}
+.world-dock a:hover,.world-dock a[aria-current]  {
+   background:var(--color-green);
+   color:var(--color-white);
+
+}
+
+.world-stage button,.world-settings button  {
+   min-height:44px;
+   padding:9px 14px;
+   font-family:inherit;
+   font-size:var(--text-sm);
+   font-weight:600;
+   line-height:1.3;
+   color:var(--park-ink);
+   background:var(--park-paper);
+   border:1px solid var(--color-line);
+   border-radius:8px;
+   cursor:pointer;
+
+}
+
+.world-stage :focus-visible,.world-dock :focus-visible,.world-settings :focus-visible  {
+   outline:3px solid var(--color-copper);
+   outline-offset:3px;
+
+}
+.world-stage button:disabled  {
+   opacity:.6;
+   cursor:default;
+
+}
+
+.world-map  {
+   position:absolute;
+   top:22px;
+   right:24px;
+   width:218px;
+   background:var(--park-paper);
+   color:var(--park-ink);
+   border-radius:10px;
+   box-shadow:0 8px 30px color-mix(in srgb,var(--color-green-deep) 16.0784%,transparent);
+
+}
+.world-map summary  {
+   cursor:pointer;
+   min-height:44px;
+   padding:12px 16px;
+   font-size:var(--text-sm);
+   font-weight:650;
+
+}
+.world-map summary span  {
+   float:right;
+
+}
+.world-map nav  {
+   display:grid;
+   padding:0 10px 10px;
+   max-height:calc(100dvh - 260px);
+   overflow:auto;
+
+}
+.world-map a  {
+   padding:10px 8px;
+   min-height:44px;
+   font-size:var(--text-sm);
+   text-decoration:none;
+   border-radius:6px;
+
+}
+.world-map a:hover  {
+   background:var(--color-green-soft);
+
+}
+
+.world-nearby  {
+   position:absolute;
+   left:50%;
+   bottom:72px;
+   transform:translateX(-50%);
+   display:flex;
+   align-items:center;
+   gap:10px;
+   padding:8px 12px;
+   background:var(--park-paper);
+   color:var(--park-ink);
+   border-radius:10px;
+   max-width:calc(100% - 24px);
+
+}
+.world-nearby span  {
+   font-size:var(--text-sm);
+
+}
+.world-nearby[hidden]  {
+   display:none;
+
+}
+
+.world-reader  {
+   position:absolute;
+   right:24px;
+   top:22px;
+   bottom:72px;
+   width:min(490px,calc(100% - 48px));
+   display:flex;
+   flex-direction:column;
+   color:var(--park-ink);
+   background:var(--park-paper);
+   border:1px solid var(--park-line);
+   border-radius:12px;
+   box-shadow:0 12px 40px color-mix(in srgb,var(--color-green-deep) 23.9216%,transparent);
+
+}
+.world-reader[hidden]  {
+   display:none;
+
+}
+.world-reader > header  {
+   display:flex;
+   align-items:center;
+   justify-content:space-between;
+   gap:10px;
+   padding:12px 18px;
+   border-bottom:1px solid var(--park-line);
+
+}
+.world-reader h2  {
+   margin:0;
+   font:var(--text-heading)/1.2 var(--font-reading);
+
+}
+.world-reader-body  {
+   overflow:auto;
+   padding:18px;
+   flex:1;
+   min-height:0;
+   overscroll-behavior:contain;
+   font-size:var(--text-base);
+
+}
+.world-reader-body p  {
+   margin:0 0 12px;
+
+}
+.world-reader-body h3  {
+   font-size:var(--text-xl);
+   margin:10px 0;
+
+}
+.world-reader-body label  {
+   display:grid;
+   gap:4px;
+   margin:10px 0;
+
+}
+.world-reader-body :is(select,input)  {
+   min-height:44px;
+   max-width:100%;
+   width:100%;
+   font:inherit;
+   color:var(--park-ink);
+   accent-color:var(--color-green);
+   background:var(--color-paper-raised);
+   border:1px solid var(--color-line);
+   border-radius:5px;
+   padding:6px;
+
+}
+.world-reader-body a  {
+   color:var(--color-green);
+   text-decoration:underline;
+
+}
+.world-reader-body .section,.world-reader-body .contact  {
+   margin:0;
+   padding:0;
+   background:transparent;
+   color:var(--park-ink);
+
+}
+.world-reader-body .shell  {
+   padding:0;
+   width:100%;
+
+}
+.world-reader-body .project-grid,.world-reader-body .timeline,.world-reader-body .capability-grid,.world-reader-body .education-grid  {
+   display:block;
+
+}
+.world-reader-body .project  {
+   padding:20px 0;
+   background:transparent;
+   border-bottom:1px solid var(--park-line);
+
+}
+.world-reader-body .project h3  {
+   font-size:var(--text-heading);
+
+}
+.world-reader-body .project-copy  {
+   padding:0;
+
+}
+.world-reader-body .project-lede  {
+   font-size:var(--text-base);
+
+}
+.world-reader-body .contact-actions  {
+   display:grid;
+   gap:10px;
+
+}
+.world-reader-body .contact-actions a  {
+   overflow-wrap:anywhere;
+   min-height:44px;
+   padding:10px;
+   color:var(--park-ink);
+
+}
+.world-reader-body .button-primary  {
+   color:var(--color-paper);
+   background:var(--color-green);
+
+}
+.world-reader-body .section-heading h2  {
+   font-size:var(--text-xl);
+
+}
+.world-reader-body .education-list span  {
+   color:var(--color-ink-muted);
+
+}
+
+.world-status  {
+   position:absolute;
+   width:1px;
+   height:1px;
+   overflow:hidden;
+   clip-path:inset(50%);
+
+}
+.world-text-mode  {
+   position:absolute;
+   left:24px;
+   bottom:16px;
+   font-size:var(--text-xs)!important;
+
+}
+
+.world-touch  {
+   position:absolute;
+   bottom:12px;
+   right:20px;
+   display:grid;
+   grid-template-columns:repeat(3,44px);
+   gap:4px;
+   touch-action:none;
+
+}
+.world-touch[hidden]  {
+   display:none;
+
+}
+.world-touch button  {
+   padding:0;
+   height:44px;
+
+}
+.world-touch [data-move="forward"]  {
+   grid-column:2;
+
+}
+.world-touch [data-move="left"]  {
+   grid-row:2;
+   grid-column:1;
+
+}
+.world-touch [data-move="back"]  {
+   grid-row:2;
+   grid-column:2;
+
+}
+.world-touch [data-move="right"]  {
+   grid-row:2;
+   grid-column:3;
+
+}
+
+.seed-art  {
+   width:100%;
+   max-height:270px;
+   display:block;
+   background:var(--color-green-soft);
+   border-radius:9px;
+
+}
+.world-button-row  {
+   display:flex;
+   gap:8px;
+   flex-wrap:wrap;
+   margin:12px 0;
+
+}
+.world-note  {
+   color:var(--color-ink-muted);
+   font-size:var(--text-sm);
+
+}
+.world-resume  {
+   width:100%;
+   height:520px;
+   border:0;
+   background:var(--color-white);
+
+}
+.world-game-meter  {
+   height:18px;
+   background:var(--color-line);
+   border-radius:9px;
+   position:relative;
+   overflow:hidden;
+   margin:12px 0;
+
+}
+.world-game-meter span  {
+   position:absolute;
+   top:0;
+   bottom:0;
+   width:4px;
+  transform:translateX(-50%);
+   background:var(--color-green);
+
+}
+.world-game-meter::before  {
+   content:"";
+   position:absolute;
+   left:22.8125%;
+   width:36.5625%;
+   top:0;
+   bottom:0;
+   background:var(--art-game-timing-zone);
+
+}
+.preview-list  {
+   display:grid;
+   gap:10px;
+
+}
+.preview-list button  {
+   text-align:left;
+   width:100%;
+
+}
+.preview-map  {
+   display:block;
+   width:100%;
+   height:170px;
+   background:var(--color-green-soft);
+   border-radius:8px;
+
+}
+.preview-status  {
+   padding:10px;
+   background:var(--color-green-soft);
+   border-radius:8px;
+
+}
+.tank-frame  {
+   width:100%;
+   height:700px;
+   border:0;
+   background:var(--color-ink);
+
+}
+.plant-progress  {
+   display:flex;
+   gap:6px;
+   margin:12px 0;
+
+}
+.plant-progress span  {
+   padding:5px 10px;
+   border-radius:5px;
+   background:var(--color-green-soft);
+   font-size:var(--text-xs);
+
+}
+.plant-progress [data-complete="true"]  {
+   background:var(--color-green);
+   color:var(--color-white);
+
+}
+
+@media(max-width:720px)  {
+   .world-header  {
+   padding:10px 12px;
+   gap:8px;
+
+}
+.world-header h1  {
+   font-size:var(--text-base);
+
+}
+.world-header p  {
+   max-width:190px;
+   font-size:var(--text-xs);
+
+}
+.world-settings  {
+   gap:4px;
+
+}
+.world-settings button  {
+   padding:8px;
+   font-size:var(--text-xs);
+
+}
+.world-stage  {
+   height:calc(100dvh - 139px);
+   min-height:280px;
+
+}
+.world-intro  {
+   top:12px;
+   left:12px;
+   right:120px;
+   padding:10px 12px;
+
+}
+.world-intro h2  {
+   font-size:var(--text-lg);
+
+}
+.world-intro p,.world-intro span  {
+   font-size:var(--text-xs);
+
+}
+.world-map  {
+   width:99px;
+   right:12px;
+   top:12px;
+
+}
+.world-map[open]  {
+   width:230px;
+   z-index:4;
+
+}
+.world-map summary  {
+   padding:12px;
+
+}
+.world-reader  {
+   top:12px;
+   right:12px;
+   bottom:64px;
+   width:calc(100% - 24px);
+
+}
+.world-reader > header  {
+   padding:10px 12px;
+
+}
+.world-reader h2  {
+   font-size:var(--text-xl);
+
+}
+.world-reader-body  {
+   padding:14px;
+
+}
+.world-dock  {
+   gap:4px;
+   padding:8px;
+   min-height:64px;
+
+}
+.world-dock a  {
+   padding:8px;
+   font-size:var(--text-xs);
+   flex:1;
+
+}
+.world-text-mode  {
+   left:12px;
+   bottom:12px;
+   max-width:150px;
+
+}
+.world-nearby  {
+   bottom:118px;
+   width:max-content;
+
+}
+.world-touch  {
+   right:12px;
+
+}
+.seed-art  {
+   max-height:210px;
+
+}
+
+}
+
+@media(max-height:460px)  {
+   .world-header  {
+   padding:6px 12px;
+
+}
+.world-header p  {
+   display:none;
+
+}
+.world-stage  {
+   min-height:180px;
+   height:calc(100dvh - 115px);
+
+}
+.world-intro  {
+   max-width:250px;
+   top:8px;
+   padding:8px 12px;
+
+}
+.world-intro h2  {
+   font-size:var(--text-lg);
+
+}
+.world-intro span  {
+   display:none;
+
+}
+.world-reader  {
+   top:8px;
+   bottom:8px;
+
+}
+.world-map  {
+   top:8px;
+
+}
+.world-reader > header  {
+   padding:6px 12px;
+
+}
+.world-nearby  {
+   bottom:74px;
+   left:35%;
+
+}
+.world-text-mode  {
+   bottom:8px;
+
+}
+.world-reader-body  {
+   font-size:var(--text-sm);
+
+}
+
+}
+
+
+/* Let the header's actual height determine the available world viewport. */
+body[data-world-ready="true"]  {
+   display:grid;
+   grid-template-rows:auto minmax(0,1fr);
+   height:100dvh;
+
+}
+
+body[data-world-ready="true"] main  {
+   display:grid;
+   grid-template-rows:minmax(0,1fr) auto;
+   min-height:0;
+
+}
+
+body[data-world-ready="true"] .world-stage  {
+   height:100%;
+   min-height:0;
+
+}
+
+.world-reader-body  {
+   overflow-wrap:anywhere;
+
+}
+.world-reader-body .project-preview  {
+   min-width:0;
+
+}
+
+.world-reader-body .world-button-row button[aria-pressed="true"],.world-reader-body .preview-list button[aria-pressed="true"]  {
+   background:var(--color-green);
+   color:var(--color-white);
+
+}
+
+
+.world-reader-body .contact-inner > p:not(.eyebrow)  {
+   color:var(--color-ink-muted);
+
+}
+
+
+.world-regions  {
+   display:flex;
+   gap:6px;
+   margin-left:auto;
+
+}
+.world-regions[hidden]  {
+   display:none;
+
+}
+
+.world-regions a  {
+   min-height:44px;
+   padding:6px 14px;
+   display:flex;
+   align-items:center;
+   gap:6px;
+   border:1px solid var(--color-line);
+   border-radius:8px;
+   font-size:var(--text-sm);
+   font-weight:650;
+   text-decoration:none;
+   color:var(--color-green-deep);
+
+}
+
+.world-regions span  {
+   font-weight:400;
+   font-size:var(--text-xs);
+
+}
+.world-regions a[aria-current]  {
+   color:var(--color-white);
+   background:var(--color-green);
+   border-color:var(--color-green);
+
+}
+.world-regions :focus-visible  {
+   outline:3px solid var(--color-copper);
+   outline-offset:3px;
+
+}
+
+.world-settings  {
+   margin-left:12px;
+
+}
+.winter-progress  {
+   font-variant-numeric:tabular-nums;
+
+}
+.winter-help  {
+   padding:10px;
+   border-radius:6px;
+   background:var(--color-green-soft);
+   color:var(--color-green-deep);
+
+}
+
+@media(max-width:720px)  {
+   .world-header  {
+   flex-wrap:wrap;
+
+}
+.world-regions  {
+   order:3;
+   width:100%;
+   justify-content:center;
+
+}
+.world-regions a  {
+   flex:1;
+   justify-content:center;
+
+}
+.world-settings  {
+   margin-left:auto;
+
+}
+
+}
+
+@media(max-height:460px)  {
+   .world-header  {
+   flex-wrap:nowrap;
+
+}
+.world-regions  {
+   order:initial;
+   width:auto;
+   margin-left:auto;
+
+}
+.world-regions span  {
+   display:none;
+
+}
+.world-regions a  {
+   padding:6px 10px;
+
+}
+.world-settings  {
+   margin-left:6px;
+
+}
+
+}
+
+
+.world-reader[data-activity="skate"]  {
+   top:auto;
+   max-height:270px;
+
+}
+.world-reader[data-activity="skate"] .world-reader-body  {
+   padding:10px 18px;
+
+}
+.world-reader[data-activity="skate"] .world-note  {
+   display:none;
+
+}
+.world-reader[data-activity="skate"] .winter-help  {
+   padding:4px 8px;
+   font-size:var(--text-xs);
+
+}
+.world-reader[data-activity="skate"] .winter-help summary  {
+   min-height:30px;
+   cursor:pointer;
+
+}
+.world-reader[data-activity="skate"] .world-button-row  {
+   margin:8px 0;
+
+}
+
+@media(max-width:720px)  {
+   .world-reader[data-activity="skate"]  {
+   max-height:250px;
+
+}
+.world-reader[data-activity="skate"] .world-reader-body  {
+   font-size:var(--text-sm);
+   padding:8px 12px;
+
+}
+.world-reader[data-activity="skate"] > header  {
+   padding:7px 12px;
+
+}
+.world-reader[data-activity="skate"] .world-button-row  {
+   display:grid;
+   grid-template-columns:1fr 1fr;
+   gap:6px;
+
+}
+.world-reader[data-activity="skate"] [data-skate-start]  {
+   grid-column:1 / -1;
+
+}
+.world-reader[data-activity="skate"] .world-reader-body p  {
+   margin-bottom:6px;
+
+}
+
+}
+
+@media(max-height:460px)  {
+   .world-reader[data-activity="skate"]  {
+   top:8px;
+   bottom:8px;
+   width:340px;
+   max-height:none;
+
+}
+
+}
+
+
+.world-demo  {
+   position:fixed;
+   inset:0;
+   width:100vw;
+   height:100dvh;
+   max-width:none;
+   max-height:none;
+
+  margin:0;
+   padding:0;
+   border:0;
+   background:var(--color-ink);
+   color:var(--color-green-soft);
+
+}
+
+.world-demo[open]  {
+   display:flex;
+   flex-direction:column;
+
+}
+
+.world-demo > header  {
+   flex:none;
+   display:flex;
+   align-items:center;
+   justify-content:space-between;
+
+  gap:8px;
+   padding:8px;
+
+}
+
+.world-demo button  {
+   min-height:44px;
+   padding:8px;
+   border-radius:6px;
+   font:600 var(--text-sm) system-ui,sans-serif;
+
+}
+
+.world-demo .tank-frame  {
+   flex:1;
+   min-height:0;
+   height:auto;
+   width:100%;
+   border:0;
+
+}
+
+.world-demo::backdrop  {
+   background:var(--color-ink);
+
+}
+
+.world-leave  {
+   position:absolute;
+   top:12px;
+   left:12px;
+
+}
+
+/* Activity controls must leave the player and ball visible. */
+.world-reader[data-activity="game"]  {
+   top:auto;
+   left:12px;
+   right:auto;
+   bottom:72px;
+
+  width:min(410px,calc(100% - 24px));
+   max-height:45%;
+
+}
+
+.world-reader[data-activity="game"] h2  {
+   font-size:var(--text-lg);
+
+}
+
+.world-reader[data-activity="game"] .world-reader-body  {
+   font-size:var(--text-sm);
+   padding:10px 14px;
+
+}
+
+@media(max-width:720px)  {
+
+  .world-reader[data-activity="game"]  {
+   bottom:114px;
+   max-height:38%;
+
+}
+
+  .world-demo > header span  {
+   font-size:var(--text-xs);
+
+}
+
+
+}
+
+@media(max-height:460px)  {
+
+  .world-reader[data-activity="game"]  {
+   left:auto;
+   right:12px;
+   top:8px;
+   bottom:8px;
+
+    width:300px;
+   max-height:none;
+
+}
+
+
+}
+
+
+/* Physics feedback must not interpolate behind the current kick window. */
+.world-game-meter span { transition:none !important; }
+
+/* Keep essential controls ahead of secondary instructions in small activity panels. */
+.world-reader[data-activity="game"] .world-button-row { margin:6px 0; }
+.world-reader[data-activity="game"] .world-button-row > button { padding:9px 6px; font-size:var(--text-sm); }
+.world-reader[data-activity="game"] .world-reader-body p { margin-bottom:6px; }
+.world-reader[data-activity="game"] .world-game-meter { margin:6px 0; }
+
+/* These dimensions and transforms are projected from the object's real front face. */
+.world-reader.world-object {
+  top:0;left:0;right:auto;bottom:auto;max-width:none;max-height:none;
+  transform-origin:0 0;will-change:transform;border-radius:0;
+  border:0;box-shadow:none;background:var(--color-paper);overflow:hidden;
+}
+.world-reader.world-object-opening{display:none;pointer-events:none;}
+.world-object > header{padding:10px 12px;gap:8px;flex-shrink:0;}
+.world-object > header h2{font-size:var(--text-lg);line-height:1.2;overflow-wrap:anywhere;}
+.world-object > header button{padding:7px 9px;font-size:var(--text-sm);flex-shrink:0;}
+.world-object .world-reader-body{padding:14px;font-size:var(--text-base);line-height:1.5;scrollbar-gutter:stable;}
+.world-object a{overflow-wrap:anywhere;}
+.world-object .section,.world-object .contact{padding:0;background:transparent;color:var(--color-ink);}
+.world-object .shell{width:auto;max-width:none;margin:0;padding:0;}
+.world-object :is(.project-grid,.resume-layout,.capability-grid,.education-grid){display:block;}
+.world-object .project{padding:18px 0;border-bottom:1px solid var(--color-line);}
+.world-object .project h3{font-size:var(--text-heading);}
+.world-object .section-heading h2,.world-object .contact h2{font-size:var(--text-heading);line-height:1.25;}
+.world-object .contact p,.world-object .text-action-light,.world-object .eyebrow-light{color:var(--color-ink-muted);}
+.world-object .contact-actions,.world-resume-actions{display:flex;flex-wrap:wrap;gap:12px;}
+.world-object .contact-actions a{max-width:100%;}
+.world-object .world-reader-body [data-world-section]{margin-bottom:20px;}
+.world-object .timeline{margin-top:16px;}
+.world-object .timeline-entry{padding:14px 0;}
+.world-object .project-facts{display:block;}
+.world-object .project-details summary{min-height:44px;}
+.world-object[data-surface="phone"] .world-reader-body,
+.world-object[data-surface="tablet"] .world-reader-body{padding:10px;}
+.world-object[data-surface="phone"] > header{padding:8px;}
+.world-object[data-surface="phone"] > header h2{font-size:var(--text-lg);}
+.world-object[data-surface="phone"] .contact h2{font-size:var(--text-xl);}
+.world-object[data-surface="phone"] .contact-actions{display:grid;gap:10px;}
+.world-object[data-surface="phone"] .contact-actions .button{padding:10px;font-size:var(--text-sm);}
+.world-object[data-surface="phone"] .contact-inner{display:block;}
+
+.world-object .section-heading{margin-bottom:20px;}
+.world-object .resume-heading{position:static;top:auto;margin-bottom:16px;}
+.world-object .resume-heading .text-action{margin-top:8px;}
+.world-project-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;}
+.world-stage .world-project-tabs [aria-selected="true"]{background:var(--color-green);color:var(--color-white);}
+.world-object .project[hidden]{display:none;}
+.world-object .project:first-child{border-top:0;padding-top:0;}
+.world-object .preview-launch{margin:10px 0 14px;}
+
+.world-discovery {max-width: 44rem; margin-inline: auto; color: var(--color-ink);}
+.world-discovery p {font-size: 1rem; line-height: 1.65;}
+.world-discovery h3 {font-size: 1.8rem; line-height: 1.15; margin: .5rem 0 1.2rem;}
+.world-discovery .world-discovery-eyebrow {font-size: .85rem; font-weight: 600; color: var(--color-ink-muted);}
+.world-discovery a {display: inline-flex; align-items: center; min-height: 52px; padding-block: 4px; text-decoration: underline;}
