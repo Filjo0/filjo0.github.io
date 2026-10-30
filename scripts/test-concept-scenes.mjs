@@ -173,3 +173,28 @@ test('lazy season asset failure reports once without showing an incomplete scene
   assert.equal(await seasons.select('winter'),false);assert.equal(errors,1);
   assert.equal(seasons.state().region,'coast');assert.equal(seasons.state().blend,0);seasons.dispose();
 });
+
+test('portrait swipes stop at the meaningful pool/pitch view and reverse immediately',async()=>{
+ const THREE=await import('../assets/vendor/three.module.js'),{createConceptCamera}=await import('../world/concept-camera.js');
+ const document={body:{append(){}},createElement:()=>({style:{},getBoundingClientRect:()=>({width:0}),remove(){}})};
+ for(const [width,height] of [[390,844],[390,664],[375,553],[320,568]]){
+  const host={clientWidth:width,clientHeight:height,ownerDocument:document};
+  const view=createConceptCamera(host,new THREE.Group(),{walkthrough:false});
+  if(width===320&&height===568){
+   host.clientHeight=496;view.resize();host.clientHeight=568;view.resize();
+   assert.ok(Math.abs(view.camera.view.offsetX-(view.camera.view.fullWidth*.18-width/2))<.001,
+    'Startup header sizing never writes a pan into the approved initial framing');
+  }
+  view.yaw=1e4;view.resize();
+  const expected=view.camera.view.fullWidth*.565-width/2;
+  assert.ok(Math.abs(view.camera.view.offsetX-expected)<.001,'No empty beach stop');
+  assert.equal(view.sceneArea(),'coast');
+  view.yaw-=.8;view.resize();
+  assert.ok(Math.abs(view.camera.view.offsetX-(expected-80))<.001,'No overscroll dead zone');
+  view.panTo(.9);assert.ok(Math.abs(view.camera.view.offsetX-expected)<.001,'Programmatic pans use the same stop');
+  view.panTo(.18);assert.equal(view.sceneArea(),'desk');
+  host.clientWidth=844;host.clientHeight=390;view.yaw=1e4;view.resize();
+  host.clientWidth=width;host.clientHeight=height;view.resize();
+  assert.ok(Math.abs(view.camera.view.offsetX-expected)<.001,'Rotating back to portrait reapplies the meaningful coast limit');
+ }
+});

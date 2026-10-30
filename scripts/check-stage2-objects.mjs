@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {contactGlass} from './phone-visual-evidence.mjs';
 import {mkdir,readFile} from 'node:fs/promises';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
 const name=process.env.STUDIO_BROWSER||'chromium',url=process.env.STUDIO_URL||'http://127.0.0.1:8765/';
@@ -53,7 +54,7 @@ async function aligned(p,id){
  return e.rect;
 }
 try{
- for(const viewport of [{width:1440,height:900},{width:1280,height:720},{width:390,height:844},{width:320,height:568},{width:844,height:390}]){
+ for(const viewport of [{width:1440,height:900},{width:1280,height:720},{width:390,height:844},{width:390,height:664},{width:375,height:553},{width:320,height:568},{width:844,height:390}]){
   console.log(name+': stage 2 '+viewport.width+'x'+viewport.height);
   const touch=viewport.width<960,p=await browser.newPage({viewport,hasTouch:touch,reducedMotion:'reduce'});current=p;
   const errors=[],requests=[];p.on('pageerror',e=>errors.push(e.message));p.on('request',r=>requests.push(r.url()));
@@ -91,7 +92,7 @@ try{
    await p.screenshot({path:out+'/'+viewport.width+'-'+season+'-resume-closed.png'});
    await dot(p,'contact',touch);await aligned(p,'contact');
    check(requests.some(u=>u.endsWith('concept-contact-closeup-v2.webp')),'Actual phone close-up photograph is used');
-   check(await p.locator('.phone-status').isVisible(),'Contact phone has a status bar');
+   await contactGlass(p,check);
    check(await p.locator('.phone-address').innerText()==='philalimov.apps@gmail.com','Approved business email is shown');
    check(await p.locator('.contact-actions :is(a,button)').count()===4,'Exactly four contact actions');
    check(await p.getByRole('link',{name:'Email Philipp Alimov'}).getAttribute('href')==='mailto:philalimov.apps@gmail.com','Email action uses the correct address');
@@ -101,12 +102,6 @@ try{
    for(const r of dimensions)check(r.width>=43&&r.height>=43&&r.y>=64&&r.bottom<=viewport.height&&r.x>=0&&r.right<=viewport.width,
     'Each contact action is readable and reachable in the screen');
    check(await p.locator('[data-world-content]').evaluate(n=>n.scrollHeight<=n.clientHeight+1),'Contact screen fits without nested scrolling');
-   if(viewport.width<720||viewport.height<500){
-    const screen=await p.locator('[data-world-reader]').boundingBox();
-    check(screen.x<1&&Math.abs(screen.y-64)<1&&screen.width>=viewport.width-1&&screen.y+screen.height>=viewport.height-1,
-     'Real contact screen fills the viewport below Back');
-    check(await p.locator('[data-world-reader]').evaluate(n=>parseFloat(getComputedStyle(n).borderRadius)>=20),'Full-screen contact keeps rounded glass corners');
-   }
    await painted(p);await p.screenshot({path:out+'/'+viewport.width+'-'+season+'-contact-open.png'});
    await p.locator('[data-copy-email]').click();
    await p.waitForFunction(()=>document.querySelector('[data-copy-email]').textContent!=='Copy email');

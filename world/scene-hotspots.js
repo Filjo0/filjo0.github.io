@@ -29,11 +29,12 @@ export function createSceneHotspots(host,onObject,view,render) {
     activity();projectionKey='';render();
   },{signal});
   const buttons=[];let data=null,visible=false,disposed=false,introduced=false,hover='',keyboard='',hint='',hintKind='';
-  let introTimer=0,idleTimer=0,hintTimer=0,introIndex=0,glints=0,idleIndex=0,projectionKey='',geometry=[],safe=null;
+  let introTimer=0,idleTimer=0,hintTimer=0,arrivalTimer=0,arrivalPending=false,previousArea=null,wasVisible=false;
+  let introIndex=0,glints=0,idleIndex=0,projectionKey='',geometry=[],safe=null;
   const clearTimer=name=>{clearTimeout(name);};
   function endHint(){clearTimer(hintTimer);hintTimer=0;hint='';hintKind='';}
   function endIntro(){clearTimer(introTimer);introTimer=0;delete layer.dataset.intro;endHint();}
-  function stopHints(){endIntro();clearTimer(idleTimer);idleTimer=0;}
+  function stopHints(){endIntro();clearTimer(idleTimer);idleTimer=0;clearTimer(arrivalTimer);arrivalTimer=0;arrivalPending=false;}
   const available=()=>visible&&!disposed&&!document.hidden&&document.hasFocus()&&!layer.hidden;
   function idleLater(){
     clearTimer(idleTimer);idleTimer=0;
@@ -45,9 +46,9 @@ export function createSceneHotspots(host,onObject,view,render) {
       hintTimer=setTimeout(()=>{endHint();paint();idleLater();},650);
     },8000);
   }
-  function introduce(){
+  function introduce(allNames=false){
     introduced=true;
-    if(reducedMotion()){
+    if(allNames||reducedMotion()){
       layer.dataset.intro='names';paint();introTimer=setTimeout(()=>{endIntro();paint();idleLater();},3000);return;
     }
     layer.dataset.intro='sweep';introIndex=0;
@@ -59,16 +60,15 @@ export function createSceneHotspots(host,onObject,view,render) {
     };step();
   }
   function activity(){
-    endIntro();clearTimer(idleTimer);idleTimer=0;idleLater();
+    stopHints();idleLater();
   }
   function paint(){
     if(!geometry.length)return;
     const shown=[];
     for(const b of buttons){
       const state=b.id===keyboard?'focus':b.id===hover?'hover':b.id===hint?hintKind:'none';
-      const place=view.compact()&&view.sceneArea()==='coast'&&['aqua','futsl'].includes(b.id);
-      const name=place||state==='focus'||state==='hover'||state==='arrival'||layer.dataset.intro==='names';
-      b.label.textContent=place?(b.id==='aqua'?'Aqua Local':'FUTSL'):names[b.id];
+      const name=state==='focus'||state==='hover'||state==='arrival'||layer.dataset.intro==='names';
+      b.label.textContent=names[b.id];
       b.button.dataset.hotspotState=state;b.effect.dataset.hotspotState=state;
       b.button.toggleAttribute('data-show-name',name);b.effect.toggleAttribute('data-show-name',name);
       if(name&&!b.button.hidden)shown.push(b);
@@ -167,7 +167,7 @@ export function createSceneHotspots(host,onObject,view,render) {
   return {
     ready,
     update(camera,region,show,lighting,season,paused=false) {
-      visible=show&&!paused;layer.hidden=!visible;
+      visible=show&&!paused;const entering=visible&&!wasVisible;wasVisible=visible;layer.hidden=!visible;
       framing.hidden=!visible||!view.compact();
       const area=view.sceneArea();
       framing.textContent=area==='desk'?'See the coast \u2192':'\u2190 Back to desk';
@@ -222,7 +222,15 @@ export function createSceneHotspots(host,onObject,view,render) {
           geometry.push({...b,shape:{outline:clipped,holes:raw.holes},raw,hit});
         }
       }
-      paint();if(!introduced&&available())introduce();else if(!introTimer&&!idleTimer&&!hintTimer)idleLater();
+      if(introduced&&(entering||previousArea!==area))arrivalPending=true;previousArea=area;
+      paint();
+      if(!introduced&&available())introduce();
+      else if(arrivalPending){
+        clearTimer(arrivalTimer);arrivalTimer=0;
+        if(!view.panning())arrivalTimer=setTimeout(()=>{
+          arrivalTimer=0;arrivalPending=false;if(available())introduce(true);
+        },180);
+      }else if(!introTimer&&!idleTimer&&!hintTimer)idleLater();
     },
     dispose(){disposed=true;stopHints();events.abort();observer.disconnect();chromeObserver.disconnect();layer.remove();framing.remove();}
   };

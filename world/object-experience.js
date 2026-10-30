@@ -23,12 +23,6 @@ export function mountObjectExperience(reader, content, id) {
     cleanups.push(()=>{events.abort();resize.disconnect();reader.removeAttribute('data-about-more');});update();
   }
   if(id==='contact') {
-    const status=document.createElement('div');status.className='phone-status';status.setAttribute('aria-hidden','true');
-    status.innerHTML='<span>9:41</span><span class="phone-camera"></span><svg viewBox="0 0 64 16" fill="none" stroke="currentColor" stroke-width="1.6">'+
-      '<path d="M2 13v-2m4 2V8m4 5V5m4 8V2M22 5a9 9 0 0 1 12 0M25 8a5 5 0 0 1 6 0M28 11h.1"/>'+
-      '<rect x="42" y="3" width="17" height="10" rx="2"/>' +
-      '<path d="M61 6v4"/><rect x="45" y="6" width="11" height="4" fill="currentColor" stroke="none"/></svg>';
-    add(content,status,true);
     const profile=document.createElement('div');profile.className='phone-profile';
     profile.innerHTML='<span class="phone-monogram" aria-hidden="true">PA</span>'+
       '<h3>Philipp Alimov</h3><p>Quality engineer &amp; product builder</p><span class="phone-location">Perth, Western Australia</span>';

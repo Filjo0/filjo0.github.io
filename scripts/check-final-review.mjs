@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {aboutLinkInk,screenshotCues} from './phone-visual-evidence.mjs';
 import {mkdir,readFile} from 'node:fs/promises';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
 const name=process.env.STUDIO_BROWSER||'chromium',url=process.env.STUDIO_URL||'http://127.0.0.1:8765';
@@ -12,7 +13,7 @@ const settled=(p,id)=>p.waitForFunction(id=>document.querySelector('[data-world-
 async function activate(p,n,touch){await n.scrollIntoViewIfNeeded();
  if(touch){const r=await n.boundingBox();await p.touchscreen.tap(r.x+r.width/2,r.y+r.height/2);}else await n.click();}
 try {
- for(const viewport of [{width:1440,height:900},{width:390,height:844},{width:320,height:568},{width:844,height:390}]){
+ for(const viewport of [{width:1440,height:900},{width:390,height:844},{width:390,height:664},{width:375,height:553},{width:320,height:568},{width:844,height:390}]){
   const touch=viewport.width<720||viewport.height<500;
   const p=await browser.newPage({viewport,hasTouch:touch,reducedMotion:'reduce'}),errors=[];current=p;
   p.on('pageerror',e=>errors.push(e.message));console.log(name+': final review '+viewport.width+'x'+viewport.height);
@@ -26,6 +27,7 @@ try {
    const r=await reader.boundingBox();check(r.width>=440,'About has a useful desktop reading width');
    check(await body.evaluate(n=>parseFloat(getComputedStyle(n).fontSize)>=17),'About uses readable desktop body type');
   }
+  await aboutLinkInk(p,check);
   const last=body.locator('a').last();await last.scrollIntoViewIfNeeded();
   check(await last.evaluate(n=>{const r=n.getBoundingClientRect(),b=n.closest('[data-world-content]').getBoundingClientRect();
    return r.top>=b.top-1&&r.bottom<=b.bottom+1&&n.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));}),
@@ -33,6 +35,7 @@ try {
   await p.screenshot({path:out+'/'+viewport.width+'-about.png'});
   await activate(p,p.locator('[data-world-close]'),touch);
   await activate(p,p.locator('.world-dock [data-world-route="work"]'),touch);await settled(p,'work');
+  await screenshotCues(p,check);
   const aqua=p.locator('[data-app-card="aqua"]');
   const picture=aqua.locator('.workspace-shot');await picture.scrollIntoViewIfNeeded();
   await picture.locator('img').evaluateAll(ns=>Promise.all(ns.map(n=>n.decode())));
@@ -97,6 +100,20 @@ try {
   const response=await browser.newContext();
   check((await response.request.get(url+'/'+file)).status()===404,'Unused prototype is absent from public root: '+file);
   await response.close();
+ }
+ // Missing captures must not leave an instruction to enlarge a nonexistent image.
+ {
+  const p=await browser.newPage({viewport:{width:375,height:553},hasTouch:true,reducedMotion:'reduce'});current=p;
+  await p.route('**/assets/previews/*.webp',route=>route.abort());
+  await p.goto(url+'/#work');await settled(p,'work');
+  await p.waitForFunction(()=>[...document.querySelectorAll('[data-app-card]:not([data-app-card="treadfront"])')].every(card=>
+   card.querySelector('.workspace-shot').textContent.includes('Screenshot unavailable')&&!card.querySelector('[data-enlarge-screenshot]')));
+  for(const id of ['futsl','aqua']){
+   const card=p.locator('[data-app-card="'+id+'"]');
+   check(await card.locator('.workspace-enlarge-cue').isHidden(),id+': failed captures hide the enlargement caption');
+   check(await card.locator('[data-app-website]').count()===1,id+': the real website remains available without screenshots');
+  }
+  await p.close();
  }
  const ignores=await readFile('.gitignore','utf8');
  check(ignores.split(/\r?\n/).includes('tasks/'),'Internal task notes are ignored');

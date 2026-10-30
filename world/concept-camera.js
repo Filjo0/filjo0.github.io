@@ -20,8 +20,14 @@ export function createConceptCamera(host, actor, {walkthrough=true}={}) {
     if(t===1||!compact())pan=null;
   }
   function cancelPan(){advancePan();pan=null;}
+  function constrainPan(){
+    // Reapply after resize too: landscape can retain a pan beyond the portrait stop.
+    if(compact())userPan=THREE.MathUtils.clamp(userPan,host.clientWidth/2-fullWidth()*sceneCentre,
+      Math.min(fullWidth()-host.clientWidth/2,fullWidth()*.565)-fullWidth()*sceneCentre);
+  }
   function compose(activity = false) {
-    advancePan();
+    // Preserve the authored zero-pan crop while startup chrome changes height.
+    advancePan();if(userPan)constrainPan();
     camera.fov = reference.fov;
     camera.position.copy(fixed.position);
     camera.quaternion.copy(fixed.quaternion);
@@ -48,15 +54,17 @@ export function createConceptCamera(host, actor, {walkthrough=true}={}) {
     panning:()=>!!pan,
     panTo(u,{immediate=true}={}) {
       cancelPan();const from=centre();preview=null;userPan=0;sceneCentre=from;
-      if(immediate||!compact())sceneCentre=u;
-      else pan={from,to:u,started:performance.now()};
+      const to=compact()?Math.min(u,.565):u;
+      if(immediate||!compact())sceneCentre=to;
+      else pan={from,to,started:performance.now()};
       compose();
     },
     previewActivity(id) {cancelPan();preview=id;userPan=0;},
     get yaw() {return userPan / 100;},
     set yaw(value) {
       cancelPan();userPan=value*100;
-      if(compact())userPan=THREE.MathUtils.clamp(userPan,host.clientWidth/2-fullWidth()*sceneCentre,fullWidth()-host.clientWidth/2-fullWidth()*sceneCentre);
+      // The pool and pitch are the last destination; the beach is scenery.
+      constrainPan();
     },
     inspect(object, immediate) {
       cancelPan();

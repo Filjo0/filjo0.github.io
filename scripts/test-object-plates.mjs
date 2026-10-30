@@ -28,8 +28,8 @@ test('engines without CSS perspective read on a rectangle inside the original ph
 });
 
 
-test('all mobile contact and sports screens project the real mesh into the complete area below Back',()=>{
- for(const id of ['contact','ball','skate','surf'])for(const [w,h] of [[390,844],[320,568],[844,390]]){
+test('retained comparison sports screens project the real mesh into the complete area below Back',()=>{
+ for(const id of ['ball','skate','surf'])for(const [w,h] of [[390,844],[320,568],[844,390]]){
   const geometry=new THREE.BufferGeometry();
   geometry.setAttribute('position',new THREE.Float32BufferAttribute(new Float32Array(12),3));
   const object={id,plate:manifest.views[id==='contact'?'contact':'ball'],face:new THREE.Mesh(geometry,new THREE.MeshBasicMaterial())};
@@ -109,6 +109,29 @@ test('sports use a genuine full-viewport mesh on desktop as well as phones',()=>
    const q=p.clone().project(camera),x=(q.x+1)*w/2,y=(1-q.y)*h/2;
    const expected=[[0,64],[w,64],[w,h],[0,h]][i];
    assert.ok(Math.hypot(x-expected[0],y-expected[1])<.001);
+  }
+  geometry.dispose();object.face.material.dispose();
+ }
+});
+
+test('Contact uses measured phone glass instead of expanding HTML beyond the photograph',()=>{
+ for(const [w,h] of [[1440,900],[390,844],[390,664],[375,553],[320,568],[844,390]]){
+  const geometry=new THREE.BufferGeometry();
+  geometry.setAttribute('position',new THREE.Float32BufferAttribute(new Float32Array(12),3));
+  const asset=manifest.views.contact,object={id:'contact',plate:asset,face:new THREE.Mesh(geometry,new THREE.MeshBasicMaterial())};
+  const camera=new THREE.PerspectiveCamera(49,w/h,.006,160);
+  composePlate(object,camera,{clientWidth:w,clientHeight:h});
+  assert.equal(object.fullViewport,false);
+  const photoHeight=2*Math.tan(THREE.MathUtils.degToRad(49/2))*100,photoWidth=photoHeight*asset.width/asset.height;
+  for(const p of object.surfaceVertices){
+   const x=(p.x/photoWidth+.5)*asset.width,y=(.5-p.y/photoHeight)*asset.height;
+   const ring=[[638,110],[1020,110],[1030,837],[635,837]];
+   for(let i=0;i<4;i++){
+    const [ax,ay]=ring[i],[bx,by]=ring[(i+1)%4];
+    assert.ok(((bx-ax)*(y-ay)-(by-ay)*(x-ax))/Math.hypot(bx-ax,by-ay)>=-.001,'Content stays below the camera and within measured glass');
+   }
+   const q=p.clone().project(camera),sx=(q.x+1)*w/2,sy=(1-q.y)*h/2;
+   assert.ok(sx>=8&&sx<=w-8&&sy>=64&&sy<=h-16,'Glass remains visible at '+w+'x'+h);
   }
   geometry.dispose();object.face.material.dispose();
  }

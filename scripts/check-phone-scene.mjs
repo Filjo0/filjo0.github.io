@@ -59,7 +59,26 @@ try{
    await activate(p.locator('[data-scene-framing]'),touch);await stopped(p);
    check(await p.locator('[data-world-render]').getAttribute('data-scene-frame-mode')==='coast','The coast action pans to the right');
    check(await p.locator('[data-scene-framing]').innerText()==='\u2190 Back to desk','The coast has a clear way back');
-   for(const id of ['aqua','futsl'])check(await p.locator('[data-scene-object="'+id+'"]').getAttribute('data-show-name')!==null,'Coast app places are named without hover');
+   await p.waitForFunction(()=>document.querySelector('.scene-hotspots').dataset.intro==='names');
+   await p.waitForFunction(()=>['aqua','futsl'].every(id=>
+    Number(getComputedStyle(document.querySelector('[data-scene-object="'+id+'"] .scene-object-label')).opacity)>=.99));
+   for(const id of ['aqua','futsl'])check(await p.locator('[data-scene-object="'+id+'"]').getAttribute('data-show-name')!==null,
+    'Newly reached coast places briefly introduce their names, like the desk');
+   for(const id of ['aqua','futsl'])check(await p.locator('[data-scene-object="'+id+'"]').evaluate(n=>{
+    const r=n.lastElementChild.getBoundingClientRect(),header=document.querySelector('.world-header').getBoundingClientRect(),dock=document.querySelector('.world-dock').getBoundingClientRect();
+    return n.dataset.labelFit==='true'&&r.left>=7&&r.right<=innerWidth-7&&r.top>=header.bottom&&r.bottom<=dock.top-7;
+   }),'Arrival name stays on screen beside its photographed place');
+   await p.screenshot({path:out+'/'+viewport.width+'-coast-labels.png'});
+   await p.waitForFunction(()=>!document.querySelector('.scene-hotspots').dataset.intro);
+   await p.waitForFunction(()=>['aqua','futsl'].every(id=>
+    getComputedStyle(document.querySelector('[data-scene-object="'+id+'"] .scene-object-label')).opacity==='0'));
+   for(const id of ['aqua','futsl'])check(await p.locator('[data-scene-object="'+id+'"] .scene-object-label').evaluate(n=>
+    getComputedStyle(n).opacity==='0'),'The actual coast tag finishes fading, beyond just its visibility flag');
+   for(const id of ['aqua','futsl'])check(await p.locator('[data-scene-object="'+id+'"]').getAttribute('data-show-name')===null,
+    'Coast names fade instead of becoming permanent tags');
+   await p.locator('[data-scene-object="aqua"]').hover();
+   check(await p.locator('[data-scene-object="aqua"]').getAttribute('data-show-name')!==null,'Hover restores the pool name');
+   await p.mouse.move(viewport.width-8,150);
    await cover(p,viewport);
   }
   await p.screenshot({path:out+'/'+viewport.width+'-coast.png'});
@@ -114,11 +133,14 @@ try{
    // Keep the complete browse-and-tap sequence on one supported pointer path.
    // Raw CDP touch drags suppress a later Playwright tap even in a blank-page control.
    // The separate motion scenario below still verifies native touch swiping in Chromium.
+   const coastStop=await frame(p);
    for(let i=0;i<4;i++)await dragScene(p,[viewport.width-30,160],[30,160],{touch:false,engine});
-   check(await p.locator('[data-world-reader]').isHidden(),'Swiping farther to the beach never opens an app');
-   await cover(p,viewport);await p.screenshot({path:out+'/'+viewport.width+'-beach.png'});
+   check(await p.locator('[data-world-reader]').isHidden(),'Trying to swipe past the coast never opens an app');
+   check(Math.abs((await frame(p)).left-coastStop.left)<2,'The photograph stops at pool/pitch instead of continuing to an empty beach');
+   for(const id of ['aqua','futsl'])check(await p.locator('[data-scene-object="'+id+'"]').isVisible(),'The last stop keeps both real app places visible');
+   await cover(p,viewport);await p.screenshot({path:out+'/'+viewport.width+'-coast-limit.png'});
    await activate(p.locator('[data-scene-framing]'),touch);await stopped(p);
-   check(await p.locator('[data-world-render]').getAttribute('data-scene-frame-mode')==='desk','Beach keeps a direct return to the desk');
+   check(await p.locator('[data-world-render]').getAttribute('data-scene-frame-mode')==='desk','The final coast stop keeps a direct return to the desk');
    await activate(p.locator('[data-scene-framing]'),touch);await stopped(p);
   }
   await p.locator('[data-settings-toggle]').click();await p.locator('[data-world-route="winter"]').click();
@@ -169,7 +191,7 @@ try{
  check(Math.abs(dragged.left-dragBefore.left-160)<4,'A native swipe moves the photograph and calibrated objects together');
  check(await motion.locator('[data-world-reader]').isHidden(),'Swiping does not open an object');
  for(let i=0;i<6;i++)await dragScene(motion,[300,160],[50,160],{touch:true,engine});
- const edge=await frame(motion);check(Math.abs(edge.left-(edge.width-390))<2,'Swiping stops at the image edge without a blank area');
+ const edge=await frame(motion);check(Math.abs(edge.left-(edge.width*.565-195))<2,'Native swiping stops at the pool/pitch viewpoint, with no empty destination');
  await dragScene(motion,[100,160],[200,160],{touch:true,engine});const reverse=await frame(motion);
  check(Math.abs(edge.left-reverse.left-80)<4,'Reversing at the edge responds immediately without an overscroll dead zone');
  await motion.locator('[data-scene-framing]').focus();await motion.keyboard.press('Enter');await stopped(motion);

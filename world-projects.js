@@ -68,7 +68,8 @@ function mountWorkspace(root,{onDemo}) {
     const title=document.createElement('strong');title.id='workspace-app-heading-'+i;title.textContent=name;title.className='workspace-card-title';
     const purpose=document.createElement('span');purpose.className='workspace-purpose';
     purpose.textContent=['Fixtures, results and teams.','Find pools and places to swim.','Defend the base in one sector.'][i];
-    body.append(shot,title,purpose);card.append(body);
+    const gallery=document.createElement('span');gallery.className='workspace-gallery';gallery.append(shot);
+    body.append(gallery,title,purpose);card.append(body);
     if(i===2){
       body.type='button';body.dataset.demoOpen='';body.setAttribute('aria-label','Play Treadfront one-sector demo');
       const action=document.createElement('span');action.className='workspace-action';action.textContent='Play demo →';body.append(action);
@@ -92,22 +93,27 @@ function mountWorkspace(root,{onDemo}) {
       projects.forEach((p,n)=>p.hidden=n!==i);root.scrollTop=0;project.querySelector('h3').tabIndex=-1;
       project.querySelector('h3').focus({preventScroll:true});},{signal:events.signal});
     card.append(notes);home.querySelector('.workspace-apps').append(card);
+    const cue=i<2?document.createElement('span'):null;
+    if(cue){
+      cue.className='workspace-enlarge-cue';cue.hidden=true;cue.textContent='Tap a screenshot to enlarge';
+      cue.id='workspace-enlarge-'+id;shot.after(cue);
+    }
     const showCaptures=(screens,capturedAt)=>{
-      if(events.signal.aborted)return;shot.replaceChildren();
+      if(events.signal.aborted)return;shot.replaceChildren();if(cue)cue.hidden=false;
       for(const capture of screens){
         const image=document.createElement('img');image.src=capture.image;image.alt=capture.alt||'Treadfront one-sector demo';
         if(capture.width){image.width=capture.width;image.height=capture.height;}
         image.loading='eager';image.addEventListener('error',()=>{
           const notice=document.createElement('span');notice.textContent='Screenshot unavailable';
           (image.closest('[data-enlarge-screenshot]')||image).replaceWith(notice);
+          if(cue)cue.hidden=!shot.querySelector('[data-enlarge-screenshot]');
         },{signal:events.signal});
         if(i<2){
           const enlarge=document.createElement('button');enlarge.type='button';enlarge.className='workspace-screenshot';
           enlarge.dataset.enlargeScreenshot=capture.id;enlarge.setAttribute('aria-haspopup','dialog');
           enlarge.setAttribute('aria-label','Enlarge '+name+': '+capture.label);enlarge.title='Enlarge screenshot';
-          const cue=document.createElement('span');cue.className='workspace-enlarge-cue';
-          cue.textContent='Enlarge';cue.setAttribute('aria-hidden','true');
-          enlarge.append(image,cue);shot.append(enlarge);
+          enlarge.setAttribute('aria-describedby',cue.id);
+          enlarge.append(image);shot.append(enlarge);
           enlarge.addEventListener('click',()=>screenshots.open(capture,name,date.textContent,enlarge),{signal:events.signal});
         }else shot.append(image);
       }
@@ -119,7 +125,9 @@ function mountWorkspace(root,{onDemo}) {
     }):fetch('assets/previews/treadfront-card.json',{signal:events.signal}).then(r=>{
       if(!r.ok)throw Error('Demo capture unavailable');return r.json();
     }).then(m=>showCaptures([m],m.capturedAt));
-    capture.catch(()=>{if(!events.signal.aborted){shot.textContent='Screenshot unavailable';date.textContent='Use the links to explore.';}});
+    capture.catch(()=>{
+      if(!events.signal.aborted){if(cue)cue.hidden=true;shot.textContent='Screenshot unavailable';date.textContent='Use the links to explore.';}
+    });
   }
   reset();
   return ()=>{events.abort();delete root.dataset.workspaceView;home.remove();back.remove();section.hidden=wasHidden;

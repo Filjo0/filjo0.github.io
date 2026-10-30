@@ -13,10 +13,11 @@ function within(q,u,v) {
 export function plateMetrics(asset,host,perspective=true,readingBook=false) {
   const w=host.clientWidth,h=host.clientHeight;
   const q=w<720&&asset.mobile_corners?asset.mobile_corners:asset.corners,full=dimensions(q);
-  const maxWidth=asset.kind==='phone'?390:asset.kind==='board'?600:1040;
+  const shortPhone=asset.kind==='phone'&&asset.mobile_corners&&w>=720&&h<500;
+  const maxWidth=shortPhone?520:asset.kind==='phone'?390:asset.kind==='board'?600:1040;
   const availableWidth=Math.min(w-32,maxWidth),availableHeight=Math.max(110,h-100);
   const fit=readingBook&&w<720?Math.max(Math.min(availableWidth/full.width,availableHeight/full.height),
-    Math.min(availableHeight,480)/full.height):asset.kind==='board'&&(w<720||h<500)?
+    Math.min(availableHeight,480)/full.height):shortPhone?availableWidth/full.width:asset.kind==='board'&&(w<720||h<500)?
     (w<720?availableHeight/full.height:availableWidth/full.width):Math.min(availableWidth/full.width,availableHeight/full.height);
   const scale=Math.max(w/asset.width,h/asset.height,fit);
   const u=Math.min(1,availableWidth/(full.width*scale)),v=Math.min(1,availableHeight/(full.height*scale));
@@ -37,7 +38,10 @@ function worldPoint(p,asset) {
 }
 export function composePlate(object,camera,host) {
   const asset=object.plate,perspective=!host.ownerDocument||supportsSurfacePerspective(host.ownerDocument);
-  const metrics=plateMetrics(asset,host,perspective&&!['work','resume'].includes(object.id),object.id==='books'),w=host.clientWidth,h=host.clientHeight;
+  // Contact always uses its measured glass inset, below the photographed camera.
+  const readingAsset=object.id==='contact'?{...asset,corners:asset.mobile_corners||asset.corners}:asset;
+  const metrics=plateMetrics(readingAsset,host,perspective&&!['work','resume','contact'].includes(object.id),object.id==='books');
+  const w=host.clientWidth,h=host.clientHeight;
   object.currentArea={width:metrics.width,height:metrics.height};
   object.surfaceVertices=metrics.corners.map(p=>worldPoint(p,asset));
   const position=object.face.geometry.attributes.position;
@@ -51,7 +55,7 @@ export function composePlate(object,camera,host) {
   camera.updateProjectionMatrix();camera.updateMatrixWorld(true);
   const touch=object.expandScreen&&host.ownerDocument?.defaultView?.matchMedia('(pointer: coarse)').matches;
   object.fullViewport=Boolean(object.fullScreenGame||(object.expandScreen||
-    ['work','contact','ball','skate','surf','plants','fibonacci'].includes(object.id))&&(w<720||h<500||touch));
+    ['work','ball','skate','surf','plants','fibonacci'].includes(object.id))&&(w<720||h<500||touch));
   if(object.fullViewport){
     const top=64;
     object.currentArea={width:w,height:h-top};

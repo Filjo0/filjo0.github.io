@@ -26,9 +26,17 @@ try {
   check(!await p.locator('[data-world-intro]').textContent().then(t=>/WASD|walk|run/i.test(t)),'No walking instructions');
   await p.locator('[data-world-render]').focus();await p.keyboard.down('KeyW');await p.waitForTimeout(150);await p.keyboard.up('KeyW');
   check(JSON.stringify((await state(p)).position)===JSON.stringify(initial.position),'Walking keys do not move the scene');
-  const host=await p.locator('[data-world-render]').boundingBox();
-  const empty={x:host.x+host.width*.52,y:host.y+host.height*(viewport.height<500?.6:.85)};
-  check(await p.evaluate(({x,y})=>!!document.elementFromPoint(x,y)?.closest('[data-world-render]'),empty),
+  // A fixed lower-centre point became the portrait coast-navigation button.
+  // Select actual scenery and still assert hit ownership before clicking it.
+  const empty=await p.locator('[data-world-render]').evaluate(host=>{
+   const r=host.getBoundingClientRect();
+   for(const v of [.4,.6,.8])for(const u of [.95,.75,.5,.25,.05]){
+    const x=r.x+r.width*u,y=r.y+r.height*v;
+    if(document.elementFromPoint(x,y)?.closest('[data-world-render]')===host)return {x,y};
+   }
+   return null;
+  });
+  check(empty&&await p.evaluate(({x,y})=>!!document.elementFromPoint(x,y)?.closest('[data-world-render]'),empty),
     'The empty-scenery probe actually targets scenery, clear of navigation');
   await p.mouse.click(empty.x,empty.y);
   check(!(await state(p)).moving,'Empty scenery clicks never start walking');
