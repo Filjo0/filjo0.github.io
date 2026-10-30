@@ -1488,3 +1488,24 @@ body[data-world-navigation="objects"] .world-reader[data-experience="experience"
 @media(max-height:499px) and (min-width:720px) {
   .workspace-card {padding:6px;}.workspace-shot {height:100px;}
 }
+
+/* Portrait browsing keeps the photograph full-height while moving between desk and coast. */
+.world-stage .scene-framing {position:absolute;left:50%;transform:translateX(-50%);z-index:5;min-height:44px;padding:10px 16px;
+  border:1px solid var(--color-green);border-radius:var(--radius-control);background:var(--color-paper);color:var(--color-green);
+  font:600 var(--text-sm)/1.3 var(--font-ui);white-space:nowrap;cursor:pointer;}
+.scene-framing:focus-visible {outline:3px solid var(--color-copper);outline-offset:3px;}
+.scene-framing[hidden] {display:none;}
+.scene-object-effects [data-scene-effect][data-hotspot-state="none"]:not([data-show-name]) {display:none;}
+.scene-object-effects [data-hotspot-state="none"] .scene-object-lift {display:none;}
+.workspace-card[data-selected] {outline:2px solid var(--color-paper);outline-offset:-2px;}
+
+.scene-loading {position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);z-index:12;margin:0;padding:12px 20px;
+  border-radius:var(--radius-control);background:var(--color-paper);color:var(--color-ink);font:500 var(--text-base)/1.4 var(--font-ui);
+  box-shadow:0 3px 16px color-mix(in srgb,var(--color-ink) 15%,transparent);pointer-events:none;}
+.scene-loading[hidden] {display:none;}
+
+/* Keep the photographed viewport stable when entering/leaving a close-up. */
+body[data-world-ready="true"][data-world-renderer="concept"][data-world-navigation="objects"] .world-header {
+  position:fixed;inset:0 0 auto;
+}
+body[data-world-ready="true"][data-world-renderer="concept"][data-world-navigation="objects"] .world-stage {height:100dvh;}

@@ -9,6 +9,7 @@ A static portfolio with a coastal pavilion, matching Siberian winter, and linked
 - Résumé: a straight clipboard and read-only HTML page with browser Print. The approved wording and one-page A4 print layout are preserved; no PDF download is required or offered.
 - Contact: a phone screen with email, LinkedIn, GitHub and Copy email.
 - Maths notebook: live sunflower-angle, Fibonacci-square and Pascal-row sliders, with tappable drawings. The reading book contains 30 sourced recommendations.
+- Portrait phones open on a full-height desk view. Use "See the coast" or swipe horizontally to explore the pool, pitch and beach, then return to the desk. The named pool and pitch open Aqua Local and FUTSL in My apps. The image never shrinks into a letterboxed strip.
 - Objects open with one click or tap. Hover and keyboard focus reveal their outlines and names. Main navigation stays available without needing to discover objects.
 - Settings contain Coast/Winter, Sunset/Night, Reduce motion and Simple page view. Night settings use dark chrome. The globe changes the season.
 
@@ -56,7 +57,7 @@ npm run test:concept:browser
 
 Browser checks use development Playwright. `PLAYWRIGHT_MODULE` may point to an existing installation's `index.mjs` file URL. `STUDIO_BROWSER` selects `chromium` or `webkit`; `STUDIO_BROWSER_EXECUTABLE` optionally selects installed Chrome. `STUDIO_URL` defaults to the local preview above. Clear the executable override when switching to WebKit. Evidence is written to ignored `validation-artifacts/`.
 
-The public experience has 19 browser suites. Inspect native screenshots as well as assertions at desktop, 390px, 320px and short landscape. Check first-Tab navigation, Escape/focus return, single-tap opening, slider dragging, screenshot viewer, browser printing, errors, interrupted loading and no-JavaScript fallback. A real iPhone/Android pass remains separate from browser emulation.
+The public experience has 20 browser suites. Inspect native screenshots as well as assertions at desktop, 390px, 320px and short landscape. Check first-Tab navigation, Escape/focus return, single-tap opening, slider dragging, screenshot viewer, browser printing, errors, interrupted loading and no-JavaScript fallback. A real iPhone/Android pass remains separate from browser emulation.
 
 Windows WebKit builds before the fix in build 2371 can omit WebGL artwork from screenshots after a drawing-buffer resize. This also reproduces with a plain red canvas, without portfolio code. Use a matching corrected Playwright/WebKit pair; do not alter the website or weaken visual checks to hide that tool defect. See [the upstream fix](https://github.com/microsoft/playwright/pull/43085).
 

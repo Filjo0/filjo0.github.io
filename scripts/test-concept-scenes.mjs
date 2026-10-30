@@ -89,7 +89,7 @@ test('B1 silhouettes are valid, plate-specific, separated and camera-calibrated'
   const camera=referenceCamera();
   assert.equal(data.outline_schema.version,1);
   assert.equal(data.outline_schema.plates.length,4);
-  assert.equal(Object.keys(data.targets).length,7);
+  assert.equal(Object.keys(data.targets).length,9);
   for(const [id,target] of Object.entries(data.targets)){
     for(const name of Object.keys(target.outline_variants||{}))assert.ok(data.outline_schema.plates.includes(name),'override selects an active filename');
     for(const plate of data.outline_schema.plates){

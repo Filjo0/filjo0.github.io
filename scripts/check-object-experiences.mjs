@@ -1,3 +1,4 @@
+import {revealDesk} from './outline-browser-evidence.mjs';
 import assert from 'node:assert/strict';
 import {mkdir} from 'node:fs/promises';
 import {resolve} from 'node:path';
@@ -16,6 +17,7 @@ try {
   await p.waitForFunction(()=>document.querySelector('canvas')&&JSON.parse(document.querySelector('canvas').dataset.worldState).ready);
   const go=async id=>{
     if(await p.locator('[data-world-reader]').isVisible())await p.locator('[data-world-close]').click();
+    if(id==='books')await revealDesk(p);
     const link=id==='books'?p.locator('[data-scene-object="books"]'):p.locator('.world-dock [data-world-route="'+id+'"]');
     await link.click();
     await p.locator('[data-world-reader]').waitFor();

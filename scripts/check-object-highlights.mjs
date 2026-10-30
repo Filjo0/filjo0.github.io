@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
-import {outlineGeometry,outlineContrast,dragScene} from './outline-browser-evidence.mjs';
+import {outlineGeometry,outlineContrast,dragScene,revealDesk} from './outline-browser-evidence.mjs';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright'),engine=process.env.STUDIO_BROWSER||'chromium';
 const url=process.env.STUDIO_URL||'http://127.0.0.1:8765/',root=process.env.OBJECT_HIGHLIGHT_ARTIFACT_DIR||'validation-artifacts/object-highlights-20oct';
 const out=root+'/'+engine;await mkdir(out,{recursive:true});
@@ -55,7 +55,7 @@ try{
  for(const size of (['all','scenes'].includes(part)?sizes:[])){
   const touch=size.width<960,p=await browser.newPage({viewport:size,hasTouch:touch,reducedMotion:'reduce'});current=p;
   p.on('pageerror',e=>errors.push(e.message));const requests=[];p.on('request',r=>requests.push(r.url()));
-  await p.bringToFront();await p.goto(url);await ready(p);
+  await p.bringToFront();await p.goto(url);await ready(p);await revealDesk(p);
   check(!requests.some(u=>/concept-(?:coast|winter)-dusk/.test(u)),'Night artwork stays lazy before selecting Night');
   await outlineGeometry(p,layout,check);await screenshot(p,size,'arrival-reduced');await outside(p,touch);
   check(await p.locator('.scene-object-dot').count()===0,'No circles or dot elements remain');
@@ -63,7 +63,9 @@ try{
   if(size.width===844&&size.height===390){
    // Reproduce a taller initial tab bar, then its normal layout at the same camera size.
    const dock=p.locator('.world-dock'),book=p.locator('[data-scene-object="books"]');
-   await dock.evaluate(n=>{n.style.setProperty('height','82px','important');n.style.setProperty('min-height','82px','important');});
+   const bookBefore=await book.boundingBox(),coverHeight=size.height-bookBefore.y+12;
+   await dock.evaluate((n,height)=>{n.style.setProperty('height',height+'px','important');
+    n.style.setProperty('min-height',height+'px','important');},coverHeight);
    await p.setViewportSize({width:845,height:390});await rendered(p);
    await p.setViewportSize(size);await rendered(p);
    check(await book.evaluate(n=>n.hidden),'A truly occluded book stays out of the keyboard sequence');
@@ -158,7 +160,7 @@ try{
   await p.waitForFunction(()=>document.querySelector('[data-scene-object="resume"]')?.dataset.hotspotState==='arrival');
   await screenshot(p,{width:1440,height:900},'arrival-sweep');
   await p.waitForFunction(()=>!document.querySelector('.scene-hotspots').dataset.intro);await p.waitForTimeout(250);
-  check((await p.evaluate(()=>window.__arrivalEvidence.join('|')))==='work|contact|resume|experience|books|fibonacci|globe','One arrival sweep visits all seven objects in order');
+  check((await p.evaluate(()=>window.__arrivalEvidence.join('|')))==='work|contact|resume|experience|books|fibonacci|globe|aqua|futsl','One arrival sweep visits all nine objects in order');
   check(await p.locator('.scene-hotspots').evaluate(n=>n.getAnimations({subtree:true}).every(a=>a.playState!=='running')),'Arrival animations settle completely');
   for(let count=1;count<=3;count++){
    await p.waitForFunction(count=>Number(document.querySelector('.scene-hotspots').dataset.glints)===count,count,{timeout:11000});
@@ -180,7 +182,7 @@ try{
  }
  if(['all','mixed-input'].includes(part)){
   const p=await browser.newPage({viewport:{width:390,height:844},hasTouch:true,reducedMotion:'reduce'});current=p;
-  p.on('pageerror',e=>errors.push(e.message));await p.bringToFront();await p.goto(url);await ready(p);
+  p.on('pageerror',e=>errors.push(e.message));await p.bringToFront();await p.goto(url);await ready(p);await revealDesk(p);
   const contact=p.locator('[data-scene-object="contact"]');
   await contact.hover();await p.waitForTimeout(220);
   check(await contact.getAttribute('data-hotspot-state')==='hover','A mouse highlights Contact before switching to touch');

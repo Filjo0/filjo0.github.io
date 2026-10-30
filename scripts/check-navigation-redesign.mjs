@@ -1,3 +1,4 @@
+import {revealDesk} from './outline-browser-evidence.mjs';
 import {outlineGeometry} from './outline-browser-evidence.mjs';
 import assert from 'node:assert/strict';
 import {mkdir,readFile} from 'node:fs/promises';
@@ -31,7 +32,6 @@ try{for(const viewport of sizes){
  check(await p.locator('[data-scene-object="fibonacci"]').count()===1&&
   await p.locator('[data-scene-object="fibonacci"]').getAttribute('aria-label')==='Maths notebook',
   'The pictured notebook has a clearly named target, even when cropped outside a narrow view');
- check(await p.locator('[data-scene-object="books"]').isVisible(),'The book stack has a visible target');
  check(await p.locator('[data-world-globe]').isHidden()&&await p.locator('[data-world-pause]').isHidden(),
   'No duplicate globe button or vague global Pause is visible');
  check(await p.evaluate(()=>document.activeElement===document.body),'Initialization does not steal keyboard focus');
@@ -46,9 +46,14 @@ try{for(const viewport of sizes){
  check((await p.locator('.world-dock > a').allTextContents()).join('|')==='My apps|About|Résumé|Contact|Maths','Navigation names are clear');
  await p.waitForFunction(()=>!document.querySelector('.scene-hotspots').dataset.intro);
  await p.waitForTimeout(220);
- check(await p.locator('.scene-object-label').evaluateAll(ns=>ns.every(n=>Number(getComputedStyle(n).opacity)===0)),
-  'Initial labels fade after about three seconds');
+ check(await p.locator('.scene-object-label').evaluateAll(ns=>ns.every(n=>{
+  const place=document.querySelector('[data-world-render]').dataset.sceneFrameMode==='coast'&&
+   ['aqua','futsl'].includes(n.closest('button').dataset.sceneObject);
+  return Number(getComputedStyle(n).opacity)===(place?1:0);
+ })),'Arrival labels settle; only the two phone app places remain named');
  await p.screenshot({path:out+'/'+viewport.width+'x'+viewport.height+'-closed.png'});
+ await revealDesk(p);
+ check(await p.locator('[data-scene-object="books"]').isVisible(),'The closer desk exposes the Book target');
  const book=p.locator('[data-scene-object="books"]');
  await book.hover();await p.waitForFunction(()=>Number(getComputedStyle(document.querySelector('[data-scene-object="books"] .scene-object-label')).opacity)>.99);
  check(await book.locator('.scene-object-label').innerText()==='Book','Hover shows only the object name');

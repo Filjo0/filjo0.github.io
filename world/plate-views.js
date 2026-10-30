@@ -66,6 +66,11 @@ export function composePlate(object,camera,host) {
 export function createPlateViews({scene,resources,texture}) {
   let manifest,disposed=false;
   const pending=new Map(),images=new Map();
+  function loadManifest(){
+    return manifest ||= fetch(new URL('../assets/outdoor/object-views.json',import.meta.url)).then(r=>{
+      if(!r.ok)throw Error('Object views unavailable');return r.json();
+    }).catch(e=>{manifest=null;throw e;});
+  }
   const aliases={tank:'work',skate:'ball',surf:'ball',plants:'books',fibonacci:'books'};
   const ids=new Set(['work','books','resume','contact','experience','ball','tank','skate','surf','plants','fibonacci']);
   async function ensure(object,region='coast') {
@@ -76,10 +81,7 @@ export function createPlateViews({scene,resources,texture}) {
     if(object.plate&&object.plateKey===key)return object;
     if(pending.has(pendingKey)&&!object.plate)return pending.get(pendingKey);
     const promise=(async()=>{
-      manifest ||= fetch(new URL('../assets/outdoor/object-views.json',import.meta.url)).then(r=>{
-        if(!r.ok)throw Error('Object views unavailable');return r.json();
-      }).catch(e=>{manifest=null;throw e;});
-      const data=await manifest,game=['ball','skate','surf'].includes(object.id);
+      const data=await loadManifest(),game=['ball','skate','surf'].includes(object.id);
       const asset=game?{width:1600,height:900,kind:'game',corners:[[0,0],[1600,0],[1600,900],[0,900]]}:data.views[key];
       object.fullScreenGame=game;
       if(!game&&!images.has(asset.image))images.set(asset.image,texture(asset.image).catch(e=>{images.delete(asset.image);throw e;}));

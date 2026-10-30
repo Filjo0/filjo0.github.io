@@ -1,5 +1,10 @@
 // Native rendered evidence shared by regression suites whose dot checks became silhouette checks.
 import assert from 'node:assert/strict';
+export async function revealDesk(page){
+  const control=page.locator('button[data-scene-framing]');
+  if(await control.isVisible()&&await control.getAttribute('data-scene-destination')==='desk')await control.click();
+  await page.waitForFunction(()=>document.querySelector('[data-world-render]').dataset.scenePanning!=='true');
+}
 const close=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 const pathPoints=d=>[...d.matchAll(/[ML](-?[\d.]+) (-?[\d.]+)/g)].map(m=>[Number(m[1]),Number(m[2])]);
 export async function outlineGeometry(page,layout,check=(v,m)=>assert.ok(v,m),pan=0) {
@@ -14,7 +19,8 @@ export async function outlineGeometry(page,layout,check=(v,m)=>assert.ok(v,m),pa
         connector:effect.querySelector('.scene-label-connector').getAttribute('d')};
     })};
   });
-  const {host,header,dock,objects}=result,fullW=Math.max(host.width,host.height*1672/941),fullH=fullW*941/1672;
+  const {host,header,dock,objects}=result;
+  const fullW=Math.max(host.width,host.height*1672/941),fullH=fullW*941/1672;
   const left=Math.max(0,Math.min(fullW-host.width,fullW*(host.width<720?layout.mobile_initial_centre:.5)-host.width/2+pan));
   const top=(fullH-host.height)/2;
   for(const o of objects.filter(o=>!o.hidden)){

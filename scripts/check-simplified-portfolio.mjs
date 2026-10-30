@@ -1,3 +1,4 @@
+import {revealDesk} from './outline-browser-evidence.mjs';
 import {outlineContrast} from './outline-browser-evidence.mjs';
 import assert from 'node:assert/strict';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -67,6 +68,7 @@ try{for(const viewport of sizes){
  check(await game.locator('canvas').evaluate(n=>JSON.parse(n.dataset.gameState).phase==='playing'),'The project demo still starts with native input');
  if(await p.locator('[data-demo-close]').isVisible())await p.locator('[data-demo-close]').click();else await press(p,p.locator('[data-world-close]'),touch);
  await p.locator('.tank-frame').waitFor({state:'detached'});await press(p,p.locator('[data-world-close]'),touch);
+ await revealDesk(p);
  const book=p.locator('[data-scene-object="books"]');await press(p,book,touch);
  await settled(p,'books');
  check(await p.locator('[data-book-topic]').count()===6,'Reading book retains all six topics');

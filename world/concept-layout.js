@@ -19,8 +19,11 @@ export function fromPlate(u, v, height = 0) {
 }
 
 // All silhouette vertices use the same real camera as the scene and current native targets.
+const platePoints=new WeakMap();
 export function projectPlateRing(ring,height,camera,width,viewportHeight) {
-  return ring.map(([u,v])=>{const p=fromPlate(u,v,height).project(camera);
+  let byHeight=platePoints.get(ring);if(!byHeight){byHeight=new Map();platePoints.set(ring,byHeight);}
+  if(!byHeight.has(height))byHeight.set(height,ring.map(([u,v])=>fromPlate(u,v,height)));
+  return byHeight.get(height).map(point=>{const p=point.clone().project(camera);
     return [(p.x+1)*width/2,(1-p.y)*viewportHeight/2];});
 }
 
@@ -74,7 +77,8 @@ export const targets = {
 // Object-mode dots use measured pictured objects, independently of legacy activity framing.
 export const hotspotTargets={
   work:targets.work,contact:targets.contact,globe:targets.globe,resume:targets.resume,
-  experience:targets.experience,books:[.082,.645,.84],fibonacci:targets.fibonacci
+  experience:targets.experience,books:[.082,.645,.84],fibonacci:targets.fibonacci,
+  aqua:[.46,.424,0],futsl:[.677,.431,0]
 };
 // Mobile discovery labels sit below the clipboard, joined to its paper by a fine stem.
 export const hotspotLabelTargets={resume:[.287,.665,.84]};

@@ -21,7 +21,8 @@ export function createWorld({host,onNear,onArrive,onGame,onFailure,onRegion=()=>
   const reduced=()=>reducedMotion();
   let route='overview',near='',path=[],arrival=null,paused=false,night=false,disposed=false;
   let frame=0,last=0,walkingPhase=0,character='loading',pendingPerson=null;
-  let loaded=false,deviceGame=null;
+  let loaded=false,deviceGame=null,renderWidth=0,renderHeight=0;
+  Object.assign(renderer.domElement.style,{width:'100%',height:'100%'});
   const snowPositions=new Float32Array(64*3);
   for(let i=0;i<64;i++) {
     snowPositions[i*3]=Math.sin(i*2.399)*.14;
@@ -62,7 +63,7 @@ export function createWorld({host,onNear,onArrive,onGame,onFailure,onRegion=()=>
     }catch{character='fallback';render();}
   },undefined,()=>{if(!disposed){character='fallback';render();}});
 
-  const hotspots=walkthrough?null:createSceneHotspots(host,onObject,view,render);
+  const hotspots=walkthrough?null:createSceneHotspots(host,onObject,view,()=>{render();request();});
   if(!walkthrough)character='none';
   Promise.all([environment.ready,hotspots?.ready]).then(()=>{
     if(disposed)return;loaded=true;host.dataset.sceneReady='true';render();request();
@@ -73,6 +74,12 @@ export function createWorld({host,onNear,onArrive,onGame,onFailure,onRegion=()=>
   function request() {if(!frame&&!disposed&&!paused&&!document.hidden)frame=requestAnimationFrame(tick);}
   function render() {
     if(disposed)return;
+    // Update the drawing buffer and camera in the same layout before exposing hit regions.
+    // Fixed CSS sizing prevents canvas pixel dimensions feeding back into the host's height.
+    const width=host.clientWidth,height=host.clientHeight;
+    if(width!==renderWidth||height!==renderHeight){
+      renderWidth=width;renderHeight=height;renderer.setSize(width,height,false);view.resize();
+    }
     if(pendingPerson&&!activities.state()) {
       const next=pendingPerson;pendingPerson=null;
       next.root.position.set(0,0,0);actor.add(next.root);person.hips.removeFromParent();
@@ -140,9 +147,8 @@ export function createWorld({host,onNear,onArrive,onGame,onFailure,onRegion=()=>
       environment.lightingRunning())request();
     else last=0;
   }
-  const observer=new ResizeObserver(()=>{renderer.setSize(host.clientWidth,host.clientHeight);view.resize();render();});
-  observer.observe(host);
-  renderer.setSize(host.clientWidth,host.clientHeight);view.resize();onNear('');render();
+  const observer=new ResizeObserver(render);observer.observe(host);
+  onNear('');render();
   return {
     travel(id,{immediate=false}={}) {
       if(!destinations[id])return;
@@ -168,6 +174,10 @@ export function createWorld({host,onNear,onArrive,onGame,onFailure,onRegion=()=>
       if(!next){actor.position.copy(nearestWalkable(actor.position));onArrive('overview');render();return;}
       path=next;arrival=id;
       if(!path.length){arrival=null;arrived(id);}else request();
+    },
+    async prepareObject(id) {
+      const object=portfolio.get(['aqua','futsl'].includes(id)?'work':id);
+      if(object&&!walkthrough)await portfolio.ensure(object,regions.state().region);
     },
     async inspect(id,{immediate=false}={}) {
       input.clear();path=[];arrival=null;

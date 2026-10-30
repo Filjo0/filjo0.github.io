@@ -6,11 +6,16 @@ import {createPortfolioObjects} from './portfolio-objects.js';
 
 export function createConceptScene({host, onFailure, walkthrough=false}) {
   const scene = new THREE.Scene(), resources = [];
-  const renderer = new THREE.WebGLRenderer({antialias: true, powerPreference: 'low-power'});
+  const palette=getComputedStyle(host.ownerDocument.documentElement);
+  const dayPaper=new THREE.Color(palette.getPropertyValue('--color-paper').trim());
+  const nightPaper=new THREE.Color(palette.getPropertyValue('--chrome-night-paper').trim());
+  const clearPaper=dayPaper.clone();
+  const renderer = new THREE.WebGLRenderer({antialias: walkthrough, alpha:!walkthrough, powerPreference: 'low-power'});
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
-  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.enabled = walkthrough;
   renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.setClearColor(dayPaper,walkthrough?1:0);
   host.append(renderer.domElement);
   renderer.domElement.setAttribute('aria-hidden', 'true');
   renderer.domElement.addEventListener('webglcontextlost', event => {event.preventDefault(); onFailure({reason:'webgl-context-lost'});});
@@ -29,7 +34,7 @@ export function createConceptScene({host, onFailure, walkthrough=false}) {
   const hemi = new THREE.HemisphereLight('#ffe4ca', '#54533f', 1.2);
   const sun = new THREE.DirectionalLight('#ffd2a0', 2.2);
   sun.position.set(10, 12, -4); sun.target.position.set(0, 0, -12);
-  sun.castShadow = true; sun.shadow.mapSize.set(1024,1024);
+  sun.castShadow = walkthrough; sun.shadow.mapSize.set(1024,1024);
   Object.assign(sun.shadow.camera, {left:-15,right:15,top:15,bottom:-15,far:60});
   sun.shadow.bias = -.0001; sun.shadow.normalBias = .025;
   scene.add(hemi, sun, sun.target);
@@ -55,9 +60,14 @@ export function createConceptScene({host, onFailure, walkthrough=false}) {
       uniform sampler2D coastDusk;uniform sampler2D winterDusk;uniform float twilight;
       uniform float season;uniform float darkness;
       void main(){vec2 uv=plateCoord.xy/plateCoord.w*0.5+0.5;
-        vec3 day=mix(texture2D(coast,uv).rgb,texture2D(winter,uv).rgb,season);
-        vec3 evening=mix(texture2D(coastDusk,uv).rgb,texture2D(winterDusk,uv).rgb,season);
-        gl_FragColor=vec4(mix(day,evening,twilight)*darkness,1.0);
+        vec3 day=season>=1.0?texture2D(winter,uv).rgb:texture2D(coast,uv).rgb;
+        if(season>0.0&&season<1.0)day=mix(day,texture2D(winter,uv).rgb,season);
+        if(twilight>0.0){
+          vec3 evening=season>=1.0?texture2D(winterDusk,uv).rgb:texture2D(coastDusk,uv).rgb;
+          if(season>0.0&&season<1.0)evening=mix(evening,texture2D(winterDusk,uv).rgb,season);
+          day=mix(day,evening,twilight);
+        }
+        gl_FragColor=vec4(day*darkness,1.0);
         #include <colorspace_fragment>
       }`});
   resources.push(plateMaterial);
@@ -202,6 +212,7 @@ export function createConceptScene({host, onFailure, walkthrough=false}) {
       uniforms.twilight.value=current+Math.sign(delta)*Math.min(Math.abs(delta),dt/1.1);
       sun.intensity=2.2-uniforms.twilight.value*1.8;hemi.intensity=1.2-uniforms.twilight.value*.45;
       scene.backgroundIntensity=1-uniforms.twilight.value*.45;
+      renderer.setClearColor(clearPaper.copy(dayPaper).lerp(nightPaper,uniforms.twilight.value),walkthrough?1:0);
       waterImage.value=uniforms.twilight.value>.5?uniforms.coastDusk.value:uniforms.coast.value;
     },
     lighting:()=>({blend:uniforms.twilight.value,target:eveningTarget,ready:eveningLoaded}),

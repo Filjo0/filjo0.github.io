@@ -62,6 +62,7 @@ function mountWorkspace(root,{onDemo}) {
     const id=['futsl','aqua','treadfront'][i],name=project.querySelector('h3').textContent;
     const card=document.createElement('article');card.className='workspace-card';card.dataset.appCard=id;
     card.setAttribute('aria-labelledby','workspace-app-heading-'+i);
+    if(root.dataset.selectedApp===id)card.dataset.selected='true';
     const body=document.createElement(i===2?'button':'div');body.className='workspace-app';body.dataset.app=String(i);
     const shot=document.createElement('span');shot.className='workspace-shot';shot.textContent='Loading screenshot…';
     const title=document.createElement('strong');title.id='workspace-app-heading-'+i;title.textContent=name;title.className='workspace-card-title';

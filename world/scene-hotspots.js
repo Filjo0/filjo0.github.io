@@ -3,7 +3,8 @@ import {reducedMotion} from './motion.js';
 import {bounds,clipRing,shapePath,labelPlacement} from './scene-object-geometry.js';
 
 const NS='http://www.w3.org/2000/svg';let instance=0;
-const names={work:'Apps',contact:'Contact',resume:'Résumé',experience:'About me',books:'Book',fibonacci:'Maths',globe:'Globe'};
+const names={work:'Apps',contact:'Contact',resume:'Résumé',experience:'About me',books:'Book',fibonacci:'Maths',
+  globe:'Globe',aqua:'Aqua Local · Pool',futsl:'FUTSL · Pitch'};
 const svg=(tag,attrs={})=>{const n=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))n.setAttribute(k,v);return n;};
 
 // Native buttons own keyboard/focus; only their SVG silhouettes (or small-object padding) receive pointers.
@@ -21,6 +22,12 @@ export function createSceneHotspots(host,onObject,view,render) {
   photo.append(image('concept-coast-v2.webp'));
   for(const n of [dayWinter,nightWinter]){n.setAttribute('width',1672);n.setAttribute('height',941);}
   photo.append(dayWinter,night);defs.append(photo);
+  const framing=document.createElement('button');framing.type='button';framing.className='scene-framing';framing.hidden=true;
+  if(!host.id)host.id='world-render';framing.dataset.sceneFraming='';framing.setAttribute('aria-controls',host.id||'world-render');host.after(framing);
+  framing.addEventListener('click',()=>{
+    view.panTo(view.sceneArea()==='coast'?.18:.565,{immediate:reducedMotion()});
+    activity();projectionKey='';render();
+  },{signal});
   const buttons=[];let data=null,visible=false,disposed=false,introduced=false,hover='',keyboard='',hint='',hintKind='';
   let introTimer=0,idleTimer=0,hintTimer=0,introIndex=0,glints=0,idleIndex=0,projectionKey='',geometry=[],safe=null;
   const clearTimer=name=>{clearTimeout(name);};
@@ -46,8 +53,9 @@ export function createSceneHotspots(host,onObject,view,render) {
     layer.dataset.intro='sweep';introIndex=0;
     const step=()=>{
       if(!available()){endIntro();paint();return;}
-      if(introIndex>=buttons.length){endIntro();paint();idleLater();return;}
-      hint=buttons[introIndex++].id;hintKind='arrival';paint();introTimer=setTimeout(step,350);
+      const shown=buttons.filter(b=>!b.button.hidden);
+      if(introIndex>=shown.length){endIntro();paint();idleLater();return;}
+      hint=shown[introIndex++].id;hintKind='arrival';paint();introTimer=setTimeout(step,240);
     };step();
   }
   function activity(){
@@ -58,7 +66,9 @@ export function createSceneHotspots(host,onObject,view,render) {
     const shown=[];
     for(const b of buttons){
       const state=b.id===keyboard?'focus':b.id===hover?'hover':b.id===hint?hintKind:'none';
-      const name=state==='focus'||state==='hover'||state==='arrival'||layer.dataset.intro==='names';
+      const place=view.compact()&&view.sceneArea()==='coast'&&['aqua','futsl'].includes(b.id);
+      const name=place||state==='focus'||state==='hover'||state==='arrival'||layer.dataset.intro==='names';
+      b.label.textContent=place?(b.id==='aqua'?'Aqua Local':'FUTSL'):names[b.id];
       b.button.dataset.hotspotState=state;b.effect.dataset.hotspotState=state;
       b.button.toggleAttribute('data-show-name',name);b.effect.toggleAttribute('data-show-name',name);
       if(name&&!b.button.hidden)shown.push(b);
@@ -77,7 +87,7 @@ export function createSceneHotspots(host,onObject,view,render) {
     }
   }
   function initialize(meta){
-    if(meta.outline_schema?.version!==1||Object.keys(meta.targets||{}).length!==7)throw Error('Unsupported scene outlines');
+    if(meta.outline_schema?.version!==1||Object.keys(meta.targets||{}).length!==9)throw Error('Unsupported scene outlines');
     for(const id of Object.keys(names)){
       const t=meta.targets[id];
       if(!Array.isArray(t?.anchor)||t.anchor.length!==3||t.anchor.some(n=>!Number.isFinite(n)))throw Error('Invalid scene anchor: '+id);
@@ -95,7 +105,8 @@ export function createSceneHotspots(host,onObject,view,render) {
       mask.append(maskRect,maskPath);defs.append(mask);
       const effect=svg('g',{'data-scene-effect':id,'data-hotspot-state':'none'});
       const lift=svg('g',{'class':'scene-object-lift','clip-path':`url(#${key}-clip)`}),sweep=svg('g',{'class':'scene-object-sweep'});
-      const lit=svg('g',{filter:`url(#${prefix}-lift)`});lit.append(svg('use',{href:'#'+prefix+'-plate'}));sweep.append(lit);lift.append(sweep);
+      const localFilter=lightFilter.cloneNode(true);localFilter.id=key+'-lift';defs.append(localFilter);
+      const lit=svg('g',{filter:`url(#${key}-lift)`});lit.append(svg('use',{href:'#'+prefix+'-plate'}));sweep.append(lit);lift.append(sweep);
       const halo=svg('path',{'class':'scene-object-halo',mask:`url(#${key}-outside)`});
       const edge=svg('path',{'class':'scene-object-focus-edge'}),rim=svg('path',{'class':'scene-object-rim'});
       const connectorEdge=svg('path',{'class':'scene-connector-edge'}),connector=svg('path',{'class':'scene-label-connector'});
@@ -130,7 +141,7 @@ export function createSceneHotspots(host,onObject,view,render) {
       button.addEventListener('focus',()=>{if(button.matches(':focus-visible'))keyboard=id;activity();paint();},{signal});
       button.addEventListener('blur',()=>{if(keyboard===id)keyboard='';paint();idleLater();},{signal});
       button.addEventListener('keydown',e=>{if(!['Shift','Control','Alt','Meta'].includes(e.key)){keyboard=id;activity();paint();}},{signal});
-      buttons.push({id,button,label:tag,hitSvg,hitPath,effect,clipPath,mask,maskRect,maskPath,halo,edge,rim,connector,connectorEdge});
+      buttons.push({id,button,localFilter,label:tag,hitSvg,hitPath,effect,clipPath,mask,maskRect,maskPath,halo,edge,rim,connector,connectorEdge});
     }
   }
   const ready=fetch(new URL('../assets/outdoor/hotspot-layout.json',import.meta.url),{signal}).then(r=>{
@@ -157,6 +168,12 @@ export function createSceneHotspots(host,onObject,view,render) {
     ready,
     update(camera,region,show,lighting,season,paused=false) {
       visible=show&&!paused;layer.hidden=!visible;
+      framing.hidden=!visible||!view.compact();
+      const area=view.sceneArea();
+      framing.textContent=area==='desk'?'See the coast \u2192':'\u2190 Back to desk';
+      framing.dataset.sceneDestination=area==='desk'?'coast':'desk';
+      if(!framing.hidden)framing.style.top=(document.querySelector('.world-dock').getBoundingClientRect().top-host.getBoundingClientRect().top-60)+'px';
+      host.dataset.sceneFrameMode=area;host.dataset.scenePanning=String(view.panning());
       if(!visible){stopHints();hover='';keyboard='';return;}
       if(!data)return;
       const w=host.clientWidth,h=host.clientHeight,origin=host.getBoundingClientRect();
@@ -165,7 +182,8 @@ export function createSceneHotspots(host,onObject,view,render) {
       const cool=region==='winter'||lighting.blend>.5;
       effects.setAttribute('viewBox',`0 0 ${w} ${h}`);layer.dataset.cool=String(cool);
       lightFilter.setAttribute('width',w);lightFilter.setAttribute('height',h);
-      for(const channel of channels)channel.setAttribute('slope',cool?1.09:1.2);
+      for(const b of buttons)for(const channel of b.localFilter.querySelectorAll('feFuncR,feFuncG,feFuncB'))
+        channel.setAttribute('slope',cool?1.09:1.2);
       if(season.blend>0&&!dayWinter.hasAttribute('href'))
         dayWinter.setAttribute('href',new URL('../assets/outdoor/concept-winter-v2.webp',import.meta.url));
       dayWinter.setAttribute('opacity',season.blend);nightWinter.setAttribute('opacity',season.blend);night.setAttribute('opacity',lighting.blend);
@@ -183,9 +201,12 @@ export function createSceneHotspots(host,onObject,view,render) {
           const raw={outline:projectPlateRing(shape.outline,meta.anchor[2],camera,w,h),
             holes:(shape.outline_holes||[]).map(r=>projectPlateRing(r,meta.anchor[2],camera,w,h))};
           const clipped=clipRing(raw.outline,{left:0,right:w,top:safe.top,bottom:safe.bottom}),box=bounds(clipped);
-          const minimum=b.id==='contact'?6:16;
-          const off=clipped.length<3||box.right-box.left<minimum||box.bottom-box.top<minimum;b.button.hidden=off;b.effect.style.display=off?'none':'';
+          const minimum=['contact','aqua','futsl'].includes(b.id)?2:16;
+          const off=clipped.length<3||box.right-box.left<minimum||box.bottom-box.top<minimum;
+          b.button.hidden=off;b.effect.style.display=off?'none':'';
           if(off)continue;
+          for(const [name,value] of Object.entries({x:box.left-8,y:box.top-8,width:box.right-box.left+16,height:box.bottom-box.top+16}))
+            b.localFilter.setAttribute(name,value);
           const rim={outline:clipRing(raw.outline,{...safe,left:12,right:w-12}),holes:raw.holes};
           const path=shapePath(raw),rimPath=shapePath(rim);
           b.clipPath.setAttribute('d',path);b.clipPath.dataset.sceneOutline=b.id;b.clipPath.dataset.plate=plate;
@@ -203,6 +224,6 @@ export function createSceneHotspots(host,onObject,view,render) {
       }
       paint();if(!introduced&&available())introduce();else if(!introTimer&&!idleTimer&&!hintTimer)idleLater();
     },
-    dispose(){disposed=true;stopHints();events.abort();observer.disconnect();chromeObserver.disconnect();layer.remove();}
+    dispose(){disposed=true;stopHints();events.abort();observer.disconnect();chromeObserver.disconnect();layer.remove();framing.remove();}
   };
 }

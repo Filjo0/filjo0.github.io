@@ -1,3 +1,4 @@
+import {revealDesk} from './outline-browser-evidence.mjs';
 import assert from 'node:assert/strict';
 import {mkdir} from 'node:fs/promises';
 import {resolve} from 'node:path';
@@ -76,6 +77,7 @@ try {
   check(await p.locator('a[href="mailto:philalimov.apps@gmail.com"]').isVisible(),'Contact is readable on the phone');
   await p.locator('[data-world-close]').click();
   check(await p.locator('.scene-hotspots').isVisible(),'Close restores object exploration');
+  await revealDesk(p);
   for(const id of ['books','fibonacci']) {
     const opener=id==='books'?p.locator('[data-scene-object="books"]'):p.locator('.world-dock [data-world-route="fibonacci"]');
     await opener.click();await p.locator('[data-world-reader]').waitFor();

@@ -31,6 +31,15 @@ const stage = document.querySelector('[data-world-stage]'),
   heading = document.getElementById('world-reader-title'),
   fallback = document.querySelector('[data-world-fallback]'),
   status = document.querySelector('[data-world-status]');
+const loadingView=document.createElement('p');loadingView.className='scene-loading';loadingView.hidden=true;
+loadingView.setAttribute('role','status');loadingView.setAttribute('aria-live','polite');stage.append(loadingView);
+let loadingTimer=0;
+function stopLoading(){clearTimeout(loadingTimer);loadingView.hidden=true;reader.removeAttribute('aria-busy');}
+const warmObject=event=>{
+  const target=event.target.closest?.('[data-world-route],[data-scene-object]');
+  const id=target?.dataset.worldRoute||target?.dataset.sceneObject;
+  if(!textMode&&id)world?.prepareObject?.(id)?.catch(()=>{});
+};
 const events = new AbortController(),
   signal = events.signal,
   records = new Map();
@@ -97,6 +106,7 @@ const demo = createDemo({
 });
 
 const restore = () => {
+  stopLoading();
   objectAnimation?.cancel();objectAnimation=null;
   objectDispose();objectDispose=()=>{};
   sceneChrome?.close();
@@ -244,10 +254,14 @@ function mount(id) {
   }
   const conceptPage=document.body.dataset.worldRenderer==='concept'&&['books','fibonacci'].includes(id);
   if (conceptPage || discoveries[id] || ['work', 'experience', 'resume', 'contact', 'futsl', 'aqua', 'tank'].includes(id)) {
-    reader.classList.add('world-object', 'world-object-opening');
+    reader.classList.add('world-object', 'world-object-opening');reader.setAttribute('aria-busy','true');
+    if(document.body.dataset.worldNavigation==='objects')document.querySelector('[data-world-close]').hidden=false;
+    loadingTimer=setTimeout(()=>{
+      loadingView.textContent='Opening '+places[id].label+'…';loadingView.hidden=false;
+    },100);
     Promise.resolve(world.inspect(id,{immediate:reduced.matches})).catch(()=>{
       if(active!==id||textMode)return;
-      reader.classList.remove('world-object','world-object-opening');
+      stopLoading();reader.classList.remove('world-object','world-object-opening');
       content.innerHTML='<p>This close-up could not load.</p><button type="button" data-view-retry>Retry view</button>';
       content.querySelector('[data-view-retry]').addEventListener('click',()=>go(id,{historyChange:false}),{signal:mountEvents.signal});
       announce('Close-up unavailable. Retry the view or go back to the scene.');
@@ -276,7 +290,12 @@ function go(id, {
   if(pendingDemo)id='work';
   if(id==='coaching')id='experience';
   if(['tennis','receipts'].includes(id))id='work';
-  if(['futsl','aqua'].includes(id)){id='work';history.replaceState({},'', '#work');historyChange=false;}
+  const selectedApp=['futsl','aqua'].includes(id)?id:null;
+  if(selectedApp){
+    id='work';
+    if(!opener){history.replaceState({},'', '#work');historyChange=false;}
+  }
+  content.dataset.selectedApp=selectedApp||'';
   if (id === 'globe' && !textMode && world.globe) {
     ++version; active = 'overview'; restore(); reader.hidden = true;
     document.querySelector('[data-world-map]').open = false;
@@ -407,7 +426,7 @@ try {
       const fits = projectSurface(reader, object, camera, host);
       updateDemoBack();
       if (fits && settled) {
-        reader.classList.remove('world-object-opening');
+        stopLoading();reader.classList.remove('world-object-opening');
         if(pendingDemo&&object?.id==='work'){
           pendingDemo=false;const token=version;
           queueMicrotask(()=>{
@@ -420,8 +439,10 @@ try {
           // Hidden close-ups have no scroll box: reset once after projection reveals it.
           content.scrollTop = 0;
           surfaceFocus = true;
+          const selected=content.querySelector('[data-app-card="'+content.dataset.selectedApp+'"]');
+          if(selected)selected.scrollIntoView({block:'center'});
           if(document.body.dataset.worldNavigation==='objects'&&!reduced.matches)
-            objectAnimation=content.animate([{opacity:0},{opacity:1}],350);
+            objectAnimation=content.animate([{opacity:0},{opacity:1}],120);
           if(focusIntent)(reader.dataset.activity==='device'?content.querySelector('[data-game-start]'):heading).focus({
             preventScroll: true
           });
@@ -543,3 +564,5 @@ try {
   fail({reason:'startup-error',error});
 }
 document.querySelectorAll('[data-current-year]').forEach(n => n.textContent = new Date().getFullYear());
+
+for(const type of ['pointerover','focusin','pointerdown'])document.addEventListener(type,warmObject,{signal});

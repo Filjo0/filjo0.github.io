@@ -32,7 +32,7 @@ Do not delete retained modules merely because their names mention old activities
 
 ## Verification
 
-Run the smallest relevant check first, then npm test and the relevant pure/browser suites listed in README.md. The full public browser run contains 19 suites. Save failures and investigate; never loosen assertions or rerun blindly until green. Review native screenshots as well as DOM/state checks. Include 320px and short landscape for responsive changes.
+Run the smallest relevant check first, then npm test and the relevant pure/browser suites listed in README.md. The full public browser run contains 20 suites. Save failures and investigate; never loosen assertions or rerun blindly until green. Review native screenshots as well as DOM/state checks. Include 320px and short landscape for responsive changes.
 
 A corrected Windows WebKit build is required for native canvas screenshots after resize; README.md links the upstream bug. Test tools and the site are separate. Emulated touch is not proof of physical iPhone/Android behaviour. Keep implemented, locally tested, real-device checked and published claims distinct.
 

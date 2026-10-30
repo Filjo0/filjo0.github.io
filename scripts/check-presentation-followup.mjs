@@ -1,3 +1,4 @@
+import {revealDesk} from './outline-browser-evidence.mjs';
 import assert from 'node:assert/strict';
 import {mkdir,readFile} from 'node:fs/promises';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
@@ -59,7 +60,7 @@ try{for(const viewport of [{width:1440,height:900},{width:390,height:844},{width
  await p.screenshot({path:dir+'/'+viewport.width+'-work.png'});
  await p.locator('[data-project-notes="0"]').click();check(await p.locator('[data-world-section="work"] .project').first().isVisible(),
  'Case study opens the canonical project story');await p.locator('[data-notes-home]').click();
- await p.locator('[data-world-close]').click();await p.locator('[data-scene-object="books"]').click();
+ await p.locator('[data-world-close]').click();await revealDesk(p);await p.locator('[data-scene-object="books"]').click();
  await p.waitForFunction(()=>document.querySelector('[data-world-reader]').dataset.object==='books'&&
  !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
  if(viewport.width<720||viewport.height<500){
