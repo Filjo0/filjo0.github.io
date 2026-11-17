@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "recordedAt": "2026-11-17T11:36:12.192Z",
-  "sourceDigest": "0f7c97f2cf94635c0959ff291846bc2520ce3b5e823dfe92ee690d0fa2806078",
+  "recordedAt": "2026-11-17T12:57:38.329Z",
+  "sourceDigest": "6e1d69d524e679a61fa8fb59fb75c2c3a419974f189942b578e553eb207134a6",
   "scope": "This source · local browser validation",
   "checks": [
     {
@@ -10,52 +10,52 @@
     },
     {
       "label": "Marker assertions · Chromium",
-      "passed": 4759
+      "passed": 7590
     },
     {
       "label": "Scene enhancement assertions · Chromium",
-      "passed": 11695
+      "passed": 12088
     },
     {
       "label": "Marker assertions · WebKit",
-      "passed": 4759
+      "passed": 7590
     },
     {
       "label": "Scene enhancement assertions · WebKit",
-      "passed": 11695
+      "passed": 12088
     },
     {
       "label": "Logic tests",
-      "passed": 99
+      "passed": 100
     }
   ],
   "objects": {
     "work": {
-      "viewports": 8
+      "viewports": 11
     },
     "contact": {
-      "viewports": 8
+      "viewports": 11
     },
     "resume": {
-      "viewports": 8
+      "viewports": 11
     },
     "experience": {
-      "viewports": 4
+      "viewports": 7
     },
     "books": {
-      "viewports": 8
+      "viewports": 11
     },
     "fibonacci": {
-      "viewports": 8
+      "viewports": 11
     },
     "globe": {
-      "viewports": 8
+      "viewports": 11
     },
     "aqua": {
-      "viewports": 8
+      "viewports": 10
     },
     "futsl": {
-      "viewports": 8
+      "viewports": 10
     }
   },
   "exclusions": [

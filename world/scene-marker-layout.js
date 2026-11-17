@@ -24,13 +24,20 @@ export function placeMarkers(markers,viewport,obstacles=[],previous={}){
   top=Math.max(viewport.top-8,Math.min(viewport.bottom+8-h,top));
   const box=rect(left,top,w,h),pill=rect(left,top+offset,w,ph),end=closest(m.anchor,pill);
   const length=Math.hypot(x-end[0],y-end[1]),other=prepared.filter(o=>o.id!==m.id);
-  if(box.right>viewport.right+.01||box.bottom>viewport.bottom+8+.01||length>44||(!m.attached&&overlaps(pill,rect(x-9,y-9,18,18),2)))return null;
+  const extent=m.outline.reduce((value,p)=>Math.max(value,Math.hypot(p[0]-x,p[1]-y)),0);
+  const reach=m.outsideObject?Math.max(44,extent+ph+52):44;
+  if(box.right>viewport.right+.01||box.bottom>viewport.bottom+8+.01||length>reach||(!m.attached&&overlaps(pill,rect(x-9,y-9,18,18),2)))return null;
   if(length<(m.minGap||0))return null;
+  if(m.outsideObject&&overlaps(pill,m.bounds,3)&&rectangleHitsRing(pill,m.outline,3))return null;
+  if(m.outsideObject){
+   const edge=nearestPoint([left+w/2,top+h/2],m.outline),near=closest(edge,pill);
+   if(Math.hypot(edge[0]-near[0],edge[1]-near[1])>52)return null;
+  }
   if(m.attached&&!m.outline.some((a,i)=>rectangleHitsRing(pill,[a,m.outline[(i+1)%m.outline.length]],3)))return null;
   if(obstacles.some(o=>overlaps(box,o,5)))return null;
   if(other.some(o=>overlaps(box,rect(o.anchor[0]-9,o.anchor[1]-9,18,18),2)||
     overlaps(pill,o.bounds,2)&&rectangleHitsRing(pill,o.outline,2)))return null;
-  for(let i=9;i<length;i+=2){
+  if(!m.outsideObject)for(let i=9;i<length;i+=2){
    const p=[x+(end[0]-x)*i/length,y+(end[1]-y)*i/length];
    if(other.some(o=>pointInRing(p,o.outline)))return null;
   }
@@ -52,18 +59,19 @@ export function placeMarkers(markers,viewport,obstacles=[],previous={}){
    const value=candidate(m,left,top,penalty);if(!value)return;
    const key=value.box.left.toFixed(2)+':'+value.box.top.toFixed(2);if(seen.has(key))return;seen.add(key);options.push(value);
   };
-  if(m.attached){
+  if(m.attached||m.outsideObject){
    const ph=m.visualHeight||28,offset=(44-ph)/2,edge=[nearestPoint(m.anchor,m.outline)];
    for(let i=0;i<m.outline.length;i++){
     const a=m.outline[i],b=m.outline[(i+1)%m.outline.length],length=Math.hypot(b[0]-a[0],b[1]-a[1]);
     for(let d=0;d<=length;d+=8){
      const t=length?d/length:0,p=[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
-     if(Math.hypot(p[0]-x,p[1]-y)<=80)edge.push(p);
+     if(m.outsideObject||Math.hypot(p[0]-x,p[1]-y)<=80)edge.push(p);
     }
    }
-   for(const [ex,ey] of edge)for(const shift of [0,-12,12,-24,24])for(const gap of [-2,0,2,3]){
-    // Test an overlap, a tangent and up to 3px of edge clearance. The
-    // transparent 44px native target remains separate from neighbouring tabs.
+   const gaps=m.outsideObject?[4,8,12,20,28,36,44,52]:[-2,0,2,3];
+   for(const [ex,ey] of edge)for(const shift of [0,-12,12,-24,24])for(const gap of gaps){
+    // Captions search the perimeter, while attached tabs can meet the edge.
+    // Transparent 44px targets remain separate from neighbouring controls.
     add(ex-w/2+shift,ey-offset+gap,(gap+2)*2);add(ex-w/2+shift,ey-offset-ph-gap,2+(gap+2)*2);
     add(ex+gap,ey-22+shift,4+(gap+2)*2);add(ex-w-gap,ey-22+shift,4+(gap+2)*2);
    }

@@ -53,7 +53,8 @@ export function createSceneHotspots(host,onObject,view,render) {
   // Compact dot-and-name buttons stay close to their calibrated objects.
   function layoutMarkers(obstacles){
     const solve=()=>placeMarkers(geometry.map(g=>({id:g.id,anchor:g.anchor,outline:g.shape.outline,
-      size:{width:g.label.getBoundingClientRect().width,height:44},visualHeight:g.pill.getBoundingClientRect().height,attached:false})),safe,
+      size:{width:g.label.getBoundingClientRect().width,height:44},visualHeight:g.pill.getBoundingClientRect().height,
+      attached:false,outsideObject:true})),safe,
         obstacles,previousMarkers);
     let layout=solve();
     if(!layout.ok){

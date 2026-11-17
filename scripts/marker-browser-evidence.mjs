@@ -27,8 +27,13 @@ async function readMarkerState(page){
     if(distance)for(let i=0,len=path.getTotalLength();i<=len;i+=.5){
      const p=path.getPointAtLength(i);distance=Math.min(distance,Math.hypot(p.x-local.x,p.y-local.y));
     }
+    let edgeGap=Infinity;
+    for(let i=0,len=path.getTotalLength();i<=len;i+=1){
+     const point=path.getPointAtLength(i),px=point.x+host.x,py=point.y+host.y;
+     edgeGap=Math.min(edgeGap,Math.hypot(Math.max(r.x-px,0,px-r.right),Math.max(r.y-py,0,py-r.bottom)));
+    }
     return {id:n.dataset.sceneObject,disabled:n.disabled,name:label.textContent,accessible:n.getAttribute('aria-label'),
-     anchorHidden:getComputedStyle(dot).opacity==='0',dotColor:getComputedStyle(dot).backgroundColor,uppercase:style.textTransform==='uppercase',iconVisible:[...label.querySelectorAll('svg')].some(n=>getComputedStyle(n).display!=='none'),iconCount:label.querySelectorAll("svg.scene-tab-icon").length,shadow:style.textShadow,dot:d,pill:r,target:box(target),button:box(n),original:[host.x+original.x,host.y+original.y],distance,
+     anchorHidden:getComputedStyle(dot).opacity==='0',dotColor:getComputedStyle(dot).backgroundColor,uppercase:style.textTransform==='uppercase',iconVisible:[...label.querySelectorAll('svg')].some(n=>getComputedStyle(n).display!=='none'),iconCount:label.querySelectorAll("svg.scene-tab-icon").length,shadow:style.textShadow,dot:d,pill:r,target:box(target),button:box(n),original:[host.x+original.x,host.y+original.y],distance,edgeGap,
      nativeStyles:{button:n.style.cssText,dot:dot.style.cssText,label:target.style.cssText,
       buttonComputed:{top:getComputedStyle(n).top,left:getComputedStyle(n).left,width:getComputedStyle(n).width,transform:getComputedStyle(n).transform,transition:getComputedStyle(n).transition,animation:getComputedStyle(n).animation},
       dotComputed:{top:getComputedStyle(dot).top,left:getComputedStyle(dot).left,transform:getComputedStyle(dot).transform}},
@@ -69,8 +74,8 @@ export async function markerEvidence(page,check,{native=true}={}){
   check(t.width>=44&&t.height>=44&&m.button.width>=44&&m.button.height>=44,m.id+': the combined native marker has a real touch target');
   check(d.x>=0&&d.right<=state.host.right&&d.y>=state.header.bottom&&
    d.bottom<=(state.dock.top>state.header.bottom?state.dock.top:state.host.bottom),m.id+': the dot never clips into navigation');
-  const x=d.x+d.width/2,y=d.y+d.height/2,nearest=[Math.max(p.x,Math.min(p.right,x)),Math.max(p.y,Math.min(p.bottom,y))];
-  check(Math.hypot(x-nearest[0],y-nearest[1])<=44.1,m.id+': the name remains near its dot');
+  const x=d.x+d.width/2,y=d.y+d.height/2;
+  check(m.edgeGap<=52.5,m.id+': the name remains next to its object edge');
   check(m.distance<.75,m.id+': the dot is actually on the photographed object');
   if(m.original[0]>=11&&m.original[0]<=state.host.right-11&&m.original[1]>=state.header.bottom+11&&
    m.original[1]<=(state.dock.top>state.header.bottom?state.dock.top:state.host.bottom)-11)
@@ -78,8 +83,8 @@ export async function markerEvidence(page,check,{native=true}={}){
   check(m.dotHit&&m.pillHit,m.id+': both the actual dot and pill receive the correct native hit');
   if(state.pan)check(!overlap(t,state.pan),m.id+': the marker never covers the pan button');
   if(state.inspector)check(!overlap(t,state.inspector),m.id+': the whole marker stays clear of the compact Inspect panel');
-  for(const o of state.objects)if(o.id!==m.id){
-   check(!overlap(t,o.target),m.id+': no overlapping marker targets with '+o.id);
+  for(const o of state.objects){
+   if(o.id!==m.id)check(!overlap(t,o.target),m.id+': no overlapping marker targets with '+o.id);
    const intersects=await page.locator('[data-scene-outline="'+o.id+'"]').evaluate((path,{p,host})=>{
     for(let y=p.y;y<=p.bottom;y+=2)for(let x=p.x;x<=p.right;x+=2)
      if(path.isPointInFill(new DOMPoint(x-host.x,y-host.y)))return true;

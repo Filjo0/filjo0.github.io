@@ -37,7 +37,8 @@ export async function outlineGeometry(page,layout,check=(v,m)=>assert.ok(v,m),pa
   const {host,header,dock,objects}=result;
   const fullW=Math.max(host.width,host.height*1672/941),fullH=fullW*941/1672;
   const left=Math.max(0,Math.min(fullW-host.width,fullW*(host.width<720?layout.mobile_initial_centre:.5)-host.width/2+pan));
-  const top=(fullH-host.height)/2;
+  const landscape=host.width<960&&host.height<host.width&&host.height<500;
+  const top=landscape?Math.max(0,fullH-host.height-(host.height<320?12:0)):(fullH-host.height)/2;
   for(const o of objects.filter(o=>!o.hidden)){
     const meta=layout.targets[o.id],shape=meta.outline_variants?.[o.plate]||meta;
     const points=pathPoints(o.d),expected=[shape.outline,...shape.outline_holes||[]].flat().map(([u,v])=>[u*fullW-left,v*fullH-top]);
@@ -64,15 +65,23 @@ export async function outlineGeometry(page,layout,check=(v,m)=>assert.ok(v,m),pa
       check(o.label.width===0&&o.label.height===0,o.id+': no caption can obscure the photograph or another shortcut');
       continue;
     }
-    check(Math.hypot(centre[0]-Math.max(r.left,Math.min(r.right,centre[0])),centre[1]-Math.max(r.top,Math.min(r.bottom,centre[1])))<=44.1,o.id+': the name button stays close to its own dot');
-    for(const other of objects.filter(n=>!n.hidden&&n.id!==o.id)){
-      const hit=await page.locator('[data-scene-hit="'+other.id+'"]').evaluate((path,{r,host})=>{
+    const edgeGap=await page.locator('[data-scene-outline="'+o.id+'"]').evaluate((path,{r,host})=>{
+      let distance=Infinity;
+      for(let i=0,len=path.getTotalLength();i<=len;i+=1){
+        const p=path.getPointAtLength(i),x=p.x+host.x,y=p.y+host.y;
+        distance=Math.min(distance,Math.hypot(Math.max(r.x-x,0,x-r.right),Math.max(r.y-y,0,y-r.bottom)));
+      }return distance;
+    },{r,host});
+    check(edgeGap<=52.5,o.id+': the name stays beside its own object edge');
+    for(const other of objects.filter(n=>!n.hidden)){
+      const selector=other.id===o.id?'data-scene-outline':'data-scene-hit';
+      const hit=await page.locator('['+selector+'="'+other.id+'"]').evaluate((path,{r,host})=>{
         for(let y=r.y;y<=r.bottom;y+=3)for(let x=r.x;x<=r.right;x+=3)
           if(path.isPointInFill(new DOMPoint(x-host.x,y-host.y)))return true;
         return false;
       },{r,host});
       check(!hit,o.id+': tag avoids the actual '+other.id+' silhouette');
-      if(other.show)check(!(r.x<other.label.right&&r.right>other.label.x&&r.y<other.label.bottom&&r.bottom>other.label.y),
+      if(other.id!==o.id&&other.show)check(!(r.x<other.label.right&&r.right>other.label.x&&r.y<other.label.bottom&&r.bottom>other.label.y),
         o.id+': tag avoids '+other.id+' tag');
     }
   }

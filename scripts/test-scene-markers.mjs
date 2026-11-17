@@ -105,3 +105,16 @@ test('measured icon tabs attach to the real object edges without sacrificing tar
   }
  }
 });
+
+test('outside captions uncover their own object and reject an overlapping cached placement',()=>{
+ const marker={id:'phone',anchor:[150,130],outline:[[100,100],[200,100],[200,160],[100,160]],
+  size:{width:80,height:44},visualHeight:22};
+ const viewport={left:8,top:8,right:292,bottom:292};
+ const previous=placeMarkers([marker],viewport);assert.ok(previous.ok);
+ assert.ok(rectangleHitsRing(previous.positions.phone.pill,marker.outline,0),'The former placement covers the object');
+ const outside=placeMarkers([{...marker,outsideObject:true}],viewport,[],previous.positions);
+ assert.ok(outside.ok);assert.ok(!outside.reused,'A cached overlap must be replaced');
+ assert.ok(!rectangleHitsRing(outside.positions.phone.pill,marker.outline,3),'The entire visible caption clears its own outline');
+ assert.deepEqual(outside.positions.phone.anchor,marker.anchor,'The dot keeps its calibrated object anchor');
+ assert.equal(outside.positions.phone.box.bottom-outside.positions.phone.box.top,44,'The native target keeps its height');
+});

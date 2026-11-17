@@ -9,9 +9,12 @@ export async function markerContrast(page){
  let freeze,ghost,mask;
  try{
   freeze=await page.addStyleTag({content:'.scene-hotspots *, .scene-hotspots *::after{animation:none!important;transition:none!important}.scene-atmosphere{visibility:hidden!important}'});
-  await paint();const actual=await page.screenshot();
+  await paint();
   ghost=await page.addStyleTag({content:'.scene-marker-text{-webkit-text-fill-color:transparent!important}'});
   await paint();const background=await page.screenshot();await ghost.evaluate(n=>n.remove());ghost=null;
+  // Restore and paint the real ink before its capture, using the same fresh
+  // rasterisation as the mask instead of a cached fractional-position layer.
+  await paint();const actual=await page.screenshot();
   mask=await page.addStyleTag({content:'.scene-marker-text{background:rgb(0,0,0)!important;color:rgb(255,255,255)!important;-webkit-text-fill-color:rgb(255,255,255)!important;text-shadow:none!important;box-shadow:none!important}'});
   await paint();const glyphs=await page.screenshot();
   return await page.evaluate(async({actual,background,glyphs,boxes})=>{

@@ -42,7 +42,9 @@ export function createConceptCamera(host, actor, {walkthrough=true}={}) {
     const screenX=activity&&w>=720?.38:.5;
     const left = THREE.MathUtils.clamp(fullW*centre-w*screenX+(activity?0:userPan),0,fullW-w);
     const targetY=preview&&!activity?targets[preview][1]:(1-focus.y)/2;
-    const top=preview||activity?THREE.MathUtils.clamp(fullH*targetY-h*.43,0,fullH-h):(fullH-h)/2;
+    const landscape=!walkthrough&&w<960&&h<w&&h<500;
+    const landscapeTop=Math.max(0,fullH-h-(h<320?12:0));
+    const top=preview||activity?THREE.MathUtils.clamp(fullH*targetY-h*.43,0,fullH-h):landscape?landscapeTop:(fullH-h)/2;
     camera.aspect = fullW / fullH;
     camera.setViewOffset(fullW, fullH, left, top, w, h);
     camera.updateProjectionMatrix();

@@ -7,7 +7,7 @@ const base=sceneFixtureURL(),out=(process.env.OBJECT_MARKER_ARTIFACT_DIR||'valid
 await mkdir(out,{recursive:true});
 const b=await pw[engine].launch({headless:true,...(process.env.STUDIO_BROWSER_EXECUTABLE?{executablePath:process.env.STUDIO_BROWSER_EXECUTABLE}:{}),
  ...(engine==='chromium'?{args:['--enable-unsafe-swiftshader']}: {})});
-const sizes=[[1440,900],[1280,720],[390,844],[390,664],[375,553],[320,568],[320,844],[844,390]],errors=[],evidence=[];
+const sizes=[[1440,900],[1280,720],[390,844],[390,664],[375,553],[320,568],[320,844],[844,390],[568,320],[844,280],[568,280]],errors=[],evidence=[];
 let checks=0,current;const check=(v,m)=>{assert.ok(v,m);checks++;};
 const ready=p=>p.waitForFunction(()=>document.querySelector('[data-world-render]')?.dataset.sceneReady==='true'&&
  document.querySelector('[data-world-render]').clientHeight===innerHeight&&document.querySelector('.scene-hotspots')?.dataset.markerLayout==='ready');
@@ -148,6 +148,6 @@ try{
   const motion=await current.evaluate(()=>({choice:document.body.dataset.motion,
    animations:document.querySelector('.scene-hotspots')?.getAnimations({subtree:true}).map(a=>({
     type:a.constructor.name,name:a.animationName,property:a.transitionProperty,timing:a.effect.getComputedTiming()}))}));
-  await writeFile(out+'/failure.json',JSON.stringify({error:e.message,errors,motion},null,2));}
+  await writeFile(out+'/failure.json',JSON.stringify({error:e.message,errors,motion,markerEvidence:e.markerEvidence},null,2));}
  throw e;
 }finally{await b.close();}

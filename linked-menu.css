@@ -78,3 +78,25 @@ body[data-linked-input="pointer"] [data-world-content] :is(h1,h2,h3,h4)[tabindex
 .linked-cancel{position:fixed;top:12px;left:12px;right:auto;z-index:101;min-width:84px;min-height:44px;
  padding:10px 16px;border:1px solid var(--color-line);border-radius:var(--radius-control);background:var(--color-paper);
  color:var(--color-green-deep);font:600 var(--text-ui) var(--ui-font);cursor:pointer;}
+
+/* Compact chrome leaves room for the desk on very short landscape screens. */
+@media(max-width:959px) and (max-height:319px) and (orientation:landscape){
+ body[data-world-ready="true"][data-world-navigation="objects"]:not([data-object-open="true"]) .world-header{
+  display:flex;height:56px;padding:6px 14px;gap:6px;align-items:center;
+ }
+ body[data-world-ready="true"][data-world-navigation="objects"]:not([data-object-open="true"]) .world-header .world-identity{
+  display:block;flex:1;min-width:0;
+ }
+ body[data-world-ready="true"][data-world-navigation="objects"]:not([data-object-open="true"]) .world-identity h1{
+  margin:0;font-size:var(--text-xl);line-height:1.1;
+ }
+ body[data-world-ready="true"][data-world-navigation="objects"]:not([data-object-open="true"]) .world-identity p{
+  margin:3px 0 0;line-height:1.2;
+ }
+ body[data-world-ready="true"][data-world-navigation="objects"] .world-dock{
+  height:calc(52px + env(safe-area-inset-bottom));min-height:52px;
+ }
+ body[data-world-ready="true"][data-world-navigation="objects"] .world-dock>a{
+  flex-direction:row;gap:6px;min-height:44px;padding:4px 2px;
+ }
+}
