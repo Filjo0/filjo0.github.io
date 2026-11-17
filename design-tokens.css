@@ -57,8 +57,9 @@
   --object-halo-warm: #ffe6a0;
   --object-label-action: #ffe1ac;
   --object-label-border: var(--color-green);
-  --object-label-ink: var(--color-green-deep);
-  --object-label-surface: var(--color-paper);
+  --object-label-ink: var(--color-black);
+  --object-label-surface: color-mix(in srgb, var(--color-white) 72%, transparent);
+  --object-label-hover: color-mix(in srgb, var(--color-white) 92%, transparent);
   --object-open-badge: #fff6dc;
   --object-rim-cool: #e7f7ff;
   --object-rim-warm: #fff1cb;
@@ -81,6 +82,8 @@
   --text-eyebrow: 11px;
   --text-xs: 12px;
   --text-marker: 13px;
+  --marker-phase: 0s;
+  --font-marker: 'Zalando Sans Expanded', var(--font-ui);
   --text-sm: 14px;
   --text-base: 16px;
   --text-lg: 18px;

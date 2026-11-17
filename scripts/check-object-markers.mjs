@@ -20,6 +20,38 @@ async function press(n,touch){
 }
 async function close(p,touch){await press(p.locator('[data-world-close]'),touch);await p.waitForFunction(()=>document.querySelector('[data-world-reader]').hidden);}
 try{
+ for(const mode of ['delayed','failed']){
+  const p=await b.newPage({viewport:{width:375,height:553},hasTouch:true,isMobile:true,reducedMotion:'reduce'});current=p;
+  p.on('pageerror',e=>errors.push(e.message));
+  let releaseFont;const heldFont=new Promise(resolve=>{releaseFont=resolve;});
+  await p.route('**/assets/fonts/zalando-sans-expanded/medium-latin.woff2',async route=>{
+   if(mode==='delayed'){await heldFont;await route.continue();}else await route.abort();
+  });
+  const requested=p.waitForRequest(r=>r.url().endsWith('/medium-latin.woff2'));
+  await p.goto(base,{waitUntil:'domcontentloaded'});await requested;
+  if(mode==='delayed'){
+   try{check(await p.locator('.scene-marker-name').count()===0,'Initial capsules wait for final font metrics instead of exposing fallback-width placement');}
+   finally{releaseFont();}
+  }
+  await ready(p);await p.evaluate(()=>document.fonts.ready);
+  if(mode==='delayed')await markerEvidence(p,check);
+  else{
+   const fallback=await p.locator('[data-scene-object]:not([hidden]) .scene-object-label').evaluateAll(nodes=>nodes.map(n=>{
+    const label=n.querySelector('.scene-marker-name'),style=getComputedStyle(label);
+    const canvas=document.createElement('canvas'),paint=canvas.getContext('2d');paint.fillStyle=style.backgroundColor;paint.fillRect(0,0,1,1);
+    return {box:n.getBoundingClientRect().toJSON(),font:parseFloat(style.fontSize),color:style.color,surface:[...paint.getImageData(0,0,1,1).data]};
+   }));
+   check(fallback.length>=5,'A failed optional font preserves the pictured controls');
+   for(const item of fallback)check(item.box.width>=44&&item.box.height>=44&&item.font>=13&&
+    item.color==='rgb(0, 0, 0)'&&item.surface.slice(0,3).every(value=>value===255)&&item.surface[3]>=170&&item.surface[3]<=240,'System fallback retains target size and readable glass controls');
+   for(const a of fallback)for(const c of fallback)if(a!==c)
+    check(a.box.right<=c.box.left||c.box.right<=a.box.left||a.box.bottom<=c.box.top||c.box.bottom<=a.box.top,
+     'Font failure cannot leave overlapping native controls');
+  }
+  await press(p.locator('[data-scene-object="work"] .scene-object-label'),true);await opened(p,'work');await close(p,true);
+  check(await p.locator('[data-world-reader]').isHidden(),mode+': font loading preserves one-tap entry and Back');
+  await p.screenshot({path:out+'/font-'+mode+'.png'});await p.close();
+ }
  for(const [width,height] of sizes){
   const touch=width<960,p=await b.newPage({viewport:{width,height},hasTouch:touch,isMobile:touch,reducedMotion:'reduce'});current=p;
   p.on('pageerror',e=>errors.push(e.message));console.log(engine+': markers '+width+'x'+height);
@@ -78,7 +110,17 @@ try{
  await p.waitForTimeout(3500);
  check(JSON.stringify(await p.locator('[data-scene-object]:visible .scene-marker-name').allTextContents())===JSON.stringify(names),
   'The names remain without fading after the former reveal interval');
- check(await p.locator('.scene-hotspots').evaluate(n=>n.getAnimations({subtree:true}).length===0),'The attached tabs remain still at rest');
+ const readPulse=()=>p.locator('[data-scene-object]:visible .scene-object-dot').evaluateAll(ns=>ns.map(n=>{
+  const pulse=getComputedStyle(n,'::after'),box=n.getBoundingClientRect();
+  return {name:pulse.animationName,delay:pulse.animationDelay,opacity:parseFloat(pulse.opacity),x:box.x+box.width/2,y:box.y+box.height/2};
+ }));
+ const pulseBefore=await readPulse();await p.waitForTimeout(450);const pulseAfter=await readPulse();
+ check(pulseBefore.every(value=>value.name==='scene-marker-breathe'),'Every visible marker has the gentle halo animation');
+ check(new Set(pulseBefore.map(value=>value.delay)).size===pulseBefore.length,'Marker pulses are staggered');
+ check(pulseBefore.some((value,i)=>Math.abs(value.opacity-pulseAfter[i].opacity)>.01),'The halo visibly changes over time');
+ check(pulseBefore.every((value,i)=>Math.hypot(value.x-pulseAfter[i].x,value.y-pulseAfter[i].y)<.1),'Animation never moves a calibrated dot');
+ check(await p.locator('[data-scene-object],.scene-object-label,.scene-marker-name').evaluateAll(ns=>ns.every(n=>n.getAnimations().length===0)),
+  'Names and native hit targets stay still while the decorative halo animates');
  await p.keyboard.press('p');
  check(await p.locator('[data-world-pause]').getAttribute('aria-pressed')==='true','The native pause shortcut pauses the site');
  check(await p.locator('.scene-hotspots').evaluate(n=>n.getAnimations({subtree:true}).length===0),'Pausing leaves the marker surface still');

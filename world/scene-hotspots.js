@@ -100,6 +100,7 @@ export function createSceneHotspots(host,onObject,view,render) {
       const edge=svg('path',{'class':'scene-object-focus-edge'}),rim=svg('path',{'class':'scene-object-rim'});
       effect.append(lift,halo,edge,rim);effects.append(effect);
       const button=document.createElement('button');button.type='button';button.dataset.sceneObject=id;
+      button.style.setProperty('--marker-phase',(-buttons.length*.35)+'s');
       button.setAttribute('aria-label',accessible[id]||label);
       const hitSvg=svg('svg',{'class':'scene-object-hit-svg','aria-hidden':'true'}),hitPath=svg('path',{'data-scene-hit':id,'fill-rule':'evenodd'});
       hitSvg.append(hitPath);const tag=document.createElement('span');tag.className='scene-object-label';tag.setAttribute('aria-hidden','true');
@@ -134,9 +135,14 @@ export function createSceneHotspots(host,onObject,view,render) {
       buttons.push({id,button,dot,localFilter,label:tag,hitSvg,hitPath,effect,clipPath,mask,maskRect,maskPath,halo,edge,rim,text,pill});
     }
   }
-  const ready=fetch(new URL('../assets/outdoor/hotspot-layout.json',import.meta.url),{signal}).then(r=>{
+  // Font metrics must be final before the first capsule placement. A failed font keeps system-type navigation usable.
+  const markerFont=document.fonts.load('500 13px "Zalando Sans Expanded"').catch(()=>[]);
+  const outlineData=fetch(new URL('../assets/outdoor/hotspot-layout.json',import.meta.url),{signal}).then(r=>{
     if(!r.ok)throw Error('Scene outlines HTTP '+r.status);return r.json();
-  }).then(initialize).catch(cause=>{throw Object.assign(new Error('Scene outlines failed to load'),{asset:'hotspot-layout.json',cause});});
+  });
+  const ready=Promise.all([outlineData,markerFont]).then(([meta])=>initialize(meta)).catch(cause=>{
+    throw Object.assign(new Error('Scene outlines failed to load'),{asset:'hotspot-layout.json',cause});
+  });
   document.addEventListener('pointerdown',e=>{
     const outside=!e.target.closest?.('[data-scene-object]');
     // Switching from mouse to touch need not emit a mouse pointerleave (WebKit).
@@ -160,7 +166,7 @@ export function createSceneHotspots(host,onObject,view,render) {
   const observer=new MutationObserver(preference);observer.observe(document.body,{attributes:true,attributeFilter:['data-motion']});
   // Header and tabs can settle after the scene (fonts, readiness styles, or text zoom).
   const chromeObserver=new ResizeObserver(render);
-  for(const node of document.querySelectorAll('.world-header,.world-dock'))chromeObserver.observe(node);
+  for(const node of document.querySelectorAll('.world-header,.world-dock,.scene-quality-panel'))chromeObserver.observe(node);
   return {
     ready,
     layout:()=>ready.then(()=>data),
@@ -200,8 +206,11 @@ export function createSceneHotspots(host,onObject,view,render) {
       const panBox=framing.hidden?null:framing.getBoundingClientRect();
       const obstacles=panBox?[{left:panBox.left-origin.left,right:panBox.right-origin.left,
         top:panBox.top-origin.top,bottom:panBox.bottom-origin.top}]:[];
+      const panel=document.querySelector('.scene-quality-panel:not([hidden]):has([data-inspect-expand][aria-expanded="false"])');
+      if(panel){const box=panel.getBoundingClientRect();obstacles.push({left:box.left-origin.left,right:box.right-origin.left,
+        top:box.top-origin.top,bottom:box.bottom-origin.top});}
       const sizes=buttons.map(b=>b.button.hidden?0:b.label.getBoundingClientRect().width);
-      const key=[w,h,safe.top,safe.bottom,...sizes,...Object.values(obstacles[0]||{}),
+      const key=[w,h,safe.top,safe.bottom,...sizes,...obstacles.flatMap(box=>Object.values(box)),
         ...camera.projectionMatrix.elements,...camera.matrixWorldInverse.elements,region,lighting.blend>.5].join(':');
       if(key!==projectionKey){
         projectionKey=key;geometry=[];

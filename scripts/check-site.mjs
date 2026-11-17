@@ -25,6 +25,9 @@ const htmlFiles = ['index.html', 'resume.html', 'demo/treadfront/index.html',...
 if (existsSync(resolve(root,'world/activity-ui.js'))) throw Error('Retired activity-ui.js must remain absent.');
 
 const requiredFiles = [
+  'linked-menu.css',
+  'assets/fonts/zalando-sans-expanded/medium-latin.woff2',
+  'assets/fonts/zalando-sans-expanded/OFL.txt',
   'assets/quality-evidence.json',
   'world/quality-build.js',
   'assets/outdoor/concept-coast-day-v1.webp',

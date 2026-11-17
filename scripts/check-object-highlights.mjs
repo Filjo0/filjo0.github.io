@@ -184,8 +184,10 @@ try{
    'All names persist beyond the old arrival interval');
   check(await p.locator('[data-scene-object]:visible').evaluateAll(ns=>ns.every(n=>n.dataset.hotspotState==='none'&&n.hasAttribute('data-show-name'))),
    'Discovery never requires an idle glint or hover');
-  check(await p.locator('.scene-hotspots').evaluate(n=>n.getAnimations({subtree:true}).length===0),
-   'The tabs, room and object outlines remain still at rest');
+  check(await p.locator('.scene-hotspots').evaluate(n=>n.getAnimations({subtree:true}).every(a=>a.animationName==='scene-marker-breathe')),
+   'Only the decorative marker halo animates at rest');
+  check(await p.locator('[data-scene-object],.scene-object-label,.scene-object-effects').evaluateAll(ns=>ns.every(n=>n.getAnimations().length===0)),
+   'The native targets, names and object outlines stay still');
   // Simulate the browser lifecycle environment, never a visitor input event.
   await p.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});document.dispatchEvent(new Event('visibilitychange'));});
   check(await p.locator('.scene-hotspots').getAttribute('data-suspended')==='true','Hidden pages suspend all hint timers/animations');
