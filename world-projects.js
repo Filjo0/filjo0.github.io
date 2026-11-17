@@ -1,3 +1,4 @@
+import {appCaptures,treadfrontCapture,captureImage} from './world/app-preview-cache.js';
 // Real project content remains canonical; only its presentation changes in the world.
 let selected=0;
 export function mountProjectPreviews(root,{onDemo=()=>{}}={}) {
@@ -55,9 +56,7 @@ function mountWorkspace(root,{onDemo}) {
   const reset=()=>{root.dataset.workspaceView='apps';section.hidden=true;back.hidden=true;home.hidden=false;root.scrollTop=0;};
   back.addEventListener('click',()=>{reset();home.querySelector('a,button').focus({preventScroll:true});},{signal:events.signal});
   section.before(home,back);
-  const captures=fetch('assets/previews/previews.json',{signal:events.signal}).then(r=>{
-    if(!r.ok)throw Error('Capture unavailable');return r.json();
-  });
+  const captures=appCaptures();
   for(const [i,project] of projects.entries()) {
     const id=['futsl','aqua','treadfront'][i],name=project.querySelector('h3').textContent;
     const card=document.createElement('article');card.className='workspace-card';card.dataset.appCard=id;
@@ -101,7 +100,7 @@ function mountWorkspace(root,{onDemo}) {
     const showCaptures=(screens,capturedAt)=>{
       if(events.signal.aborted)return;shot.replaceChildren();if(cue)cue.hidden=false;
       for(const capture of screens){
-        const image=document.createElement('img');image.src=capture.image;image.alt=capture.alt||'Treadfront one-sector demo';
+        const image=captureImage(capture.image);image.alt=capture.alt||'Treadfront one-sector demo';
         if(capture.width){image.width=capture.width;image.height=capture.height;}
         image.loading='eager';image.addEventListener('error',()=>{
           const notice=document.createElement('span');notice.textContent='Screenshot unavailable';
@@ -122,9 +121,7 @@ function mountWorkspace(root,{onDemo}) {
     };
     const capture=i<2?captures.then(m=>{
       const app=m.projects[id];showCaptures(app.screens.slice(0,2),app.capturedAt);
-    }):fetch('assets/previews/treadfront-card.json',{signal:events.signal}).then(r=>{
-      if(!r.ok)throw Error('Demo capture unavailable');return r.json();
-    }).then(m=>showCaptures([m],m.capturedAt));
+    }):treadfrontCapture().then(m=>showCaptures([m],m.capturedAt));
     capture.catch(()=>{
       if(!events.signal.aborted){if(cue)cue.hidden=true;shot.textContent='Screenshot unavailable';date.textContent='Use the links to explore.';}
     });

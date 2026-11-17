@@ -16,7 +16,7 @@ try{
   p.on('pageerror',e=>errors.push(e.message));await p.goto(url+'/#ball');
   await p.waitForFunction(()=>document.querySelector('[data-world-reader]').dataset.object==='ball'&&
     document.querySelector('[data-world-content]').dataset.artState==='ready'&&
-    !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+    !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
   for(const selector of ['.world-dock','.world-map','.scene-settings','[data-world-text]'])
     check(await p.locator(selector).isHidden(),viewport.width+': no global chrome over a game');
   check(await p.locator('canvas').count()===2,'Game has an actual separate rendered playfield');
@@ -124,12 +124,12 @@ try{
   await p.locator('[data-settings-toggle]').click();await p.locator('[data-world-regions] [data-world-route="winter"]').click();
   await p.waitForFunction(()=>JSON.parse(document.querySelector('canvas').dataset.worldState).region==='winter');
   await p.locator('[data-world-map] summary').click();await p.locator('[data-world-map] [data-world-route="ball"]').click();
-  await p.waitForFunction(()=>!document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+  await p.waitForFunction(()=>!document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
   await p.screenshot({path:art+'/'+viewport.width+'-ball-winter.png'});
   check(await p.locator('[data-world-close]').innerText()==='← Coast','The coastal court returns to its matching season');
   await p.locator('[data-world-close]').click();
   await p.locator('.world-dock [data-world-route="work"]').click();
-  await p.waitForFunction(()=>!document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+  await p.waitForFunction(()=>!document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
   check(await p.locator('.workspace-app').count()===3&&await p.locator('[data-project-tab]').count()===0,
     'Laptop starts with three icons and no duplicate tabs');
   await p.locator('[data-demo-open]').click();
@@ -165,7 +165,7 @@ try{
  check(await missing.locator('[data-world-close]').isVisible(),'Optional close-up failure retains a visible exit');
  await missing.locator('[data-view-retry]').click();
  await missing.waitForFunction(()=>document.querySelector('[data-world-reader]').dataset.object==='books'&&
-   !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+   !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
  check(await missing.locator('.book-contents').isVisible(),'Retry recovers the physical book after an asset failure');
  await missing.close();
  console.log(name+': '+checks+' presentation checks passed.');

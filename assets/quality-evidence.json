@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "recordedAt": "2026-11-17T09:01:20.509Z",
+  "sourceDigest": "c831719b3bd3018d26ed5e11f144a934bfd05f716c90e0dcbd303b8ca8971ee8",
+  "scope": "This source · local browser validation",
+  "checks": [
+    {
+      "label": "Portfolio browser suites · Chromium",
+      "passed": 20
+    },
+    {
+      "label": "Marker assertions · Chromium",
+      "passed": 4338
+    },
+    {
+      "label": "Scene enhancement assertions · Chromium",
+      "passed": 11200
+    },
+    {
+      "label": "Marker assertions · WebKit",
+      "passed": 4338
+    },
+    {
+      "label": "Scene enhancement assertions · WebKit",
+      "passed": 11200
+    },
+    {
+      "label": "Logic tests",
+      "passed": 99
+    }
+  ],
+  "objects": {
+    "work": {
+      "viewports": 8
+    },
+    "contact": {
+      "viewports": 8
+    },
+    "resume": {
+      "viewports": 8
+    },
+    "experience": {
+      "viewports": 4
+    },
+    "books": {
+      "viewports": 8
+    },
+    "fibonacci": {
+      "viewports": 8
+    },
+    "globe": {
+      "viewports": 8
+    },
+    "aqua": {
+      "viewports": 8
+    },
+    "futsl": {
+      "viewports": 8
+    }
+  },
+  "exclusions": [
+    "Physical iPhone/Android hardware",
+    "Production deployment"
+  ]
+}

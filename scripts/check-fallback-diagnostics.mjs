@@ -1,7 +1,8 @@
+import {sceneFixtureURL} from './scene-fixture-url.mjs';
 import assert from 'node:assert/strict';
 import {mkdir,writeFile} from 'node:fs/promises';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright'),name=process.env.STUDIO_BROWSER||'chromium';
-const url=process.env.STUDIO_URL||'http://127.0.0.1:8765/',out='validation-artifacts/redesign-15oct/stage4-complete/diagnostics-'+name;
+const url=sceneFixtureURL(),out='validation-artifacts/redesign-15oct/stage4-complete/diagnostics-'+name;
 await mkdir(out,{recursive:true});
 const browser=await pw[name].launch({headless:true,...(process.env.STUDIO_BROWSER_EXECUTABLE?
  {executablePath:process.env.STUDIO_BROWSER_EXECUTABLE}:{}),...(name==='chromium'?{args:['--enable-unsafe-swiftshader']}: {})});

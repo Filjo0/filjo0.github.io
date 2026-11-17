@@ -1,9 +1,23 @@
-// Native rendered evidence shared by regression suites whose dot checks became silhouette checks.
+// Native rendered evidence shared by scene calibration and persistent-marker regressions.
 import assert from 'node:assert/strict';
 export async function revealDesk(page){
   const control=page.locator('button[data-scene-framing]');
   if(await control.isVisible()&&await control.getAttribute('data-scene-destination')==='desk')await control.click();
   await page.waitForFunction(()=>document.querySelector('[data-world-render]').dataset.scenePanning!=='true');
+}
+// Persistent name pills make a formerly empty fixed coordinate clickable.
+// Select a real blank point before sending native pointer input.
+export async function blankScenePoint(page){
+ const point=await page.evaluate(()=>{
+  const host=document.querySelector('[data-world-render]').getBoundingClientRect();
+  const header=document.querySelector('.world-header').getBoundingClientRect(),dock=document.querySelector('.world-dock').getBoundingClientRect();
+  const top=Math.max(host.top+12,header.bottom+12),bottom=Math.min(host.bottom-12,dock.top>header.bottom?dock.top-12:host.bottom-12);
+  for(let y=top;y<=bottom;y+=16)for(let x=host.right-12;x>=host.left+12;x-=16){
+   const node=document.elementFromPoint(x,y);
+   if(node&&!node.closest('button,a,[role="button"]')&&node.closest('[data-world-render],.scene-hotspots'))return [x,y];
+  }return null;
+ });
+ assert.ok(point,'The scene has actual empty space for native background input');return point;
 }
 const close=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 const pathPoints=d=>[...d.matchAll(/[ML](-?[\d.]+) (-?[\d.]+)/g)].map(m=>[Number(m[1]),Number(m[2])]);
@@ -15,8 +29,9 @@ export async function outlineGeometry(page,layout,check=(v,m)=>assert.ok(v,m),pa
       const id=n.dataset.sceneObject,effect=document.querySelector('[data-scene-effect="'+id+'"]');
       const path=document.querySelector('[data-scene-outline="'+id+'"]');
       return {id,hidden:n.hidden,button:box(n),plate:path?.dataset.plate,d:path?.getAttribute('d'),
-        show:n.hasAttribute('data-show-name'),label:box(n.lastElementChild),fit:n.dataset.labelFit,
-        connector:effect.querySelector('.scene-label-connector').getAttribute('d')};
+        show:n.hasAttribute('data-show-name'),label:box(n.querySelector('.scene-marker-name')),dot:box(n.querySelector('.scene-object-dot')),
+        fit:n.dataset.labelFit,captionHidden:getComputedStyle(n.querySelector('.scene-object-label')).display==='none',
+        connector:effect.querySelector('.scene-label-connector')?.getAttribute('d')};
     })};
   });
   const {host,header,dock,objects}=result;
@@ -33,22 +48,23 @@ export async function outlineGeometry(page,layout,check=(v,m)=>assert.ok(v,m),pa
     if(!o.show)continue;
     check(o.fit==='true',o.id+': name has a valid non-overlapping position');
     const r=o.label;
-    check(r.x>=8-1&&r.right<=host.right-8+1&&r.y>=header.bottom&&
+    if(!o.captionHidden)check(r.x>=8-1&&r.right<=host.right-8+1&&r.y>=header.bottom&&
       r.bottom<=(dock.top>header.bottom+1?dock.top:host.bottom)-7,o.id+': tag stays on screen and clear of navigation');
-    const endpoints=pathPoints(o.connector).map(([x,y])=>[host.x+x,host.y+y]);
-    check(endpoints.length===2,o.id+': a short visible connector joins the tag');
-    const distance=await page.locator('[data-scene-outline="'+o.id+'"]').evaluate((path,p)=>{
-      const length=path.getTotalLength();let nearest=Infinity;
-      for(let i=0;i<=Math.ceil(length*4);i++){
-        const a=path.getPointAtLength(length*i/Math.ceil(length*4));nearest=Math.min(nearest,Math.hypot(a.x-p[0],a.y-p[1]));
-      }return nearest;
-    },[endpoints[0][0]-host.x,endpoints[0][1]-host.y]);
-    check(distance<1,o.id+': connector begins on its actual silhouette within 1px');
-    const [x,y]=endpoints[1];
-    const edgeDistance=Math.min(Math.hypot(x-Math.max(r.x,Math.min(r.right,x)),y-r.y),
-      Math.hypot(x-Math.max(r.x,Math.min(r.right,x)),y-r.bottom),
-      Math.hypot(x-r.x,y-Math.max(r.y,Math.min(r.bottom,y))),Math.hypot(x-r.right,y-Math.max(r.y,Math.min(r.bottom,y))));
-    check(edgeDistance<1,o.id+': connector ends on the actual tag edge within 1px');
+    check(!o.connector,o.id+': no detached label connector remains');
+    const centre=[o.dot.x+o.dot.width/2,o.dot.y+o.dot.height/2];
+    const onObject=await page.locator('[data-scene-outline="'+o.id+'"]').evaluate((path,p)=>{
+      if(path.isPointInFill(new DOMPoint(p[0],p[1])))return true;
+      const length=path.getTotalLength();
+      for(let i=0;i<=length;i+=.5){const q=path.getPointAtLength(i);if(Math.hypot(q.x-p[0],q.y-p[1])<.75)return true;}
+      return false;
+    },[centre[0]-host.x,centre[1]-host.y]);
+    check(onObject,o.id+': persistent dot stays on its calibrated pictured object');
+    check(o.show,o.id+': the name is always present for the enabled object');
+    if(o.captionHidden){
+      check(o.label.width===0&&o.label.height===0,o.id+': no caption can obscure the photograph or another shortcut');
+      continue;
+    }
+    check(Math.hypot(centre[0]-Math.max(r.left,Math.min(r.right,centre[0])),centre[1]-Math.max(r.top,Math.min(r.bottom,centre[1])))<=44.1,o.id+': the name button stays close to its own dot');
     for(const other of objects.filter(n=>!n.hidden&&n.id!==o.id)){
       const hit=await page.locator('[data-scene-hit="'+other.id+'"]').evaluate((path,{r,host})=>{
         for(let y=r.y;y<=r.bottom;y+=3)for(let x=r.x;x<=r.right;x+=3)
@@ -89,7 +105,7 @@ export async function outlineContrast(page) {
     result.push({id,ratio});
   }
   // End with native pointer input, retaining keyboard modality throughout each focus measurement.
-  const r=await page.locator('[data-world-render]').boundingBox();await page.mouse.click(r.x+r.width-8,r.y+r.height*.65);
+  await page.mouse.click(...await blankScenePoint(page));
   return result;
 }
 

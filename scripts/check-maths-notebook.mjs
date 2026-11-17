@@ -1,10 +1,11 @@
+import {sceneFixtureURL} from './scene-fixture-url.mjs';
 import assert from 'node:assert/strict';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {GOLDEN_ANGLE,seedPattern} from '../world-state.js';
 import {spiralFamilies} from '../world/seed-spirals.js';
 import {dragRange,rendered,paintedThumb} from './maths-browser-input.mjs';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
-const name=process.env.STUDIO_BROWSER||'chromium',url=process.env.STUDIO_URL||'http://127.0.0.1:8765/';
+const name=process.env.STUDIO_BROWSER||'chromium',url=sceneFixtureURL();
 const out=(process.env.MATHS_ARTIFACT_DIR||'validation-artifacts/redesign-15oct/stage4-first-page')+'/'+name;
 await mkdir(out,{recursive:true});
 const browser=await pw[name].launch({headless:true,...(process.env.STUDIO_BROWSER_EXECUTABLE?
@@ -15,7 +16,7 @@ let checks=0,current;const captures=[];
 const check=(ok,message)=>{assert.ok(ok,message);checks++;};
 const expected=spiralFamilies(seedPattern(400,GOLDEN_ANGLE));
 const settled=p=>p.waitForFunction(()=>document.querySelector('[data-world-reader]').dataset.object==='fibonacci'&&
- !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+ !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
 const idle=p=>p.waitForFunction(()=>document.querySelector('[data-maths-step]').dataset.animating==='false');
 async function press(p,n,touch) {
  if(touch){const r=await n.boundingBox();await p.touchscreen.tap(r.x+r.width/2,r.y+r.height/2);}else await n.click();
@@ -156,7 +157,7 @@ try {
  const size={width:390,height:844},p=await browser.newPage({viewport:size,hasTouch:true,reducedMotion:'no-preference'});current=p;
  const errors=[];p.on('pageerror',e=>errors.push(e.message));
  await p.addInitScript(()=>{window.mathsRaf=0;const raf=requestAnimationFrame.bind(window);window.requestAnimationFrame=cb=>{window.mathsRaf++;return raf(cb);};});
- await p.goto(url+'/#fibonacci');await settled(p);await press(p,p.locator('[data-maths-chapter="0"]'),true);
+ await p.goto(new URL('#fibonacci',url).href);await settled(p);await press(p,p.locator('[data-maths-chapter="0"]'),true);
  await press(p,p.locator('[data-maths-next]'),true);
  await p.waitForFunction(()=>document.querySelectorAll('[data-spiral-family="0"]').length>5&&document.querySelectorAll('[data-spiral-family="1"]').length===0);
  check(await p.locator('[data-maths-next]').isDisabled()&&(await p.locator('[data-maths-next]').innerText())==='Counting…','The action is only disabled while counting and explains its progress');
@@ -178,8 +179,8 @@ try {
  await p.keyboard.press('Escape');await p.waitForTimeout(400);const exited=await p.evaluate(()=>window.mathsRaf);await p.waitForTimeout(180);
  check(await p.evaluate(()=>window.mathsRaf)===exited,'Exiting mid-trace cancels every notebook frame');
  await p.emulateMedia({reducedMotion:'reduce'});
- await p.goto(url+'/#books');await p.waitForFunction(()=>document.querySelector('[data-world-reader]').dataset.object==='books'&&
-  !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+ await p.goto(new URL('#books',url).href);await p.waitForFunction(()=>document.querySelector('[data-world-reader]').dataset.object==='books'&&
+  !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
  await press(p,p.locator('[data-book-topic="apps"]'),true);await press(p,p.locator('[data-book-open]').first(),true);
  await press(p,p.locator('[data-book-turn]'),true);await press(p,p.locator('[data-book-turn]'),true);
  const next=p.getByRole('button',{name:'Next reading →',exact:true});

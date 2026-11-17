@@ -1,9 +1,10 @@
+import {sceneFixtureURL} from './scene-fixture-url.mjs';
 import {revealDesk} from './outline-browser-evidence.mjs';
 import assert from 'node:assert/strict';
 import {mkdir} from 'node:fs/promises';
 import {resolve} from 'node:path';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
-const name=process.env.STUDIO_BROWSER||'chromium',url=process.env.STUDIO_URL||'http://127.0.0.1:8765';
+const name=process.env.STUDIO_BROWSER||'chromium',url=sceneFixtureURL();
 const art=resolve(import.meta.dirname,'../validation-artifacts/ux-rebuild',name);await mkdir(art,{recursive:true});
 const browser=await pw[name].launch({headless:true,
  ...(process.env.STUDIO_BROWSER_EXECUTABLE?{executablePath:process.env.STUDIO_BROWSER_EXECUTABLE}:{}),
@@ -21,7 +22,7 @@ try {
     const link=id==='books'?p.locator('[data-scene-object="books"]'):p.locator('.world-dock [data-world-route="'+id+'"]');
     await link.click();
     await p.locator('[data-world-reader]').waitFor();
-    await p.waitForFunction(()=>!document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+    await p.waitForFunction(()=>!document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
   };
   await go('work');
   for(const id of ['futsl','aqua']) {

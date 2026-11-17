@@ -2,6 +2,7 @@
   "name": "philipp-alimov-portfolio",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "Static portfolio and public resume for Philipp Alimov",
   "scripts": {
     "test": "node scripts/check-site.mjs",
@@ -16,7 +17,12 @@
     "build:demo": "node scripts/build-treadfront-demo.mjs",
     "test:surfaces": "node --test scripts/test-world-surfaces.mjs scripts/test-object-plates.mjs",
     "capture:previews": "node scripts/capture-previews.mjs",
-    "test:concept": "node --test scripts/test-concept-scenes.mjs scripts/test-seed-spirals.mjs scripts/test-maths-patterns.mjs",
+    "test:concept": "node --test scripts/test-concept-scenes.mjs scripts/test-seed-spirals.mjs scripts/test-maths-patterns.mjs scripts/test-scene-markers.mjs",
+    "test:markers:browser": "node scripts/check-object-markers.mjs",
+    "test:enhancements": "node --test scripts/test-scene-enhancements.mjs scripts/test-quality-record.mjs",
+    "quality:build": "node scripts/build-quality-evidence.mjs",
+    "check:publish": "npm test && npm run test:privacy",
+    "test:enhancements:browser": "node scripts/check-scene-enhancements.mjs",
     "test:concept:browser": "node scripts/check-object-scenes.mjs && node scripts/check-world-surfaces.mjs && node scripts/check-world-discoveries.mjs && node scripts/check-object-experiences.mjs && node scripts/check-presentation-followup.mjs && node scripts/check-treadfront-presentation.mjs && node scripts/check-site-navigation.mjs && node scripts/check-creative-objects.mjs && node scripts/check-final-review.mjs && node scripts/check-about-copy.mjs && node scripts/check-navigation-redesign.mjs && node scripts/check-stage2-objects.mjs && node scripts/check-reading-book.mjs && node scripts/check-maths-notebook.mjs && node scripts/check-maths-pages.mjs && node scripts/check-fallback-diagnostics.mjs && node scripts/check-simplified-portfolio.mjs && node scripts/check-simplification-review.mjs && node scripts/check-object-highlights.mjs && node scripts/check-phone-scene.mjs",
     "test:legacy-world:browser": "node scripts/check-legacy-world.mjs",
     "test:walk:browser": "node scripts/check-concept-scenes.mjs && node scripts/check-world-character.mjs"

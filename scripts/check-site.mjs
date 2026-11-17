@@ -1,3 +1,6 @@
+import {QUALITY_SOURCE_DIGEST} from '../world/quality-build.js';
+import {qualityStats} from '../world/quality-record.js';
+import {qualityDigest} from './build-quality-evidence.mjs';
 import {containsPrivateProject} from './public-content-guard.mjs';
 import {createHash} from 'node:crypto';
 import { existsSync, readFileSync, statSync, readdirSync } from 'node:fs';
@@ -22,6 +25,12 @@ const htmlFiles = ['index.html', 'resume.html', 'demo/treadfront/index.html',...
 if (existsSync(resolve(root,'world/activity-ui.js'))) throw Error('Retired activity-ui.js must remain absent.');
 
 const requiredFiles = [
+  'assets/quality-evidence.json',
+  'world/quality-build.js',
+  'assets/outdoor/concept-coast-day-v1.webp',
+  'assets/outdoor/concept-winter-day-v1.webp',
+  'art/outdoor/daylight-scenes.json',
+  'scripts/build-quality-evidence.mjs',
   ...textFiles,
   'concept.css',
   'favicon.ico',
@@ -56,6 +65,12 @@ const requiredFiles = [
   'assets/studio/desk-zone.glb',
   'assets/studio/living-zone.glb',
 ];
+const qualityFile=resolve(root,'assets/quality-evidence.json');
+if(!existsSync(qualityFile))throw Error('Recorded quality evidence is required for the inspector.');
+const quality=JSON.parse(readFileSync(qualityFile,'utf8'));
+if(quality.schema!==1||quality.scope!=='This source · local browser validation'||quality.sourceDigest!==qualityDigest()||quality.sourceDigest!==QUALITY_SOURCE_DIGEST)
+ throw Error('Quality evidence is stale or a baseline. Complete matching local checks and rebuild it before release.');
+qualityStats(quality,QUALITY_SOURCE_DIGEST);
 const failures = [];
 
 const fail = (message) => failures.push(message);

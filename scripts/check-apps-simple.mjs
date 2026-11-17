@@ -33,7 +33,7 @@ async function verifyLink(p,link,label,href,touch,reader){
   check(await popup.evaluate(()=>opener===null),label+': '+method+' has no opener');await popup.close();
  }
 }
-const settled=p=>p.waitForFunction(()=>document.querySelector('[data-world-reader]')?.dataset.object==='work'&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+const settled=p=>p.waitForFunction(()=>document.querySelector('[data-world-reader]')?.dataset.object==='work'&&!document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
 async function press(p,n,touch){await n.scrollIntoViewIfNeeded();touch?await n.tap():await n.click();}
 try{for(const viewport of [{width:1440,height:900},{width:1280,height:720},{width:390,height:844},{width:320,height:568},{width:844,height:390}]){
  const touch=viewport.width<720||viewport.height<500,context=await b.newContext({viewport,hasTouch:touch,reducedMotion:'reduce'}),p=await context.newPage();current=p;

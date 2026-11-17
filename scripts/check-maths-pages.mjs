@@ -1,8 +1,9 @@
+import {sceneFixtureURL} from './scene-fixture-url.mjs';
 import assert from 'node:assert/strict';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {integerRange,dragRange,rendered} from './maths-browser-input.mjs';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright'),name=process.env.STUDIO_BROWSER||'chromium';
-const url=process.env.STUDIO_URL||'http://127.0.0.1:8765/',out=(process.env.MATHS_PAGES_ARTIFACT_DIR||'validation-artifacts/redesign-15oct/stage4-complete')+'/'+name;
+const url=sceneFixtureURL(),out=(process.env.MATHS_PAGES_ARTIFACT_DIR||'validation-artifacts/redesign-15oct/stage4-complete')+'/'+name;
 await mkdir(out,{recursive:true});
 const sizes=(process.env.MATHS_PAGES_VIEWPORTS||'1440x900,1280x720,390x844,320x568,844x390').split(',')
  .map(s=>{const [width,height]=s.split('x').map(Number);return {width,height};});
@@ -10,7 +11,7 @@ const browser=await pw[name].launch({headless:true,...(process.env.STUDIO_BROWSE
  {executablePath:process.env.STUDIO_BROWSER_EXECUTABLE}:{}),...(name==='chromium'?{args:['--enable-unsafe-swiftshader']}: {})});
 let checks=0,current;const captures=[],check=(v,m)=>{assert.ok(v,m);checks++;};
 const settled=p=>p.waitForFunction(()=>document.querySelector('[data-world-reader]').dataset.object==='fibonacci'&&
- !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+ !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
 async function press(p,n,touch){const r=await n.boundingBox();if(touch)await p.touchscreen.tap(r.x+r.width/2,r.y+r.height/2);else await n.click();}
 async function capture(p,size,label){const file=size.width+'x'+size.height+'-'+label+'.png';
  await press(p,p.locator('.creative-title h3'),size.width<960);await rendered(p);await p.screenshot({path:out+'/'+file});captures.push(file);}
@@ -54,7 +55,7 @@ try {
  for(const size of sizes){
   const touch=size.width<960,p=await browser.newPage({viewport:size,hasTouch:touch,reducedMotion:'reduce'});current=p;
   const errors=[];p.on('pageerror',e=>errors.push(e.message));console.log(name+': live maths '+size.width+'x'+size.height);
-  await p.goto(url+'/#fibonacci');await settled(p);check(await p.locator('[data-maths-chapter]').count()===3,'Contents has three named chapters');
+  await p.goto(new URL('#fibonacci',url).href);await settled(p);check(await p.locator('[data-maths-chapter]').count()===3,'Contents has three named chapters');
   await fit(p,size,'contents');await capture(p,size,'contents');await press(p,p.locator('[data-maths-chapter="0"]'),touch);
   await press(p,p.locator('[data-maths-next]'),touch);await fit(p,size,'sunflower lattice');await capture(p,size,'sunflower-lattice');
   await press(p,p.locator('[data-maths-next-page]'),touch);
@@ -116,7 +117,7 @@ try {
  }
  const p=await browser.newPage({viewport:{width:390,height:844},hasTouch:true,reducedMotion:'no-preference'});current=p;
  await p.addInitScript(()=>{window.mathsFrames=0;const raf=requestAnimationFrame.bind(window);window.requestAnimationFrame=cb=>{window.mathsFrames++;return raf(cb);};});
- await p.goto(url+'/#fibonacci');await settled(p);await press(p,p.locator('[data-maths-chapter="1"]'),true);
+ await p.goto(new URL('#fibonacci',url).href);await settled(p);await press(p,p.locator('[data-maths-chapter="1"]'),true);
  await integerRange(p,'[data-sequence-count]',5);
  check(await p.locator('[data-fibonacci-arc]').evaluateAll(ns=>ns.every(n=>parseFloat(getComputedStyle(n).strokeDashoffset)===0)),'All slider-driven arcs are complete immediately');
  const artwork=await p.locator('[data-fibonacci-art]').innerHTML();await p.emulateMedia({reducedMotion:'reduce'});

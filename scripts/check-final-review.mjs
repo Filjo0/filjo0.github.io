@@ -1,15 +1,16 @@
+import {sceneFixtureURL} from './scene-fixture-url.mjs';
 import assert from 'node:assert/strict';
 import {aboutLinkInk,screenshotCues} from './phone-visual-evidence.mjs';
 import {mkdir,readFile} from 'node:fs/promises';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
-const name=process.env.STUDIO_BROWSER||'chromium',url=process.env.STUDIO_URL||'http://127.0.0.1:8765';
+const name=process.env.STUDIO_BROWSER||'chromium',url=sceneFixtureURL();
 const out=(process.env.FINAL_REVIEW_ARTIFACT_DIR||'validation-artifacts/final-review')+'/'+name;await mkdir(out,{recursive:true});
 const browser=await pw[name].launch({headless:true,
  ...(process.env.STUDIO_BROWSER_EXECUTABLE?{executablePath:process.env.STUDIO_BROWSER_EXECUTABLE}:{}),
  ...(name==='chromium'?{args:['--enable-unsafe-swiftshader']}: {})});
 let checks=0,current;const check=(v,m)=>{assert.ok(v,m);checks++;};
 const settled=(p,id)=>p.waitForFunction(id=>document.querySelector('[data-world-reader]').dataset.object===id&&
- !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'),id);
+ !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'),id);
 async function activate(p,n,touch){await n.scrollIntoViewIfNeeded();
  if(touch){const r=await n.boundingBox();await p.touchscreen.tap(r.x+r.width/2,r.y+r.height/2);}else await n.click();}
 try {
@@ -17,7 +18,7 @@ try {
   const touch=viewport.width<720||viewport.height<500;
   const p=await browser.newPage({viewport,hasTouch:touch,reducedMotion:'reduce'}),errors=[];current=p;
   p.on('pageerror',e=>errors.push(e.message));console.log(name+': final review '+viewport.width+'x'+viewport.height);
-  await p.goto(url+'/#experience');await settled(p,'experience');
+  await p.goto(new URL('#experience',url).href);await settled(p,'experience');
   check(await p.evaluate(()=>document.activeElement===document.body),'Async deep-link arrival does not steal initial focus');
   await p.keyboard.press('Tab');
   check(await p.locator('.skip-link').evaluate(n=>document.activeElement===n),'Deep links preserve first Tab to Skip to content');
@@ -66,7 +67,7 @@ try {
      return n.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));}),label+': action is unobstructed');
    }
   }
-  await p.goto(url+'/#fibonacci');await settled(p,'fibonacci');await fitCreative('tablet sunflower');
+  await p.goto(new URL('#fibonacci',url).href);await settled(p,'fibonacci');await fitCreative('tablet sunflower');
   await p.screenshot({path:out+'/'+viewport.width+'-tablet-sunflower.png'});
   check(errors.length===0,'No tablet runtime errors: '+errors.join('; '));await p.close();
  }
@@ -74,7 +75,7 @@ try {
  for(const delay of [0,200])for(let iteration=0;iteration<4;iteration++){
   const p=await browser.newPage({viewport:{width:320,height:568},hasTouch:true,reducedMotion:'reduce'});current=p;
   if(delay)await p.route('**/world-controller.js',async route=>{await new Promise(r=>setTimeout(r,delay));await route.continue();});
-  await p.goto(url+'/#experience');await settled(p,'experience');
+  await p.goto(new URL('#experience',url).href);await settled(p,'experience');
   check(await p.evaluate(()=>document.activeElement===document.body),'Repeated deep link keeps document focus');
   check(await p.evaluate(()=>!document.body.hasAttribute('tabindex')&&!document.body.matches(':focus-visible')),
    'Startup reset leaves no body tab stop or visible focus outline');
@@ -86,7 +87,7 @@ try {
  // Keep visitor focus during the initial, motion-enabled close-up transition.
  {
   const p=await browser.newPage({viewport:{width:320,height:568},hasTouch:true,reducedMotion:'no-preference'});current=p;
-  await p.goto(url+'/#experience');
+  await p.goto(new URL('#experience',url).href);
   for(let i=0;i<20&&!await p.locator('.skip-link').evaluate(n=>document.activeElement===n);i++)
    await p.keyboard.press('Shift+Tab');
   check(await p.locator('.skip-link').evaluate(n=>document.activeElement===n),'Native keyboard reaches Skip during initial loading');
@@ -98,14 +99,14 @@ try {
  for(const file of ['studio.html','studio.css','walkthrough.css','room.js','room-details.js','room-experience.js','room-audio.js',
   'assets/studio/contact-zone.glb','assets/studio/desk-zone.glb','assets/studio/living-zone.glb','assets/studio-workspace.webp']){
   const response=await browser.newContext();
-  check((await response.request.get(url+'/'+file)).status()===404,'Unused prototype is absent from public root: '+file);
+  check((await response.request.get(new URL(file,url).href)).status()===404,'Unused prototype is absent from public root: '+file);
   await response.close();
  }
  // Missing captures must not leave an instruction to enlarge a nonexistent image.
  {
   const p=await browser.newPage({viewport:{width:375,height:553},hasTouch:true,reducedMotion:'reduce'});current=p;
   await p.route('**/assets/previews/*.webp',route=>route.abort());
-  await p.goto(url+'/#work');await settled(p,'work');
+  await p.goto(new URL('#work',url).href);await settled(p,'work');
   await p.waitForFunction(()=>[...document.querySelectorAll('[data-app-card]:not([data-app-card="treadfront"])')].every(card=>
    card.querySelector('.workspace-shot').textContent.includes('Screenshot unavailable')&&!card.querySelector('[data-enlarge-screenshot]')));
   for(const id of ['futsl','aqua']){

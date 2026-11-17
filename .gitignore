@@ -2,6 +2,10 @@ validation-artifacts/
 .DS_Store
 Thumbs.db
 
+# Local Node tooling and Python authoring environments.
+node_modules/
+.venv/
+
 # Blender authoring scripts import shared Python helpers.
 __pycache__/
 *.pyc

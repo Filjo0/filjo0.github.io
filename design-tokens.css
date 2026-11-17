@@ -56,9 +56,9 @@
   --object-halo-cool: #cfedff;
   --object-halo-warm: #ffe6a0;
   --object-label-action: #ffe1ac;
-  --object-label-border: #d8e5c9;
-  --object-label-ink: #fffaf0;
-  --object-label-surface: #20352c;
+  --object-label-border: var(--color-green);
+  --object-label-ink: var(--color-green-deep);
+  --object-label-surface: var(--color-paper);
   --object-open-badge: #fff6dc;
   --object-rim-cool: #e7f7ff;
   --object-rim-warm: #fff1cb;
@@ -80,6 +80,7 @@
   --ui-font: var(--font-ui);
   --text-eyebrow: 11px;
   --text-xs: 12px;
+  --text-marker: 13px;
   --text-sm: 14px;
   --text-base: 16px;
   --text-lg: 18px;

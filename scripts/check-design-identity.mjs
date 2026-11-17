@@ -12,7 +12,7 @@ const browser=await pw[engine].launch({headless:true,...(process.env.STUDIO_BROW
 const rgb=s=>s.match(/[\d.]+/g).slice(0,3).map(Number),lum=c=>c.map(x=>{x/=255;return x<=.04045?x/12.92:((x+.055)/1.055)**2.4;}).reduce((v,n,i)=>v+n*[.2126,.7152,.0722][i],0);
 const contrast=(a,b)=>(Math.max(lum(a),lum(b))+.05)/(Math.min(lum(a),lum(b))+.05);
 async function pixel(p,point){const data=(await p.screenshot()).toString('base64');return p.evaluate(async({data,point})=>{const i=new Image();i.src='data:image/png;base64,'+data;await i.decode();const c=document.createElement('canvas');c.width=i.width;c.height=i.height;const x=c.getContext('2d');x.drawImage(i,0,0);return [...x.getImageData(Math.round(point.x),Math.round(point.y),1,1).data].slice(0,3);},{data,point});}
-const settled=(p,id)=>p.waitForFunction(id=>document.querySelector('[data-world-reader]').dataset.object===id&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening'),id);
+const settled=(p,id)=>p.waitForFunction(id=>document.querySelector('[data-world-reader]').dataset.object===id&&!document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'),id);
 const shot=async(p,size,label)=>{const file=size.width+'x'+size.height+'-'+label+'.png';await p.screenshot({path:root+'/'+file});captures.push(file);};
 try{for(const size of sizes){
  const touch=size.width<720||size.height<500,p=await browser.newPage({viewport:size,hasTouch:touch,reducedMotion:'reduce'});current=p;

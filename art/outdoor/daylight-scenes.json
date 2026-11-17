@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-30",
+  "tool": "built-in imagegen",
+  "fictional_places": true,
+  "assets": {
+    "coast": {
+      "path": "assets/outdoor/concept-coast-day-v1.webp",
+      "source": "exec-bbc0602d-d1f9-4404-91ce-e948da123831.png",
+      "size": [
+        1672,
+        941
+      ],
+      "bytes": 257066,
+      "sha256": "4cd2291644593e35c2efafcf5caa362869ec51d2fa71202d7d849c634fae8aa8",
+      "quality": 68
+    },
+    "winter": {
+      "path": "assets/outdoor/concept-winter-day-v1.webp",
+      "source": "exec-f9e21a5e-dcdc-4fba-972c-da166e071fa0.png",
+      "size": [
+        1672,
+        941
+      ],
+      "bytes": 302440,
+      "sha256": "34cd796495349daf47ca55e790f61da760dd09607962844c2b4ca3c6eefdd2a6",
+      "quality": 76
+    }
+  },
+  "prompt": "Lighting-weather edit of each approved v2 scene: clear natural midday daylight only. Preserve exact framing, camera, every object position and size, materials, buildings, plants, pool and pitch. Neutral blue sky and white clouds; no horizon sun. No redesign, UI, markers, text or people. Winter keeps snow-covered shapes, frozen water and birches. Original pixels are not overwritten. Morning uses a small warm grade of this daylight source.",
+  "conversion": "WebP encoded from generated originals at original dimensions, with per-season quality recorded; each file is no larger than its approved sunset source.",
+  "edit_prompts": {
+    "coast": "Use case: lighting-weather. Asset type: photographic portfolio scene with calibrated clickable objects. EDIT the provided image, change lighting ONLY to clear natural MIDDAY daylight. Preserve the EXACT original image framing, aspect ratio, camera, every edge and every object position and size: laptop, book stack, open maths notebook, phone, snow globe, resume clipboard, bag, furniture, plants, building posts, pool and football pitch. Do not add or remove anything. No redesign. Sky becomes soft clear blue with white clouds, no visible sun at the horizon; neutral natural daylight replaces sunset orange. Retain beautiful realistic materials and depth. Table and room must be bright and readable with believable soft daylight shadows. No text, interface, markers or people. Coastal Perth setting: warm-neutral oak, lush green vegetation, blue sea. Preserve composition to the pixel as closely as possible.",
+    "winter": "Use case: lighting-weather. Asset type: photographic portfolio scene with calibrated clickable objects. EDIT the provided image, change lighting ONLY to clear natural MIDDAY daylight. Preserve the EXACT original image framing, aspect ratio, camera, every edge and every object position and size: laptop, book stack, open maths notebook, phone, snow globe, resume clipboard, bag, furniture, plants, building posts, pool and football pitch. Do not add or remove anything. No redesign. Sky becomes soft clear blue with white clouds, no visible sun at the horizon; neutral natural daylight replaces sunset orange. Retain beautiful realistic materials and depth. Table and room must be bright and readable with believable soft daylight shadows. No text, interface, markers or people. Siberian winter setting: preserve every snow-covered shape, frozen water, bare birch branches and distant cottages exactly. Clear winter blue sky, bright white snow and soft blue shadows; gentle warmth only inside the pavilion."
+  }
+}

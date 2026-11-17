@@ -1,4 +1,6 @@
+import {createPlateSnapshot} from './plate-snapshot.js';
 import {reducedMotion} from './motion.js';
+import {createSceneLighting,MORNING_GRADE} from './scene-lighting.js';
 import {createPlateViews} from './plate-views.js';
 import * as THREE from '../assets/vendor/three.module.js';
 import {referenceCamera, fromPlate, targets} from './concept-layout.js';
@@ -48,26 +50,33 @@ export function createConceptScene({host, onFailure, walkthrough=false}) {
   }
   const waterImage={value:null};
   const fixed = referenceCamera();
-  const uniforms = {coast:{value:null}, winter:{value:null}, coastDusk:{value:null}, winterDusk:{value:null},
-    twilight:{value:0}, season:{value:0}, darkness:{value:1},
+  const uniforms = {coast:{value:null}, winter:{value:null}, oldCoast:{value:null}, oldWinter:{value:null},
+    twilight:{value:0}, lightProgress:{value:1}, morning:{value:0}, oldMorning:{value:0},
+    season:{value:0}, darkness:{value:1},
     referenceMatrix:{value:new THREE.Matrix4().multiplyMatrices(fixed.projectionMatrix, fixed.matrixWorldInverse)}};
+  const snapshot=createPlateSnapshot(uniforms);environment.capturePlate=()=>snapshot.capture();resources.push({dispose:()=>snapshot.dispose()});
   const plateMaterial = new THREE.ShaderMaterial({uniforms, toneMapped:false, side:THREE.DoubleSide,
     vertexShader: `varying vec4 plateCoord;
       uniform mat4 referenceMatrix;
       void main(){vec4 world=modelMatrix*vec4(position,1.0);plateCoord=referenceMatrix*world;
         gl_Position=projectionMatrix*viewMatrix*world;}`,
     fragmentShader: `varying vec4 plateCoord;uniform sampler2D coast;uniform sampler2D winter;
-      uniform sampler2D coastDusk;uniform sampler2D winterDusk;uniform float twilight;
-      uniform float season;uniform float darkness;
+      uniform sampler2D oldCoast;uniform sampler2D oldWinter;uniform float lightProgress;
+      uniform float season;uniform float darkness;uniform float morning;uniform float oldMorning;
+      // Morning warms the light while retaining the original black point and contrast; daylight keeps the ungraded source.
+      vec3 grade(vec3 c,float warm){return mix(c,
+        c*vec3(${MORNING_GRADE.scale.join(',')})+vec3(${MORNING_GRADE.offset.join(',')}),warm);}
       void main(){vec2 uv=plateCoord.xy/plateCoord.w*0.5+0.5;
-        vec3 day=season>=1.0?texture2D(winter,uv).rgb:texture2D(coast,uv).rgb;
-        if(season>0.0&&season<1.0)day=mix(day,texture2D(winter,uv).rgb,season);
-        if(twilight>0.0){
-          vec3 evening=season>=1.0?texture2D(winterDusk,uv).rgb:texture2D(coastDusk,uv).rgb;
-          if(season>0.0&&season<1.0)evening=mix(evening,texture2D(winterDusk,uv).rgb,season);
-          day=mix(day,evening,twilight);
+        uv=clamp(uv,vec2(.0001),vec2(.9999));
+        vec3 current=season>=1.?texture2D(winter,uv).rgb:texture2D(coast,uv).rgb;
+        if(season>0.&&season<1.)current=mix(current,texture2D(winter,uv).rgb,season);
+        current=grade(current,morning);
+        if(lightProgress<1.){
+          vec3 previous=season>=1.?texture2D(oldWinter,uv).rgb:texture2D(oldCoast,uv).rgb;
+          if(season>0.&&season<1.)previous=mix(previous,texture2D(oldWinter,uv).rgb,season);
+          current=mix(grade(previous,oldMorning),current,lightProgress);
         }
-        gl_FragColor=vec4(day*darkness,1.0);
+        gl_FragColor=vec4(current*darkness,1.0);
         #include <colorspace_fragment>
       }`});
   resources.push(plateMaterial);
@@ -161,23 +170,13 @@ export function createConceptScene({host, onFailure, walkthrough=false}) {
   const plateViews=createPlateViews({scene,resources,texture});
   let inspected = null;
   let closeupCoast=null,closeupWinter=null,season=0;
-  // The coast is the only photograph needed to open the object-based portfolio.
-  const ready = texture('concept-coast-v2.webp').then(a=>{
-    uniforms.coast.value=a;uniforms.winter.value=a;uniforms.coastDusk.value=a;uniforms.winterDusk.value=a;
-    waterImage.value=a;
+  const lighting=createSceneLighting({texture,uniforms,reduced:reducedMotion});
+  const ready=lighting.ready.then(()=>{
+    waterImage.value=uniforms.coast.value;
     if(walkthrough)return Promise.all(['concept-desk-closeup-v1.webp','concept-winter-desk-closeup-v1.webp'].map(texture))
       .then(([c,d])=>{closeupCoast=c;closeupWinter=d;});
   });
-  let winterLoad=null;
-  function prepareSeason(next) {
-    if(next!=='winter')return Promise.resolve();
-    if(!winterLoad)winterLoad=texture('concept-winter-v2.webp').then(b=>{
-      uniforms.winter.value=b;
-      if(!eveningLoaded)uniforms.winterDusk.value=b;
-    }).catch(error=>{winterLoad=null;throw error;});
-    return winterLoad;
-  }
-  let eveningLoad=null,eveningTarget=0,eveningLoaded=false,lightingDisposed=false,lightingVersion=0;
+  const prepareSeason=next=>lighting.prepareSeason(next);
   function inspect(object) {
     if (inspected) inspected.root.visible=false;
     inspected=object;
@@ -190,34 +189,22 @@ export function createConceptScene({host, onFailure, walkthrough=false}) {
   return {...environment,waterImage, portfolio:{objects,hitMeshes,get:id=>objects.get(id),inspect,ensure:plateViews.ensure,hasPlate:plateViews.has},
     ready,prepareSeason,
     applySeason(value) {
-      uniforms.season.value=value;season=value;
+      uniforms.season.value=value;season=value;lighting.setRegion(value>=.5?'winter':'coast');
       if(inspected&&!inspected.plate)scene.background=value<.5?closeupCoast:closeupWinter;
       sun.color.set('#ffd2a0').lerp(new THREE.Color('#dbe8ff'),value);
       hemi.color.set('#ffe4ca').lerp(new THREE.Color('#e0edff'),value);
     },
-    async setNight(value) {
-      const token=++lightingVersion;
-      if(value&&!eveningLoaded) {
-        if(!eveningLoad)eveningLoad=Promise.all(['concept-coast-dusk-v2.webp','concept-winter-dusk-v2.webp'].map(texture))
-          .then(([a,b])=>{uniforms.coastDusk.value=a;uniforms.winterDusk.value=b;eveningLoaded=true;})
-          .catch(e=>{eveningLoad=null;throw e;});
-        await eveningLoad;
-      }
-      if(lightingDisposed||token!==lightingVersion)return;
-      eveningTarget=value?1:0;
-      if(reducedMotion())uniforms.twilight.value=eveningTarget;
-    },
+    setPhase:lighting.setPhase,
     stepLighting(dt) {
-      const current=uniforms.twilight.value,delta=eveningTarget-current;
-      uniforms.twilight.value=current+Math.sign(delta)*Math.min(Math.abs(delta),dt/1.1);
+      lighting.step(dt);
       sun.intensity=2.2-uniforms.twilight.value*1.8;hemi.intensity=1.2-uniforms.twilight.value*.45;
       scene.backgroundIntensity=1-uniforms.twilight.value*.45;
       renderer.setClearColor(clearPaper.copy(dayPaper).lerp(nightPaper,uniforms.twilight.value),walkthrough?1:0);
-      waterImage.value=uniforms.twilight.value>.5?uniforms.coastDusk.value:uniforms.coast.value;
+      waterImage.value=uniforms.coast.value;
     },
-    lighting:()=>({blend:uniforms.twilight.value,target:eveningTarget,ready:eveningLoaded}),
-    lightingRunning:()=>Math.abs(uniforms.twilight.value-eveningTarget)>.00001,
-    cancelLighting(){plateViews.dispose();lightingDisposed=true;++lightingVersion;},
+    lighting:lighting.state,
+    lightingRunning:lighting.running,
+    cancelLighting(){plateViews.dispose();lighting.dispose();},
     highlight(id,camera) {for(const [key,halo] of halos){halo.visible=key===id&&!inspected;halo.quaternion.copy(camera.quaternion);}}
   };
 }

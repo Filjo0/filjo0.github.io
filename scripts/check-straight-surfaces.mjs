@@ -23,7 +23,7 @@ const b=await pw[engine].launch({headless:true,...(process.env.STUDIO_BROWSER_EX
 const results=[];try{for(const viewport of [{width:1440,height:900},{width:390,height:844},{width:320,height:568}]){
  const p=await b.newPage({viewport,reducedMotion:'reduce'});
  for(const id of targets){await p.goto((process.env.STUDIO_URL||'http://127.0.0.1:8765/')+'#'+id);
-  await p.waitForFunction(id=>document.querySelector('[data-world-reader]')?.dataset.object===id&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening'),id);
+  await p.waitForFunction(id=>document.querySelector('[data-world-reader]')?.dataset.object===id&&!document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'),id);
   const edges=await readingSurfaceEdges(p.locator('[data-world-reader]'));results.push({viewport,id,...edges});
   assert.ok(edges.maxDeviation<=1,`${id} at ${viewport.width}: reading edges deviate ${edges.maxDeviation.toFixed(3)}°, limit 1°`);
  }await p.close();}console.log(engine+': '+results.length+' straight reading surfaces passed (≤1°).');}

@@ -1,10 +1,11 @@
+import {sceneFixtureURL} from './scene-fixture-url.mjs';
 import {outlineGeometry} from './outline-browser-evidence.mjs';
 import assert from 'node:assert/strict';
 import {mkdir,readFile} from 'node:fs/promises';
 import {seedPattern} from '../world-state.js';
 import {spiralFamilies} from '../world/seed-spirals.js';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
-const name=process.env.STUDIO_BROWSER||'chromium',url=process.env.STUDIO_URL||'http://127.0.0.1:8765/';
+const name=process.env.STUDIO_BROWSER||'chromium',url=sceneFixtureURL();
 const art=(process.env.CREATIVE_ARTIFACTS||'validation-artifacts/creative-review')+'/'+name;await mkdir(art,{recursive:true});
 const browser=await pw[name].launch({headless:true,
  ...(process.env.STUDIO_BROWSER_EXECUTABLE?{executablePath:process.env.STUDIO_BROWSER_EXECUTABLE}:{}),
@@ -61,7 +62,7 @@ try{for(const viewport of [{width:1440,height:900},{width:390,height:844},{width
  const go=async id=>{
   const link=p.locator('.world-dock [data-world-route="'+id+'"]');await activate(p,link,touch);
   await p.waitForFunction(id=>document.querySelector('[data-world-reader]').dataset.object===id&&
-   !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'),id);
+   !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'),id);
  };
  await go('fibonacci');
  if(await p.locator('[data-maths-chapter="0"]').isVisible())await activate(p,p.locator('[data-maths-chapter="0"]'),touch);

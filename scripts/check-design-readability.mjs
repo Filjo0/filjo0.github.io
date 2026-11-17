@@ -11,7 +11,7 @@ async function sampledPixel(p,point){const data=(await p.screenshot()).toString(
  const image=new Image();image.src='data:image/png;base64,'+data;await image.decode();const canvas=document.createElement('canvas');canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;
  const c=canvas.getContext('2d');c.drawImage(image,0,0);const pixels=c.getImageData(Math.round(point.x)-1,Math.round(point.y)-1,3,3).data;
  return [0,1,2].map(k=>Array.from({length:9},(_,i)=>pixels[i*4+k]).sort((a,b)=>a-b)[4]);},{data,point});}
-const settled=(p,id)=>p.waitForFunction(id=>document.querySelector('[data-world-reader]').dataset.object===id&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening'),id);
+const settled=(p,id)=>p.waitForFunction(id=>document.querySelector('[data-world-reader]').dataset.object===id&&!document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'),id);
 const shot=async(p,size,label)=>{const file=size.width+'x'+size.height+'-'+label+'.png';await p.screenshot({path:root+'/'+file});captures.push(file);};
 try{for(const size of sizes){
  const touch=size.width<720||size.height<500,p=await browser.newPage({viewport:size,hasTouch:touch,reducedMotion:'reduce'});current=p;

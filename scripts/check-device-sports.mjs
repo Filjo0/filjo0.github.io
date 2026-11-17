@@ -35,7 +35,7 @@ try{
   p.on('pageerror',e=>errors.push(e.message));console.log(name+': device games '+viewport.width+'px');
   // A full touch-only round, without relying on an obsolete prompt or mutating the model.
   await p.goto(url+'/#ball');await p.waitForFunction(()=>document.querySelector('[data-world-reader]').dataset.object==='ball'&&
-   !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+   !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
   await p.waitForFunction(()=>JSON.parse(document.querySelector('[data-juggle-canvas]').dataset.juggleState).artReady);
   check(await p.locator('[data-world-content]').getAttribute('data-art-state')==='ready',
    'The lazily loaded artwork is visibly ready before the native Start tap');
@@ -81,7 +81,7 @@ try{
    await p.locator('[data-world-map] summary').click();
    await p.locator('[data-world-map] [data-world-route="'+type+'"]').click();
    await p.waitForFunction(t=>document.querySelector('[data-world-reader]').dataset.object===t&&
-    !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'),type);
+    !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'),type);
    const canvas=p.locator('[data-sport-canvas]'),state=()=>canvas.evaluate(n=>JSON.parse(n.dataset.sportState));
    // The reading mesh can settle one frame after the route is published. Inspect a real,
    // resized canvas, retaining the fill and painted-pixel assertions below.
@@ -228,7 +228,7 @@ try{
  const motion=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'no-preference'});current=motion;
  await motion.goto(url+'/#surf');
  await motion.waitForFunction(()=>document.querySelector('[data-world-reader]').dataset.object==='surf'&&
-  !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+  !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
  await nativeActivate(motion,'[data-game-start]',false);
  await motion.waitForFunction(()=>JSON.parse(document.querySelector('[data-sport-canvas]').dataset.sportState).phase==='playing');
  await motion.keyboard.down('ArrowRight');

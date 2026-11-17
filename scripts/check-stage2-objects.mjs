@@ -1,8 +1,9 @@
+import {sceneFixtureURL} from './scene-fixture-url.mjs';
 import assert from 'node:assert/strict';
 import {contactGlass} from './phone-visual-evidence.mjs';
 import {mkdir,readFile} from 'node:fs/promises';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
-const name=process.env.STUDIO_BROWSER||'chromium',url=process.env.STUDIO_URL||'http://127.0.0.1:8765/';
+const name=process.env.STUDIO_BROWSER||'chromium',url=sceneFixtureURL();
 const out='validation-artifacts/redesign-15oct/stage2/'+name;await mkdir(out,{recursive:true});
 const resume=await readFile(new URL('../resume.html',import.meta.url),'utf8');
 const browser=await pw[name].launch({headless:true,
@@ -11,7 +12,7 @@ const browser=await pw[name].launch({headless:true,
 let checks=0,current;const check=(v,m)=>{assert.ok(v,m);checks++;};
 const settled=async(p,id)=>{
  await p.waitForFunction(id=>document.querySelector('[data-world-reader]').dataset.object===id&&
-  !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'),id);
+  !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'),id);
  await p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
 };
 async function painted(p){

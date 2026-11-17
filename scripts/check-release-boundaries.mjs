@@ -1,7 +1,8 @@
+import {sceneFixtureURL} from './scene-fixture-url.mjs';
 import assert from 'node:assert/strict';
 import {mkdir,writeFile} from 'node:fs/promises';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
-const engine=process.env.STUDIO_BROWSER||'chromium',base=process.env.STUDIO_URL||'http://127.0.0.1:8765/';
+const engine=process.env.STUDIO_BROWSER||'chromium',base=sceneFixtureURL();
 const out='validation-artifacts/release-boundaries/'+engine;await mkdir(out,{recursive:true});
 const browser=await pw[engine].launch({headless:true,
  ...(process.env.STUDIO_BROWSER_EXECUTABLE?{executablePath:process.env.STUDIO_BROWSER_EXECUTABLE}:{}),
@@ -24,7 +25,7 @@ try {
    assert.match(await p.locator('[data-world-route="winter"]').textContent(),/loading/);
    await p.keyboard.press('Escape');await p.locator('.world-dock [data-world-route="contact"]').tap();release();
    await p.waitForFunction(()=>document.querySelector('[data-world-reader]').dataset.object==='contact'&&
-    !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+    !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
    await p.locator('[data-world-close]').tap();
    assert.equal(await p.locator('body').getAttribute('data-world-region'),'coast');
    await p.locator('[data-settings-toggle]').tap();await p.locator('[data-world-route="winter"]').tap();

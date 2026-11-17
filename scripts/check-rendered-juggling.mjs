@@ -18,7 +18,7 @@ const state=p=>p.locator('[data-juggle-canvas]').evaluate(n=>JSON.parse(n.datase
 async function open(p){
  await p.waitForFunction(()=>document.querySelector('[data-world-reader]')?.dataset.object==='ball'&&
   document.querySelector('[data-world-content]')?.dataset.artState==='ready'&&
-  !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+  !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
 }
 async function press(p,selector,touch){
  const n=p.locator(selector);await n.waitFor({state:'visible'});

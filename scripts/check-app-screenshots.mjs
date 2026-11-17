@@ -6,7 +6,7 @@ const out='validation-artifacts/straight-and-simple-24oct/stage-b/viewer/'+engin
 const manifest=JSON.parse(await readFile('assets/previews/previews.json','utf8'));
 const b=await pw[engine].launch({headless:true,...(process.env.STUDIO_BROWSER_EXECUTABLE?{executablePath:process.env.STUDIO_BROWSER_EXECUTABLE}:{}),...(engine==='chromium'?{args:['--enable-unsafe-swiftshader']}: {})});
 let checks=0,current;const errors=[],failures=[],sizes=[],check=(v,m)=>{assert.ok(v,m);checks++;};
-const settled=p=>p.waitForFunction(()=>document.querySelector('[data-world-reader]')?.dataset.object==='work'&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+const settled=p=>p.waitForFunction(()=>document.querySelector('[data-world-reader]')?.dataset.object==='work'&&!document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
 try{for(const [width,height] of [[1440,900],[1280,720],[390,844],[320,568],[844,390]]){
  const touch=width<720||height<500,p=await b.newPage({viewport:{width,height},hasTouch:touch,reducedMotion:'reduce'});current=p;
  p.on('pageerror',e=>errors.push(e.message));p.on('response',r=>{if(r.status()>=400)failures.push(r.url());});

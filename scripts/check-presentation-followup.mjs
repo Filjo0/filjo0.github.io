@@ -1,8 +1,9 @@
+import {sceneFixtureURL} from './scene-fixture-url.mjs';
 import {revealDesk} from './outline-browser-evidence.mjs';
 import assert from 'node:assert/strict';
 import {mkdir,readFile} from 'node:fs/promises';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
-const name=process.env.STUDIO_BROWSER||'chromium',url=process.env.STUDIO_URL||'http://127.0.0.1:8765';
+const name=process.env.STUDIO_BROWSER||'chromium',url=sceneFixtureURL();
 const b=await pw[name].launch({headless:true,
  ...(process.env.STUDIO_BROWSER_EXECUTABLE?{executablePath:process.env.STUDIO_BROWSER_EXECUTABLE}:{}),
  ...(name==='chromium'?{args:['--enable-unsafe-swiftshader']}: {})});
@@ -12,8 +13,8 @@ let checks=0;const check=(v,m)=>{assert.ok(v,m);checks++;};
 try{for(const viewport of [{width:1440,height:900},{width:390,height:844},{width:320,height:844},{width:844,height:390}]){
  const p=await b.newPage({viewport,reducedMotion:'reduce',hasTouch:viewport.width<720}),errors=[];
  p.on('pageerror',e=>errors.push(e.message));console.log(name+': checking follow-up '+viewport.width+'px');
- await p.goto(url+'/#work');await p.waitForFunction(()=>document.querySelector('[data-world-reader]').dataset.object==='work'&&
- !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+ await p.goto(new URL('#work',url).href);await p.waitForFunction(()=>document.querySelector('[data-world-reader]').dataset.object==='work'&&
+ !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
  await p.waitForFunction(()=>document.querySelectorAll('.workspace-shot img').length===5);
  check(await p.locator('.workspace-subtitle').count()===0,'No clipped footer hangs onto the laptop bezel');
  if(viewport.width<720){
@@ -62,7 +63,7 @@ try{for(const viewport of [{width:1440,height:900},{width:390,height:844},{width
  'Case study opens the canonical project story');await p.locator('[data-notes-home]').click();
  await p.locator('[data-world-close]').click();await revealDesk(p);await p.locator('[data-scene-object="books"]').click();
  await p.waitForFunction(()=>document.querySelector('[data-world-reader]').dataset.object==='books'&&
- !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+ !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
  if(viewport.width<720||viewport.height<500){
   for(const action of ['[data-book-turn]','[data-book-suggest]']){
    const r=await p.locator(action).boundingBox(),paper=await p.locator('[data-world-reader]').boundingBox();
@@ -77,7 +78,7 @@ try{for(const viewport of [{width:1440,height:900},{width:390,height:844},{width
  await p.screenshot({path:dir+'/'+viewport.width+'-book-suggested.png'});
  await p.locator('[data-world-close]').click();await p.locator('.world-dock [data-world-route="resume"]').click();
  await p.waitForFunction(()=>document.querySelector('[data-world-reader]').dataset.object==='resume'&&
- !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+ !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
  await p.locator('[data-resume-document] h1').waitFor();
  const evidence=await p.locator('[data-world-reader]').evaluate(n=>{
   const root=n.querySelector('[data-world-content]'),host=root.querySelector('[data-resume-document]'),shadow=host.shadowRoot;

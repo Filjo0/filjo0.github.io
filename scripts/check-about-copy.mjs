@@ -1,7 +1,8 @@
+import {sceneFixtureURL} from './scene-fixture-url.mjs';
 import assert from 'node:assert/strict';
 import {readFile,mkdir} from 'node:fs/promises';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
-const name=process.env.STUDIO_BROWSER||'chromium',url=process.env.STUDIO_URL||'http://127.0.0.1:8765';
+const name=process.env.STUDIO_BROWSER||'chromium',url=sceneFixtureURL();
 // Preserve the original complete About expectation when the owner shortens only the CV.
 const approved=JSON.parse(await readFile(new URL('./fixtures/resume-approved.json',import.meta.url),'utf8'));
 const source=approved.roles.slice(0,5).map(r=>({role:r.role,date:r.date,employer:r.employer_or_project,bullets:r.before}));
@@ -13,9 +14,9 @@ let checks=0,current;const check=(v,m)=>{assert.ok(v,m);checks++;};
 try {
  for(const viewport of [{width:1440,height:900},{width:390,height:844}])for(const mode of ['scene','page','no-js']){
   const p=await browser.newPage({viewport,reducedMotion:'reduce',javaScriptEnabled:mode!=='no-js'}),errors=[];current=p;
-  p.on('pageerror',e=>errors.push(e.message));await p.goto(url+'/#experience');
+  p.on('pageerror',e=>errors.push(e.message));await p.goto(new URL('#experience',url).href);
   if(mode!=='no-js')await p.waitForFunction(()=>document.querySelector('[data-world-reader]').dataset.object==='experience'&&
-   !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+   !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
   if(mode==='page'){
    await p.locator('[data-world-close]').click();await p.locator('[data-settings-toggle]').click();
    await p.locator('[data-world-text]').click();await p.locator('#experience').waitFor();
@@ -28,7 +29,7 @@ try {
     bullets:[...n.querySelectorAll('li')].map(b=>clean(b.textContent))}));
   });
   assert.deepEqual(actual,source,'Every role, date, employer and bullet must retain the approved full About copy exactly');checks++;
-  check(await scope.locator('a.text-action').innerText()==='Open full résumé','The résumé link keeps its accents');
+  check(await scope.locator('a.text-action[data-world-route="resume"]').innerText()==='Open full résumé','The résumé link keeps its accents');
   check(await scope.locator('li').count()===source.reduce((n,r)=>n+r.bullets.length,0),'All approved experience bullets are present');
   const last=scope.locator('.timeline-entry').last();await last.scrollIntoViewIfNeeded();
   check(await last.locator('li').isVisible(),'The final job remains reachable');

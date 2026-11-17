@@ -1,8 +1,9 @@
+import {sceneFixtureURL} from './scene-fixture-url.mjs';
 import assert from 'node:assert/strict';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {readings,readingCategories} from '../room-reading.js';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
-const name=process.env.STUDIO_BROWSER||'chromium',url=process.env.STUDIO_URL||'http://127.0.0.1:8765/';
+const name=process.env.STUDIO_BROWSER||'chromium',url=sceneFixtureURL();
 const out=(process.env.BOOK_ARTIFACT_DIR||'validation-artifacts/redesign-15oct/stage3-fit')+'/'+name;await mkdir(out,{recursive:true});
 const sizes=(process.env.BOOK_VIEWPORTS||'1440x900,1280x720,390x844,320x568,844x390').split(',').map(s=>{
  const [width,height]=s.split('x').map(Number);return {width,height};});
@@ -11,7 +12,7 @@ const browser=await pw[name].launch({headless:true,...(process.env.STUDIO_BROWSE
 let checks=0,current;const check=(ok,message)=>{assert.ok(ok,message);checks++;};
 const captures=[];
 const settled=p=>p.waitForFunction(()=>document.querySelector('[data-world-reader]').dataset.object==='books'&&
- !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+ !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
 async function capture(p,viewport,label){
  const file=viewport.width+'x'+viewport.height+'-'+label+'.png';await p.screenshot({path:out+'/'+file});captures.push(file);
 }

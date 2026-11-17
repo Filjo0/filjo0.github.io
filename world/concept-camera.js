@@ -49,6 +49,8 @@ export function createConceptCamera(host, actor, {walkthrough=true}={}) {
   }
   return {
     camera,
+    rememberOverview(){cancelPan();compose();return {userPan,sceneCentre};},
+    restoreOverview(saved){cancelPan();userPan=saved.userPan;sceneCentre=saved.sceneCentre;plate=null;preview=null;reading.clearInspection();compose();},
     compact,
     sceneArea:()=>compact()&&centre()>=.39?'coast':'desk',
     panning:()=>!!pan,

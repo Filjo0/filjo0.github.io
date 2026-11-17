@@ -1,14 +1,15 @@
+import {sceneFixtureURL} from './scene-fixture-url.mjs';
 import assert from 'node:assert/strict';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {integerRange} from './maths-browser-input.mjs';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
-const engine=process.env.STUDIO_BROWSER||'chromium',url=process.env.STUDIO_URL||'http://127.0.0.1:8765/';
+const engine=process.env.STUDIO_BROWSER||'chromium',url=sceneFixtureURL();
 const out=(process.env.SIMPLIFICATION_REVIEW_ARTIFACT_DIR||'validation-artifacts/simplification-review-19oct')+'/'+engine;await mkdir(out,{recursive:true});
 const sizes=(process.env.REVIEW_VIEWPORTS||'1440x900,390x844,320x568,844x390').split(',').map(s=>{const [width,height]=s.split('x').map(Number);return {width,height};});
 const browser=await pw[engine].launch({headless:true,...(process.env.STUDIO_BROWSER_EXECUTABLE?{executablePath:process.env.STUDIO_BROWSER_EXECUTABLE}:{}),...(engine==='chromium'?{args:['--enable-unsafe-swiftshader']}: {})});
 let checks=0,current;const check=(value,message)=>{assert.ok(value,message);checks++;};
 const rendered=p=>p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
-const settled=p=>p.waitForFunction(()=>document.querySelector('[data-world-reader]').dataset.object==='fibonacci'&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+const settled=p=>p.waitForFunction(()=>document.querySelector('[data-world-reader]').dataset.object==='fibonacci'&&!document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
 async function press(p,n,touch){await n.scrollIntoViewIfNeeded();touch?await n.tap():await n.click();await rendered(p);}
 async function noPointerOutline(svg){return svg.evaluate(n=>{
  const s=getComputedStyle(n);return {active:document.activeElement===n,style:s.outlineStyle,width:parseFloat(s.outlineWidth),pointer:n.hasAttribute('data-pointer-focus')};});}
@@ -29,7 +30,7 @@ try{for(const viewport of sizes){
  await p.goto(url);await p.waitForFunction(()=>document.querySelector('[data-world-render]')?.dataset.sceneReady==='true');await rendered(p);
  check(requests.some(u=>u.endsWith('/concept-coast-v2.webp')),'The approved board-free coastal plate is loaded');
  check(!requests.some(u=>/concept-coast(-dusk)?-v3\.webp$/.test(u)),'Retired surfboard plates are not loaded');
-  check(await p.locator('.scene-object-dot').count()===0,'Objects use silhouettes without dots or target rings');
+  check(await p.locator('.scene-tab-icon').count()===9,'Objects retain silhouettes and their persistent icon tabs');
   check(await p.locator('[data-scene-object]:visible').evaluateAll(ns=>ns.every(n=>{
    const r=n.getBoundingClientRect();return r.width>=44&&r.height>=44;
   })),'Every visible silhouette keeps a 44px target');

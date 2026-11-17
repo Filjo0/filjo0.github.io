@@ -1,4 +1,7 @@
+import {createLinkedMenuFlow} from './world/linked-menu-flow.js';
 import {reducedMotion} from './world/motion.js';
+import {createSceneClock,initialLight} from './world/scene-clock.js';
+import {createSceneInspector} from './world/scene-inspector.js';
 import {mountObjectExperience, setupObjectMenu, setupFocusedChrome} from './world/object-experience.js';
 import { discoveries, mountDiscovery } from './world/discoveries.js';
 import {
@@ -43,6 +46,7 @@ const warmObject=event=>{
 const events = new AbortController(),
   signal = events.signal,
   records = new Map();
+let linkedFlow=null;
 let world, active = 'overview',
   version = 0,
   textMode = false,
@@ -58,7 +62,7 @@ let world, active = 'overview',
   focusIntent = false,
   initialTabStart = Boolean(location.hash),
   returnFocus = null,
-  sceneChrome = null;
+  sceneChrome = null, sceneClock = null, sceneInspector = null;
 const reduced = {get matches(){return reducedMotion();}};
 const announce = text => {
   status.textContent = text;
@@ -106,10 +110,10 @@ const demo = createDemo({
 });
 
 const restore = () => {
-  stopLoading();
+  stopLoading();delete content.dataset.resumeState;
   objectAnimation?.cancel();objectAnimation=null;
   objectDispose();objectDispose=()=>{};
-  sceneChrome?.close();
+  sceneChrome?.close();sceneInspector?.close();
   delete reader.dataset.playState;
   mountEvents.abort();
   mountEvents = new AbortController();
@@ -156,7 +160,7 @@ function fail(cause={}) {
   document.querySelector('[data-world-map]').hidden=true;
   fallback.hidden = false;
   document.querySelector('[data-world-settings]').hidden = true;
-  sceneChrome?.dispose();
+  sceneClock?.dispose();sceneInspector?.dispose();sceneChrome?.dispose();
   delete document.body.dataset.worldReady;
   delete document.body.dataset.worldRegion;
   delete document.body.dataset.objectOpen;
@@ -179,6 +183,8 @@ function updateRegion(region) {
 }
 
 function exploreCurrent() {
+  if(linkedFlow?.busy()){linkedFlow.cancel();return;}
+  if(linkedFlow?.opened()){linkedFlow.leave();return;}
   go(world.state().region === 'winter' ? 'winter' : 'overview');
 }
 
@@ -203,6 +209,7 @@ function mount(id) {
   if (exploring) {
     if(focusIntent) {
       const opener=returnFocus,token=version;returnFocus=null;
+      if(linkedFlow?.opening())return;
       // A short viewport can briefly crop a dot while the overview resizes back from paper.
       const deadline=performance.now()+500;
       const focusOverview=()=>{
@@ -221,6 +228,7 @@ function mount(id) {
   const returning=document.querySelector('[data-world-close]');
   returning.textContent=document.body.dataset.worldNavigation==='objects'?`← ${world.state().region==='winter'?'Winter':'Coast'}`:'Back to scene';
   returning.setAttribute('aria-label','Return to the scene');
+  if(linkedFlow?.opening()){returning.textContent='← Back to '+linkedFlow.backLabel();returning.setAttribute('aria-label','Back to '+linkedFlow.backLabel());}
   const sections = id === 'work' ? ['work'] : id === 'experience' ? ['experience', 'capabilities', 'resume'] :
     id ===
     'contact' ? ['contact'] : [];
@@ -258,8 +266,8 @@ function mount(id) {
     if(document.body.dataset.worldNavigation==='objects')document.querySelector('[data-world-close]').hidden=false;
     loadingTimer=setTimeout(()=>{
       loadingView.textContent='Opening '+places[id].label+'…';loadingView.hidden=false;
-    },100);
-    Promise.resolve(world.inspect(id,{immediate:reduced.matches})).catch(()=>{
+    },host.dataset.sceneTravel&&!reduced.matches?500:100);
+    Promise.resolve(world.inspect(id,{immediate:reduced.matches||!!linkedFlow?.opening()})).catch(()=>{
       if(active!==id||textMode)return;
       stopLoading();reader.classList.remove('world-object','world-object-opening');
       content.innerHTML='<p>This close-up could not load.</p><button type="button" data-view-retry>Retry view</button>';
@@ -279,9 +287,43 @@ function mount(id) {
   announce(`${places[id].label} opened.`);
 }
 
-function go(id, {
+function focusLinkedPage(){
+  // The old reader header is clipped to 1px; focus the actual visible content.
+  const roots=[content,...[...content.querySelectorAll('*')].map(n=>n.shadowRoot).filter(Boolean)];
+  const choices=roots.flatMap(root=>[...root.querySelectorAll('h1,h2,h3,h4,[role="heading"]')]);
+  const resumeHeading=content.querySelector('[data-resume-document]')?.shadowRoot?.querySelector('[data-resume-heading]');
+  const target=resumeHeading||choices.find(n=>{const r=n.getBoundingClientRect();return r.width>8&&r.height>8&&r.bottom>0&&r.top<innerHeight&&
+    r.right>0&&r.left<innerWidth&&getComputedStyle(n).visibility!=='hidden';})||document.querySelector('[data-world-close]');
+  if(target.matches('h1,h2,h3,h4,[role="heading"]'))target.setAttribute('tabindex','-1');
+  target.focus({preventScroll:true});
+}
+function go(id,options={}){
+  if(linkedFlow?.busy())return;
+  if(!initializing&&id===active&&['overview','coast','winter'].includes(id)&&reader.hidden){sceneChrome?.close(true);return;}
+  if(['aqua','futsl'].includes(id)){
+    options={...options,app:id};id='work';
+    if(!options.opener){history.replaceState({},'', '#work');options.historyChange=false;}
+  }
+  if(linkedFlow?.opened()&&['overview','coast','winter'].includes(id)){linkedFlow.leave(options);return;}
+  if(id===linkedFlow?.current()&&linkedFlow?.opened()){
+    if(options.app){
+      content.dataset.selectedApp=options.app;
+      for(const card of content.querySelectorAll('[data-app-card]')){
+        if(card.dataset.appCard===options.app){card.dataset.selected='true';card.scrollIntoView({block:'center'});}
+        else card.removeAttribute('data-selected');
+      }
+    }
+    return;
+  }
+  if(id===linkedFlow?.parentId()&&linkedFlow?.opened()){linkedFlow.leave(options);return;}
+  if(!initializing&&['work','experience','resume','contact','fibonacci','books'].includes(id)&&linkedFlow&&(reader.hidden||linkedFlow.opened())){
+    linkedFlow.enter(id,options);return;}
+  linkedFlow?.discard();return navigate(id,options);
+}
+function navigate(id, {
   historyChange = true,
-  opener = null
+  opener = null,
+  app = null
 } = {}) {
   if(['swim','ball','surf','skate','plants'].includes(id)){id='overview';history.replaceState({},'', '#top');}
   focusIntent=!initializing;
@@ -290,7 +332,7 @@ function go(id, {
   if(pendingDemo)id='work';
   if(id==='coaching')id='experience';
   if(['tennis','receipts'].includes(id))id='work';
-  const selectedApp=['futsl','aqua'].includes(id)?id:null;
+  const selectedApp=app||(['futsl','aqua'].includes(id)?id:null);
   if(selectedApp){
     id='work';
     if(!opener){history.replaceState({},'', '#work');historyChange=false;}
@@ -323,14 +365,14 @@ function go(id, {
   document.querySelector('.scene-play > summary')?.setAttribute('aria-current',
     !['overview','coast','winter','work','experience','resume','contact'].includes(id)?'page':'false');
   announce(`${document.body.dataset.worldNavigation==='objects'?'Opening':'Walking to'} ${places[id].label}.`);
-  if (paused) {
+  if (paused&&!linkedFlow?.opening()) {
     paused = false;
     world.setPaused(false);
     document.querySelector('[data-world-pause]').setAttribute('aria-pressed', 'false');
     document.querySelector('[data-world-pause]').textContent = 'Pause';
   }
   world.travel(id, {
-    immediate: reduced.matches
+    immediate: reduced.matches||!!linkedFlow?.opening(),source:opener?.dataset.sceneObject||id
   });
   return token;
 }
@@ -391,7 +433,9 @@ try {
     new URLSearchParams(location.search).get('navigation') !== 'walk' ? 'objects' : 'walk';
   if(document.body.dataset.worldNavigation==='objects') {
     setupObjectMenu(document.querySelector('[data-world-map]'));
-    sceneChrome=setupFocusedChrome(document.querySelector('.world-header'),{signal,onMotionChange:()=>world?.refreshMotion?.()});
+    sceneChrome=setupFocusedChrome(document.querySelector('.world-header'),{signal,onMotionChange:()=>world?.refreshMotion?.(),
+      onLightChoice:choice=>sceneClock?.select(choice)});
+    sceneInspector=createSceneInspector(document.querySelector('.world-header'),{signal,onChange:()=>world?.refreshMotion?.()});
     const back=document.querySelector('[data-world-close]');back.classList.add('scene-back');back.hidden=true;
     document.querySelector('.world-header').prepend(back);
     document.querySelector('[data-world-text]').textContent='Simple page view';
@@ -441,9 +485,9 @@ try {
           surfaceFocus = true;
           const selected=content.querySelector('[data-app-card="'+content.dataset.selectedApp+'"]');
           if(selected)selected.scrollIntoView({block:'center'});
-          if(document.body.dataset.worldNavigation==='objects'&&!reduced.matches)
+          if(document.body.dataset.worldNavigation==='objects'&&!reduced.matches&&!paused)
             objectAnimation=content.animate([{opacity:0},{opacity:1}],120);
-          if(focusIntent)(reader.dataset.activity==='device'?content.querySelector('[data-game-start]'):heading).focus({
+          if(focusIntent&&!linkedFlow?.opening())(reader.dataset.activity==='device'?content.querySelector('[data-game-start]'):heading).focus({
             preventScroll: true
           });
           else resetInitialTabStart();
@@ -453,6 +497,16 @@ try {
     onGame() {},
     onRegion: updateRegion
   });
+  if(document.body.dataset.worldNavigation==='objects')linkedFlow=createLinkedMenuFlow({host,reader,signal,focusPage:focusLinkedPage,
+    prepare:id=>world.prepareObject(id),capture:()=>world.captureOverview(),layout:()=>world.sceneLayout(),
+    restore:saved=>world.restoreOverview(saved),paused:()=>paused,
+    open:(id,options)=>navigate(id,options),
+    back:options=>{returnFocus=linkedFlow.opener();return navigate(world.state().region==='winter'?'winter':'overview',options);}});
+  if(document.body.dataset.worldNavigation==='objects')sceneClock=createSceneClock({
+    initial:{choice:initialLight().choice,phase:world.state().lighting.phase},
+    apply:phase=>world.setLight(phase),changed:state=>{
+      sceneChrome.syncLight(state);document.body.dataset.worldLight=state.phase==='night'?'night':'sunset';
+    },failed:()=>announce('Lighting could not load. The previous view is still available.')});
   document.body.dataset.worldReady = 'true';
   fallback.hidden = true;
   document.querySelector('[data-world-settings]').hidden = document.body.dataset.worldNavigation==='objects';
@@ -488,7 +542,7 @@ try {
   document.querySelectorAll('[data-move]').forEach(b => hold(b, b.dataset.move));
   document.querySelector('[data-world-pause]').addEventListener('click', e => {
     paused = !paused;
-    world.setPaused(paused);
+    world.setPaused(paused);linkedFlow?.setPaused(paused);
     readerStation?.setPaused?.(paused);
     if(paused&&objectAnimation?.playState==='running')objectAnimation.pause();
     else if(!paused&&objectAnimation?.playState==='paused')objectAnimation.play();
@@ -521,9 +575,10 @@ try {
       dusk.disabled=false;if(day)day.disabled=false;dusk.closest('[data-settings-light]')?.removeAttribute('aria-busy');
     });
   };
-  dusk.addEventListener('click',()=>setLight(document.body.dataset.worldNavigation==='objects'||
-    dusk.getAttribute('aria-pressed')!=='true'),{signal});
-  day?.addEventListener('click',()=>setLight(false),{signal});
+  if(document.body.dataset.worldNavigation!=='objects'){
+    dusk.addEventListener('click',()=>setLight(dusk.getAttribute('aria-pressed')!=='true'),{signal});
+    day?.addEventListener('click',()=>setLight(false),{signal});
+  }
   document.addEventListener('keydown', e => {
     const play=document.querySelector('[data-world-map]');
     if(e.key==='Escape'&&play.open&&document.body.dataset.worldNavigation==='objects'){
@@ -547,6 +602,7 @@ try {
     signal
   });
   const hash = () => {
+    if(linkedFlow?.busy()&&document.body.dataset.linkedFlowPhase!=='returning')linkedFlow.discard();
     const id = location.hash.slice(1);
     go(places[id] || id==='swim' ? id : 'overview', {
       historyChange: false

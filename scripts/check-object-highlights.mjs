@@ -1,8 +1,9 @@
+import {sceneFixtureURL} from './scene-fixture-url.mjs';
 import assert from 'node:assert/strict';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
-import {outlineGeometry,outlineContrast,dragScene,revealDesk} from './outline-browser-evidence.mjs';
+import {outlineGeometry,outlineContrast,dragScene,revealDesk,blankScenePoint} from './outline-browser-evidence.mjs';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright'),engine=process.env.STUDIO_BROWSER||'chromium';
-const url=process.env.STUDIO_URL||'http://127.0.0.1:8765/',root=process.env.OBJECT_HIGHLIGHT_ARTIFACT_DIR||'validation-artifacts/object-highlights-20oct';
+const url=sceneFixtureURL(),root=process.env.OBJECT_HIGHLIGHT_ARTIFACT_DIR||'validation-artifacts/object-highlights-20oct';
 const out=root+'/'+engine;await mkdir(out,{recursive:true});
 const layout=JSON.parse(await readFile(new URL('../art/outdoor/hotspot-layout.json',import.meta.url),'utf8'));
 const sizes=(process.env.OBJECT_HIGHLIGHT_VIEWPORTS||'1440x900,390x844,320x568,844x390').split(',').map(s=>{
@@ -13,11 +14,12 @@ const part=process.env.OBJECT_HIGHLIGHT_PART||'all';
 let checks=0,current;const captures=[],errors=[],check=(v,m)=>{assert.ok(v,m);checks++;};
 const ready=p=>p.waitForFunction(()=>document.querySelector('[data-world-render]')?.dataset.sceneReady==='true');
 const settled=(p,id)=>p.waitForFunction(id=>document.querySelector('[data-world-reader]').dataset.object===id&&
- !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'),id);
+ !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'),id);
 const rendered=p=>p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
-async function outside(p,touch=false){const r=await p.locator('[data-world-render]').boundingBox();
- if(touch)await p.touchscreen.tap(r.x+r.width-10,r.y+r.height*.65);else await p.mouse.click(r.x+r.width-10,r.y+r.height*.65);
+async function outside(p,touch=false){const point=await blankScenePoint(p);
+ if(touch)await p.touchscreen.tap(...point);else await p.mouse.click(...point);
  await p.waitForTimeout(200);
+ check(await p.locator('[data-world-reader]').isHidden(),'Background input cannot accidentally activate a persistent marker');
 }
 async function screenshot(p,size,state){await rendered(p);const file=size.width+'x'+size.height+'-'+state+'.png';
  await p.screenshot({path:out+'/'+file});captures.push(file);}
@@ -36,15 +38,15 @@ async function photoDifference(p,before,id,afterOverride){
   const a=await load(before),b=await load(after),host=document.querySelector('[data-world-render]').getBoundingClientRect();
   const effect=document.querySelector('[data-scene-effect="'+id+'"]'),shape=document.querySelector('[data-scene-outline="'+id+'"]');
   const button=document.querySelector('[data-scene-object="'+id+'"]'),object=effect.querySelector('.scene-object-rim').getBoundingClientRect(),label=button.lastElementChild.getBoundingClientRect();
-  const connector=effect.querySelector('.scene-label-connector').getBoundingClientRect();
+  const dot=button.querySelector('.scene-object-dot').getBoundingClientRect();
   let outside=0,inside=0,lift=0;
   for(let y=Math.ceil(host.y);y<Math.min(a.height,Math.floor(host.bottom));y++)for(let x=0;x<a.width;x++){
    const i=(y*a.width+x)*4,diff=Math.max(...[0,1,2].map(c=>Math.abs(a.data[i+c]-b.data[i+c])));
    const onObject=shape.isPointInFill(new DOMPoint(x-host.x,y-host.y));
-   const allowed=onObject||[object,label,connector].some(r=>x>=r.left-15&&x<=r.right+15&&y>=r.top-15&&y<=r.bottom+15);
+   const allowed=onObject||[object,label].some(r=>x>=r.left-15&&x<=r.right+15&&y>=r.top-15&&y<=r.bottom+15);
    if(diff>2&&!allowed)outside++;
    // Interior pixels are selected by native SVG fill, away from the outline and its labels.
-   if(x%3||y%3||!onObject)continue;
+   if(x%3||y%3||!onObject||[dot,label].some(r=>x>=r.left-1&&x<=r.right+1&&y>=r.top-1&&y<=r.bottom+1))continue;
    const old=a.data[i]+a.data[i+1]+a.data[i+2],now=b.data[i]+b.data[i+1]+b.data[i+2];
    if(old>60&&old<620){inside++;lift+=now/old-1;}
   }
@@ -58,7 +60,9 @@ try{
   await p.bringToFront();await p.goto(url);await ready(p);await revealDesk(p);
   check(!requests.some(u=>/concept-(?:coast|winter)-dusk/.test(u)),'Night artwork stays lazy before selecting Night');
   await outlineGeometry(p,layout,check);await screenshot(p,size,'arrival-reduced');await outside(p,touch);
-  check(await p.locator('.scene-object-dot').count()===0,'No circles or dot elements remain');
+  check(await p.locator('.scene-tab-icon').count()===9,'Every interactive object has an icon tab');
+  check(await p.locator('[data-scene-object]:visible').evaluateAll(ns=>ns.every(n=>n.hasAttribute('data-show-name'))),
+   'All enabled object names are visible before hover');
   if(size.width===320)check(await p.locator('[data-scene-object="contact"]').isVisible(),'The tiny pictured phone retains its padded target at 320px');
   if(size.width===844&&size.height===390){
    // Reproduce a taller initial tab bar, then its normal layout at the same camera size.
@@ -88,7 +92,7 @@ try{
    const work=p.locator('[data-scene-object="work"]'),before=await p.screenshot();
    await work.hover();await p.waitForTimeout(220);
    check(await p.locator('[data-world-reader]').isHidden(),'Hover reveals the object without opening');
-   check(await work.locator('small').count()===0&&(await work.locator('.scene-object-label').innerText())==='Apps','Hover shows the name without a redundant Open action');
+   check(await work.locator('small').count()===0&&(await work.locator('.scene-marker-text').textContent())=== 'My apps','Hover retains the destination name without a redundant Open action');
    await outlineGeometry(p,layout,check);const pixels=await photoDifference(p,before,'work');
    check(pixels.outside===0,'Highlight changes only its own object, halo, tag and connector: '+JSON.stringify(pixels));
    if(size.width===1440&&season==='coast'&&!night){
@@ -108,14 +112,14 @@ try{
    const contact=p.locator('[data-scene-object="contact"]');
    if(await contact.isVisible()){
     await contact.hover();await p.waitForTimeout(220);await outlineGeometry(p,layout,check);
-    check(await contact.locator('.scene-object-label').innerText()==='Contact'&&await contact.locator('small').count()===0,
+    check(await contact.locator('.scene-marker-text').textContent()==='Contact'&&await contact.locator('small').count()===0,
      'Contact keeps its attached name without a second action');
     await screenshot(p,size,label+'-contact-tag');await outside(p,touch);
    }
    await p.keyboard.press('Tab');const book=p.locator('[data-scene-object="books"]');
    await book.focus();await p.waitForTimeout(220);await outlineGeometry(p,layout,check);
    check(await book.getAttribute('data-hotspot-state')==='focus','Keyboard focus uses the real book silhouette');
-   check((await book.locator('.scene-object-label').innerText())==='Book'&&await book.locator('small').count()===0,'Keyboard focus names the object without an Open badge');
+   check((await book.getAttribute('aria-label')).includes('Book')&&await book.locator('small').count()===0,'Keyboard focus names the object without an Open badge');
    const painted=await p.locator('[data-scene-effect="books"] .scene-object-rim').boundingBox();
    check(painted.x>=8&&painted.x+painted.width<=size.width-8,'Book rim stays inward of the cropped screen edge');
    await screenshot(p,size,label+'-keyboard');await outside(p,touch);
@@ -129,9 +133,29 @@ try{
    check(await phone.evaluate(n=>document.activeElement===n),'Escape restores the exact silhouette opener');
   }
   await outside(p,touch);
-  const workBox=await p.locator('[data-scene-object="work"]').boundingBox(),empty=[workBox.x+2,workBox.y+2];
-  check(await p.evaluate(([x,y])=>!document.elementFromPoint(x,y)?.closest('[data-scene-object]'),empty),'An empty corner of the laptop box is not a hit');
-  await p.mouse.click(...empty);check(await p.locator('[data-world-reader]').isHidden(),'Clicking an empty box corner does not open a menu');
+  const empty=await p.evaluate(()=>{
+   const work=document.querySelector('[data-scene-object="work"]'),box=work.getBoundingClientRect();
+   const host=document.querySelector('[data-world-render]').getBoundingClientRect();
+   const targets=[...document.querySelectorAll('[data-scene-object]:not([hidden])')];
+   const labels=targets.flatMap(n=>[n.querySelector('.scene-object-label'),n.querySelector('.scene-object-dot')].map(n=>n.getBoundingClientRect()));
+   const shapes=targets.map(n=>n.querySelector('[data-scene-hit]'));
+   // Choose from geometric negative space, independently of native hit testing.
+   // A valid Book/name target is no longer 'empty' merely because it is in this box.
+   for(let y=box.top+2;y<box.bottom-1;y+=3)for(let x=box.left+2;x<box.right-1;x+=3){
+    if(labels.some(r=>x>=r.left-1&&x<=r.right+1&&y>=r.top-1&&y<=r.bottom+1))continue;
+    const point=new DOMPoint(x-host.x,y-host.y);
+    if(shapes.every(path=>!path.isPointInFill(point)&&!path.isPointInStroke(point)))return [x,y];
+   }return null;
+  });
+  check(empty,'There is geometric negative space inside the laptop box, outside all silhouettes and markers');
+  check(await p.evaluate(([x,y])=>!document.elementFromPoint(x,y)?.closest('[data-scene-object]'),empty),
+   'Empty geometry inside the laptop box is not a native hit');
+  const negative=await p.locator('[data-scene-object="work"]').evaluate((n,point)=>{
+   const previous=n.style.pointerEvents;n.style.pointerEvents='auto';
+   const caught=document.elementFromPoint(...point)?.closest('[data-scene-object]')===n;n.style.pointerEvents=previous;return caught;
+  },empty);
+  check(negative,'Negative control: making the whole laptop box clickable is detected at the same point');
+  await p.mouse.click(...empty);check(await p.locator('[data-world-reader]').isHidden(),'Clicking empty space inside the laptop box does not open a menu');
   for(const measured of await outlineContrast(p))check(measured.ratio>=7,measured.id+': painted keyboard focus retains ≥7:1 contrast');
   if(touch&&size.height>700){
    // Drag from the object itself: the touch must pan and never become an activation.
@@ -151,26 +175,17 @@ try{
  if(['all','lifecycle'].includes(part)&&process.env.OBJECT_HIGHLIGHT_LIFECYCLE!=='skip'){
   const p=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'no-preference'});current=p;
   p.on('pageerror',e=>errors.push(e.message));
-  await p.addInitScript(()=>{window.__arrivalEvidence=[];
-   new MutationObserver(records=>{for(const {target:n} of records)if(n.dataset?.sceneObject&&n.dataset.hotspotState==='arrival'&&
-     window.__arrivalEvidence.at(-1)!==n.dataset.sceneObject)window.__arrivalEvidence.push(n.dataset.sceneObject);
-   }).observe(document,{subtree:true,attributes:true,attributeFilter:['data-hotspot-state']});
-  });
   await p.bringToFront();await p.goto(url);await ready(p);
-  await p.waitForFunction(()=>document.querySelector('[data-scene-object="resume"]')?.dataset.hotspotState==='arrival');
-  await screenshot(p,{width:1440,height:900},'arrival-sweep');
-  await p.waitForFunction(()=>!document.querySelector('.scene-hotspots').dataset.intro);await p.waitForTimeout(250);
-  check((await p.evaluate(()=>window.__arrivalEvidence.join('|')))==='work|contact|resume|experience|books|fibonacci|globe|aqua|futsl','One arrival sweep visits all nine objects in order');
-  check(await p.locator('.scene-hotspots').evaluate(n=>n.getAnimations({subtree:true}).every(a=>a.playState!=='running')),'Arrival animations settle completely');
-  for(let count=1;count<=3;count++){
-   await p.waitForFunction(count=>Number(document.querySelector('.scene-hotspots').dataset.glints)===count,count,{timeout:11000});
-   check(await p.locator('[data-hotspot-state="idle"][data-scene-effect]').count()===1,'Only one idle object catches the light');
-   await screenshot(p,{width:1440,height:900},'idle-glint-'+count);
-   await p.waitForTimeout(800);
-  }
-  await p.waitForTimeout(8500);
-  check(await p.locator('.scene-hotspots').getAttribute('data-glints')==='3','Idle hints stop after three glints per visit');
-  check(await p.locator('.scene-hotspots').evaluate(n=>!n.getAnimations({subtree:true}).some(a=>a.playState==='running')),'Idle decorations settle with no animation loop');
+  check(await p.locator('.scene-hotspots').getAttribute('data-intro')===null,'The old timed sweep is removed');
+  const atRest=await p.locator('[data-scene-object]:visible .scene-marker-name').allTextContents();
+  await screenshot(p,{width:1440,height:900},'persistent-markers');
+  await p.waitForTimeout(3500);
+  check(JSON.stringify(await p.locator('[data-scene-object]:visible .scene-marker-name').allTextContents())===JSON.stringify(atRest),
+   'All names persist beyond the old arrival interval');
+  check(await p.locator('[data-scene-object]:visible').evaluateAll(ns=>ns.every(n=>n.dataset.hotspotState==='none'&&n.hasAttribute('data-show-name'))),
+   'Discovery never requires an idle glint or hover');
+  check(await p.locator('.scene-hotspots').evaluate(n=>n.getAnimations({subtree:true}).length===0),
+   'The tabs, room and object outlines remain still at rest');
   // Simulate the browser lifecycle environment, never a visitor input event.
   await p.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});document.dispatchEvent(new Event('visibilitychange'));});
   check(await p.locator('.scene-hotspots').getAttribute('data-suspended')==='true','Hidden pages suspend all hint timers/animations');
@@ -188,10 +203,10 @@ try{
   check(await contact.getAttribute('data-hotspot-state')==='hover','A mouse highlights Contact before switching to touch');
   await outside(p,true);
   check(await p.locator('[data-world-reader]').isHidden(),'Touching the background does not open an object');
-  check(await p.locator('[data-scene-object]').evaluateAll(ns=>ns.every(n=>n.dataset.hotspotState==='none'&&!n.hasAttribute('data-show-name'))),
-   'Touching elsewhere dismisses the previous mouse highlight and name');
-  check(await p.locator('.scene-object-effects').evaluate(n=>[...n.querySelectorAll('.scene-object-lift,.scene-object-rim,.scene-object-halo,.scene-label-connector')]
-   .every(e=>getComputedStyle(e).opacity==='0')),'The previous object glow and connector are visibly cleared');
+  check(await p.locator('[data-scene-object]').evaluateAll(ns=>ns.every(n=>n.dataset.hotspotState==='none'&&(n.hidden||n.hasAttribute('data-show-name')))),
+   'Touching elsewhere clears stale hover while preserving the permanent names');
+  check(await p.locator('.scene-object-effects').evaluate(n=>[...n.querySelectorAll('.scene-object-lift,.scene-object-rim,.scene-object-halo')]
+   .every(e=>getComputedStyle(e).opacity==='0')),'The previous object glow is visibly cleared; marker connectors remain');
   await screenshot(p,{width:390,height:844},'mouse-to-touch-cleared');
   const work=p.locator('[data-scene-object="work"]'),r=await work.boundingBox(),a=[r.x+r.width/2,r.y+r.height/2];
   await dragScene(p,a,[a[0]-80,a[1]],{touch:true,engine});await rendered(p);

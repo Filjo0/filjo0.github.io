@@ -1,3 +1,4 @@
+import {sceneFixtureURL} from './scene-fixture-url.mjs';
 import {revealDesk} from './outline-browser-evidence.mjs';
 import {outlineContrast} from './outline-browser-evidence.mjs';
 import assert from 'node:assert/strict';
@@ -7,7 +8,7 @@ import {integerRange} from './maths-browser-input.mjs';
 import {seedPattern} from '../world-state.js';
 import {spiralFamilies} from '../world/seed-spirals.js';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
-const engine=process.env.STUDIO_BROWSER||'chromium',url=process.env.STUDIO_URL||'http://127.0.0.1:8765/';
+const engine=process.env.STUDIO_BROWSER||'chromium',url=sceneFixtureURL();
 const out=(process.env.SIMPLIFIED_ARTIFACT_DIR||'validation-artifacts/simplification-18oct')+'/'+engine;await mkdir(out,{recursive:true});
 const sizes=(process.env.SIMPLIFIED_VIEWPORTS||'1440x900,390x844,320x568,844x390').split(',').map(s=>{
  const [width,height]=s.split('x').map(Number);return {width,height};});
@@ -16,7 +17,7 @@ const browser=await pw[engine].launch({headless:true,
  ...(engine==='chromium'?{args:['--enable-unsafe-swiftshader']}: {})});
 let checks=0,current;const check=(value,message)=>{assert.ok(value,message);checks++;};
 const settled=(p,id)=>p.waitForFunction(id=>document.querySelector('[data-world-reader]').dataset.object===id&&
- !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'),id);
+ !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'),id);
 async function press(p,n,touch){await n.scrollIntoViewIfNeeded();if(touch)await n.tap();else await n.click();}
 async function fit(p,label){
  const content=p.locator('[data-world-content]');

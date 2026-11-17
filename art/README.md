@@ -80,3 +80,8 @@ ordinary room geometry independently. Baked illumination remains static.
 `build_coast.py`, `geometry.py`, `export_scene.py` and `sky.py` own the older geometric coast.
 The retired sports rig has its own provenance in `art/games/`. Download caches and intermediate
 Blender files remain ignored; the homepage does not load the character or sports artwork.
+
+
+## Automatic-light daylight sources (30 Oct 2026)
+
+The two additional daylight assets are original, built-in image-tool lighting edits of the existing coast/winter v2 plates. They retain the 1672×941 composition and add no objects. `art/outdoor/daylight-scenes.json` records the full prompt, source IDs, hashes and WebP conversions. Morning is a gentle warm shader grade of the same daylight image; sunset/night originals remain unchanged. Each new source stays below the corresponding sunset image byte size. No new external artwork or third-party licence is involved.

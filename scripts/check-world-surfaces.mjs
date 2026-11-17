@@ -1,8 +1,9 @@
+import {sceneFixtureURL} from './scene-fixture-url.mjs';
 import assert from 'node:assert/strict';
 import {mkdir,readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
-const name=process.env.STUDIO_BROWSER||'chromium',url=process.env.STUDIO_URL||'http://127.0.0.1:8765';
+const name=process.env.STUDIO_BROWSER||'chromium',url=sceneFixtureURL();
 const art=resolve(import.meta.dirname,'../validation-artifacts/phase02',name);await mkdir(art,{recursive:true});
 const captures=JSON.parse(await readFile(resolve(import.meta.dirname,'../assets/previews/previews.json'),'utf8'));
 const resume=await readFile(resolve(import.meta.dirname,'../resume.html'),'utf8');
@@ -23,7 +24,7 @@ try {
     if(await close.isVisible())await close.click();else await page.locator('[data-world-close]').click();
     await page.locator('.tank-frame').waitFor({state:'detached'});
    }
-   if(await page.locator('[data-world-reader]').isVisible())await page.locator('[data-world-close]').click();
+   if(await page.locator('[data-world-reader]').isVisible()){await page.locator('[data-world-close]').click();await page.waitForFunction(()=>!document.querySelector('.linked-input-shield'));}
    if(id==='tank'){await go('work');await page.locator('[data-demo-open]').click();}
    else if(['futsl','aqua'].includes(id)) {await page.evaluate(id=>{location.hash=id;},id);await page.waitForFunction(()=>location.hash==='#work');}
    else if(['coast','winter','overview'].includes(id)) {
@@ -35,7 +36,7 @@ try {
    }
    if(!['overview','coast','winter'].includes(id))await page.locator('[data-world-reader]').waitFor();
    if(['work','experience','resume','contact','futsl','aqua','tank'].includes(id))
-    await page.waitForFunction(()=>!document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+    await page.waitForFunction(()=>!document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
   };
   async function surface(id) {
    const reader=page.locator('[data-world-reader]');
@@ -180,24 +181,19 @@ try {
  await journey.emulateMedia({reducedMotion:'no-preference'});
  await journey.locator('[data-world-close]').click();
  await journey.locator('.world-dock [data-world-route="resume"]').click();
- await journey.waitForFunction(()=>document.querySelector('[data-world-reader]').dataset.object==='resume'&&
-   !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
- await journey.waitForFunction(()=>document.querySelector('[data-world-content]').getAnimations().some(a=>a.playState==='running'));
+ await journey.waitForFunction(()=>document.querySelector('.linked-plane')?.getAnimations().some(a=>a.playState==='running'));
  await journey.keyboard.press('p');
- // Web Animations pause is pending until the browser commits its hold time.
- await journey.waitForFunction(()=>document.querySelector('[data-world-content]').getAnimations().some(a=>
-  a.playState==='paused'&&!a.pending));
- const frozen=await journey.locator('[data-world-content]').evaluate(n=>n.getAnimations()[0].currentTime);
+ await journey.waitForFunction(()=>document.querySelector('.linked-plane')?.getAnimations().some(a=>a.playState==='paused'&&!a.pending));
+ const frozen=await journey.locator('.linked-plane').evaluate(n=>n.getAnimations()[0].currentTime);
  await journey.waitForTimeout(220);
- check(await journey.locator('[data-world-content]').evaluate(n=>n.getAnimations()[0].currentTime)===frozen,
-   'Pause freezes the actual photographed-object content transition');
+ check(await journey.locator('.linked-plane').evaluate(n=>n.getAnimations()[0].currentTime)===frozen,'Pause freezes the actual photographed-object approach');
  await journey.keyboard.press('p');
- await journey.waitForFunction(()=>!document.querySelector('[data-world-content]').getAnimations().some(a=>a.playState==='running'));
+ await journey.waitForFunction(()=>document.body.dataset.linkedFlowPhase==='open'&&!document.querySelector('.linked-input-shield'));
  check(await journey.locator('[data-resume-document] h1').isVisible(),'Finite transition ends on a readable board');
  await journey.screenshot({path:resolve(art,'physical-board-arrival.png')});await journey.close();
  const slow=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce'});
  await slow.route('**/resume.html',async r=>{await new Promise(resolve=>setTimeout(resolve,600));await r.continue();});
- await slow.goto(`${url}/#resume`);await slow.getByText('Loading résumé…').waitFor();
+ await slow.goto(new URL('#resume',url).href);await slow.getByText('Loading résumé…').waitFor();
  await slow.evaluate(()=>location.hash='contact');await slow.waitForTimeout(800);
  check(await slow.locator('[data-resume-document]').count()===0&&
    await slow.locator('[data-world-section="contact"]').isVisible(),'Interrupted résumé load cannot overwrite the contact phone');
@@ -205,7 +201,7 @@ try {
  const broken=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce'});
  let failResume=true;
  await broken.route('**/resume.html',r=>{if(failResume){failResume=false;return r.fulfill({status:404,body:'Missing'});}return r.continue();});
- await broken.goto(`${url}/#resume`);await broken.getByRole('button',{name:'Retry résumé',exact:true}).waitFor();
+ await broken.goto(new URL('#resume',url).href);await broken.getByRole('button',{name:'Retry résumé',exact:true}).waitFor();
  check(await broken.getByRole('link',{name:'Read or print résumé ↗',exact:true}).isVisible(),'Failed clipboard retains the standalone readable and printable résumé');
  await broken.getByRole('button',{name:'Retry résumé',exact:true}).click();
  await broken.locator('[data-resume-document] h1').waitFor();check(true,'Retry loads the approved résumé on its original board');
@@ -213,7 +209,7 @@ try {
  // Missing screenshot metadata must leave real app links and canonical content usable.
  const missing=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce'});
  await missing.route('**/assets/previews/previews.json',r=>r.fulfill({status:404,body:'Missing'}));
- await missing.goto(`${url}/#aqua`);await missing.waitForFunction(()=>location.hash==='#work');
+ await missing.goto(new URL('#aqua',url).href);await missing.waitForFunction(()=>location.hash==='#work');
  await missing.waitForFunction(()=>[...document.querySelectorAll('.workspace-shot')].filter(n=>n.textContent==='Screenshot unavailable').length===2);
  check(await missing.locator('[data-app-website],[data-app-store]').count()===6,'Missing captures retain every website and published store link');
  await missing.locator('[data-project-notes="0"]').click();check(await missing.locator('[data-world-section="work"] .project').first().isVisible(),'Missing screenshots retain the real case study');await missing.close();

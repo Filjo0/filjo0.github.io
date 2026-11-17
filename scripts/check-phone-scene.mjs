@@ -1,15 +1,16 @@
+import {sceneFixtureURL} from './scene-fixture-url.mjs';
 import assert from 'node:assert/strict';
 import {dragScene} from './outline-browser-evidence.mjs';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright'),engine=process.env.STUDIO_BROWSER||'webkit';
-const base=process.env.STUDIO_URL||'http://127.0.0.1:8765/',out=(process.env.PHONE_SCENE_ARTIFACT_DIR||'validation-artifacts/phone-pan-30oct/checks')+'/'+engine;
+const base=sceneFixtureURL(),out=(process.env.PHONE_SCENE_ARTIFACT_DIR||'validation-artifacts/phone-pan-30oct/checks')+'/'+engine;
 await mkdir(out,{recursive:true});const layout=JSON.parse(await readFile('assets/outdoor/hotspot-layout.json','utf8'));
 const browser=await pw[engine].launch({headless:true,...(process.env.STUDIO_BROWSER_EXECUTABLE?{executablePath:process.env.STUDIO_BROWSER_EXECUTABLE}:{}),
  ...(engine==='chromium'?{args:['--enable-unsafe-swiftshader']}: {})});
 let checks=0,current;const evidence=[],errors=[],check=(v,m)=>{assert.ok(v,m);checks++;};
 const ready=p=>p.waitForFunction(()=>document.querySelector('[data-world-render]')?.dataset.sceneReady==='true');
 const opened=(p,id)=>p.waitForFunction(id=>document.querySelector('[data-world-reader]')?.dataset.object===id&&
- !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'),id);
+ !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'),id);
 const paint=p=>p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
 
 const stopped=p=>p.waitForFunction(()=>document.querySelector('[data-world-render]').dataset.scenePanning==='false');
@@ -53,31 +54,20 @@ try{
   if(portrait){
    check(await p.locator('[data-world-render]').getAttribute('data-scene-frame-mode')==='desk','Phone opens on the full-height desk');
    check(await p.locator('[data-scene-object="work"]').isVisible()&&await p.locator('[data-scene-object="books"]').isVisible(),'Desk objects start large and directly usable');
-   check(await p.locator('[data-scene-framing]').innerText()==='See the coast \u2192','The coast is a clearly named next view');
+   check(await p.locator('[data-scene-framing]').innerText()==='See coast \u2192','The coast is a clearly named next view');
    await cover(p,viewport);
    await p.screenshot({path:out+'/'+viewport.width+'-desk.png'});
    await activate(p.locator('[data-scene-framing]'),touch);await stopped(p);
    check(await p.locator('[data-world-render]').getAttribute('data-scene-frame-mode')==='coast','The coast action pans to the right');
    check(await p.locator('[data-scene-framing]').innerText()==='\u2190 Back to desk','The coast has a clear way back');
-   await p.waitForFunction(()=>document.querySelector('.scene-hotspots').dataset.intro==='names');
-   await p.waitForFunction(()=>['aqua','futsl'].every(id=>
-    Number(getComputedStyle(document.querySelector('[data-scene-object="'+id+'"] .scene-object-label')).opacity)>=.99));
-   for(const id of ['aqua','futsl'])check(await p.locator('[data-scene-object="'+id+'"]').getAttribute('data-show-name')!==null,
-    'Newly reached coast places briefly introduce their names, like the desk');
-   for(const id of ['aqua','futsl'])check(await p.locator('[data-scene-object="'+id+'"]').evaluate(n=>{
-    const r=n.lastElementChild.getBoundingClientRect(),header=document.querySelector('.world-header').getBoundingClientRect(),dock=document.querySelector('.world-dock').getBoundingClientRect();
-    return n.dataset.labelFit==='true'&&r.left>=7&&r.right<=innerWidth-7&&r.top>=header.bottom&&r.bottom<=dock.top-7;
-   }),'Arrival name stays on screen beside its photographed place');
+   for(const id of ['aqua','futsl']){
+    check(await p.locator('[data-scene-object="'+id+'"] .scene-object-label').evaluate(n=>getComputedStyle(n).display!=='none'&&getComputedStyle(n).opacity==='1'),'Coast shortcuts have the same visible buttons as desk objects');
+    check((await p.locator('[data-scene-object="'+id+'"]').getAttribute('aria-label')).includes(id==='aqua'?'Aqua Local':'FUTSL'),'Coast shortcuts retain accurate accessible names');
+   }
+   check(await p.locator('.world-dock [data-world-route="work"]').isVisible(),'The clearly named My apps action stays available on the coast');
    await p.screenshot({path:out+'/'+viewport.width+'-coast-labels.png'});
-   await p.waitForFunction(()=>!document.querySelector('.scene-hotspots').dataset.intro);
-   await p.waitForFunction(()=>['aqua','futsl'].every(id=>
-    getComputedStyle(document.querySelector('[data-scene-object="'+id+'"] .scene-object-label')).opacity==='0'));
-   for(const id of ['aqua','futsl'])check(await p.locator('[data-scene-object="'+id+'"] .scene-object-label').evaluate(n=>
-    getComputedStyle(n).opacity==='0'),'The actual coast tag finishes fading, beyond just its visibility flag');
-   for(const id of ['aqua','futsl'])check(await p.locator('[data-scene-object="'+id+'"]').getAttribute('data-show-name')===null,
-    'Coast names fade instead of becoming permanent tags');
    await p.locator('[data-scene-object="aqua"]').hover();
-   check(await p.locator('[data-scene-object="aqua"]').getAttribute('data-show-name')!==null,'Hover restores the pool name');
+   check(await p.locator('[data-scene-object="aqua"]').getAttribute('data-hotspot-state')==='hover','Hover highlights the actual pool shortcut');
    await p.mouse.move(viewport.width-8,150);
    await cover(p,viewport);
   }

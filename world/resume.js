@@ -1,6 +1,7 @@
 // Read the approved local document; never maintain a second set of résumé facts.
 let approved;
 export async function mountResume(root, signal) {
+  root.dataset.resumeState='loading';
   root.innerHTML = `<p class="world-resume-actions">
     <a href="resume.html" target="_blank" rel="noopener">Read or print résumé ↗</a></p>
     <p data-resume-loading>Loading résumé…</p>`;
@@ -43,6 +44,9 @@ export async function mountResume(root, signal) {
     shadow.append(style);
     const paper=document.body.dataset.worldNavigation==='objects';
     articles.forEach(article=>shadow.append(document.importNode(article,true)));
+    const heading=shadow.querySelector('h1');
+    if(!heading?.textContent.trim())throw Error('Resume heading unavailable');
+    heading.dataset.resumeHeading='';heading.tabIndex=-1;
     host.dataset.layout='continuous';
     if(paper) {
       style.textContent+=' .page{background:transparent;overflow:visible;} .compact-masthead{display:none;}';
@@ -57,6 +61,7 @@ export async function mountResume(root, signal) {
       event.target.scrollIntoView({block: 'nearest', inline: 'nearest', behavior: 'instant'});
     });
     root.querySelector('[data-resume-loading]').replaceWith(host);
+    root.dataset.resumeState='ready';
   } catch (e) {
     if (signal.aborted) return;
     root.querySelector('[data-resume-loading]').textContent =
@@ -68,5 +73,6 @@ export async function mountResume(root, signal) {
       once: true
     });
     root.append(retry);
+    root.dataset.resumeState='error';
   }
 }

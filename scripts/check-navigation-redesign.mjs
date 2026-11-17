@@ -1,9 +1,10 @@
+import {sceneFixtureURL} from './scene-fixture-url.mjs';
 import {revealDesk} from './outline-browser-evidence.mjs';
 import {outlineGeometry} from './outline-browser-evidence.mjs';
 import assert from 'node:assert/strict';
 import {mkdir,readFile} from 'node:fs/promises';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
-const name=process.env.STUDIO_BROWSER||'chromium',url=process.env.STUDIO_URL||'http://127.0.0.1:8765/';
+const name=process.env.STUDIO_BROWSER||'chromium',url=sceneFixtureURL();
 const out=(process.env.NAV_REDESIGN_ARTIFACT_DIR||'validation-artifacts/redesign-15oct/navigation')+'/'+name;await mkdir(out,{recursive:true});
 const layout=JSON.parse(await readFile(new URL('../art/outdoor/hotspot-layout.json',import.meta.url),'utf8'));
 const sizes=(process.env.NAV_REDESIGN_VIEWPORTS||'1440x900,1280x720,390x844,320x844,844x390').split(',')
@@ -14,7 +15,7 @@ const browser=await pw[name].launch({headless:true,
 let checks=0,current;const check=(v,m)=>{assert.ok(v,m);checks++;};
 const state=p=>p.locator('canvas').evaluate(n=>JSON.parse(n.dataset.worldState));
 const settled=(p,id)=>p.waitForFunction(id=>document.querySelector('[data-world-reader]').dataset.object===id&&
- !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'),id);
+ !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'),id);
 async function activate(p,n,touch){
  await n.scrollIntoViewIfNeeded();if(touch){const r=await n.boundingBox();await p.touchscreen.tap(r.x+r.width/2,r.y+r.height/2);}
  else await n.click();
@@ -24,11 +25,11 @@ try{for(const viewport of sizes){
  const touch=viewport.width<=960,p=await browser.newPage({viewport,hasTouch:touch,reducedMotion:'no-preference'});current=p;
  const errors=[];p.on('pageerror',e=>errors.push(e.message));console.log(name+': redesigned navigation '+viewport.width+'x'+viewport.height);
  await p.goto(url);await p.waitForFunction(()=>document.querySelector('[data-world-render]').dataset.sceneReady==='true');
- check(await p.locator('.scene-hotspots').getAttribute('data-intro')==='sweep','Arrival uses one finite sequence of object light sweeps');
+ check(await p.locator('.scene-hotspots').getAttribute('data-intro')===null,'Persistent markers replace the timed arrival sweep');
  await p.screenshot({path:out+'/'+viewport.width+'x'+viewport.height+'-intro.png'});
  await p.waitForFunction(()=>!document.querySelector('.scene-hotspots').dataset.intro);
  await outlineGeometry(p,layout,check);
- check(await p.locator('.scene-object-dot').count()===0,'Dots and plus markers are removed entirely');
+ check(await p.locator('.scene-tab-icon').count()===9,'One icon tab identifies each scene destination');
  check(await p.locator('[data-scene-object="fibonacci"]').count()===1&&
   await p.locator('[data-scene-object="fibonacci"]').getAttribute('aria-label')==='Maths notebook',
   'The pictured notebook has a clearly named target, even when cropped outside a narrow view');
@@ -40,23 +41,20 @@ try{for(const viewport of sizes){
  await (touch?p.touchscreen.tap(8,header.height+18):p.mouse.click(8,header.height+18));
  check(touch?dock.y>viewport.height-90:dock.y>=header.y&&dock.y+dock.height<=header.y+header.height,
   'Primary navigation is in the desktop header or slim phone tab bar');
- if(touch){check(dock.height<=60,'Phone tab bar stays slim');
+ if(touch){check(dock.height>=60&&dock.height<=70,'Secondary phone navigation stays slim and readable');
   check(await p.locator('.world-dock .nav-icon:visible').count()===5,'All phone tabs have matching line icons');}
  else check(await p.locator('.world-dock .nav-icon:visible').count()===0,'Desktop navigation is plain text');
  check((await p.locator('.world-dock > a').allTextContents()).join('|')==='My apps|About|Résumé|Contact|Maths','Navigation names are clear');
  await p.waitForFunction(()=>!document.querySelector('.scene-hotspots').dataset.intro);
  await p.waitForTimeout(220);
- check(await p.locator('.scene-object-label').evaluateAll(ns=>ns.every(n=>{
-  const place=document.querySelector('[data-world-render]').dataset.sceneFrameMode==='coast'&&
-   ['aqua','futsl'].includes(n.closest('button').dataset.sceneObject);
-  return Number(getComputedStyle(n).opacity)===(place?1:0);
- })),'Arrival labels settle; only the two phone app places remain named');
+ check(await p.locator('[data-scene-object]:visible .scene-object-label').evaluateAll(ns=>ns.every(n=>
+  getComputedStyle(n).display!=='none'&&getComputedStyle(n).opacity==='1')),'Every photographed shortcut has an always-visible name button');
  await p.screenshot({path:out+'/'+viewport.width+'x'+viewport.height+'-closed.png'});
  await revealDesk(p);
  check(await p.locator('[data-scene-object="books"]').isVisible(),'The closer desk exposes the Book target');
  const book=p.locator('[data-scene-object="books"]');
- await book.hover();await p.waitForFunction(()=>Number(getComputedStyle(document.querySelector('[data-scene-object="books"] .scene-object-label')).opacity)>.99);
- check(await book.locator('.scene-object-label').innerText()==='Book','Hover shows only the object name');
+ await book.hover();
+ check((await book.getAttribute('aria-label')).includes('Book'),'The book shortcut has a clear accessible action');
  check(await book.locator('small').count()===0,'No extra Open action remains');
  await p.screenshot({path:out+'/'+viewport.width+'x'+viewport.height+'-names.png'});
  await activate(p,book,touch);await settled(p,'books');

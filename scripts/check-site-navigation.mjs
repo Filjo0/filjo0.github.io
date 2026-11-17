@@ -1,8 +1,9 @@
+import {sceneFixtureURL} from './scene-fixture-url.mjs';
 import {containsPrivateProject} from './public-content-guard.mjs';
 import assert from 'node:assert/strict';
 import {mkdir} from 'node:fs/promises';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
-const name=process.env.STUDIO_BROWSER||'chromium',url=process.env.STUDIO_URL||'http://127.0.0.1:8765';
+const name=process.env.STUDIO_BROWSER||'chromium',url=sceneFixtureURL();
 const art='validation-artifacts/site-review-14oct-implementation/'+name;await mkdir(art,{recursive:true});
 const browser=await pw[name].launch({headless:true,
  ...(process.env.STUDIO_BROWSER_EXECUTABLE?{executablePath:process.env.STUDIO_BROWSER_EXECUTABLE}:{}),
@@ -13,7 +14,7 @@ async function tap(p,target,touch){
  if(touch){const r=await target.boundingBox();await p.touchscreen.tap(r.x+r.width/2,r.y+r.height/2);}else await target.click();
 }
 async function settled(p,id){await p.waitForFunction(id=>document.querySelector('[data-world-reader]').dataset.object===id&&
- !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'),id);}
+ !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'),id);}
 try{for(const viewport of [{width:1440,height:900},{width:390,height:844},{width:320,height:844},{width:844,height:390}]){
  const touch=viewport.width<720||viewport.height<500,p=await browser.newPage({viewport,hasTouch:touch,reducedMotion:'reduce'}),errors=[];current=p;
  p.on('pageerror',e=>errors.push(e.message));console.log(name+': navigation '+viewport.width+'px');
@@ -37,19 +38,11 @@ try{for(const viewport of [{width:1440,height:900},{width:390,height:844},{width
   check(await marker.evaluate(n=>{const r=n.getBoundingClientRect();
    return document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest('[data-scene-object]')===n;
   }),'Every visible object center is clickable without interception');
- const labels=p.locator('[data-scene-object]:visible > span:last-child');
- for(const label of await labels.all()){
-  await label.locator('..').focus();
-  await p.waitForFunction(id=>Number(getComputedStyle(document.querySelector('[data-scene-object="'+id+'"] .scene-object-label')).opacity)>.99,
-   await label.evaluate(n=>n.closest('button').dataset.sceneObject));
-  check(await label.evaluate(n=>Number(getComputedStyle(n).opacity)>.99),'Keyboard focus reveals the attached name');
-  const r=await label.boundingBox();check(r.x>=0&&r.x+r.width<=viewport.width+1,'Marker labels stay within the viewport');
-  const own=await label.evaluate(n=>n.closest('button').dataset.sceneObject);
-  for(const marker of await p.locator('[data-scene-object]:visible').all()){
-   if(await marker.getAttribute('data-scene-object')===own)continue;
-   const box=await marker.boundingBox(),x=box.x+box.width/2,y=box.y+box.height/2;
-   check(!(x>=r.x&&x<=r.x+r.width&&y>=r.y&&y<=r.y+r.height),'A label never blocks another object click target');
-  }
+ for(const marker of await p.locator('[data-scene-object]:visible').all()){
+  await p.keyboard.press('Tab');await marker.focus();
+  check(await marker.getAttribute('data-hotspot-state')==='focus','Keyboard focus highlights the photographed shortcut');
+  check(await marker.locator('.scene-object-label').evaluate(n=>getComputedStyle(n).display!=='none'&&getComputedStyle(n).opacity==='1'),'The pictured object has a persistent visible name button');
+  check(!!await marker.getAttribute('aria-label'),'Every optional shortcut retains an accessible destination name');
  }
  await p.screenshot({path:art+'/'+viewport.width+'-overview.png'});
  await tap(p,dock.locator('[data-world-route="fibonacci"]'),touch);await settled(p,'fibonacci');

@@ -1,4 +1,6 @@
+import {navIcon} from './scene-icons.js';
 import {reducedMotion,restoreMotionPreference,setMotionPreference} from './motion.js';
+import {LIGHT_NAMES,initialLight,perthLight} from './scene-clock.js';
 
 // Presentation only: canonical contact facts and links are restored on exit.
 export function mountObjectExperience(reader, content, id) {
@@ -8,6 +10,10 @@ export function mountObjectExperience(reader, content, id) {
     prepend?parent.prepend(node):parent.append(node);additions.push(node);return node;
   };
   if(id==='experience') {
+    const reading=document.createElement('a');reading.href='#books';reading.className='text-action about-reading';
+    reading.dataset.aboutReading='';reading.dataset.worldRoute='books';reading.textContent='Find a reading';
+    add(content.querySelector('.resume-heading')||content,reading);
+
     const events=new AbortController(),cue=document.createElement('button');
     cue.type='button';cue.className='about-scroll-cue';cue.textContent='Scroll for more ↓';
     const update=()=>{
@@ -49,26 +55,8 @@ export function setupObjectMenu(menu) {
   menu.hidden=true;
 }
 
-const iconPaths={
-  fibonacci:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 3v18M11 8h6M11 12h4M11 16h6"/>',
-  work:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>'+
-    '<rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
-  experience:'<circle cx="12" cy="8" r="3.5"/><path d="M4.5 21v-2a7.5 7.5 0 0 1 15 0v2"/>',
-  resume:'<path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8zM14 3v5h5M9 12h6M9 16h6"/>',
-  contact:
-    '<path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 '+
-      '8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9H13a8.5 8.5 0 0 1 8 8z"/>',
-  play:'<path d="m9 4 11 8-11 8z"/>',
-  gear:
-    '<path d="m9.5 3-.6 2.1-2 .9-2-.5-2.4 4.1 1.5 1.5v2.2l-1.5 1.5 2.4 4.1 2-.5 2 .9.6 2.1h5l.6-2.1 2-.9 2 .5 '+
-      '2.4-4.1-1.5-1.5v-2.2l1.5-1.5L19.1 5l-2 .5-2-.9L14.5 3z"/><circle cx="12" cy="12" r="3"/>'
-};
-function navIcon(id) {
-  return '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" '+
-    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+iconPaths[id]+'</svg>';
-}
 
-export function setupFocusedChrome(header,{signal,onMotionChange=()=>{}}={}) {
+export function setupFocusedChrome(header,{signal,onMotionChange=()=>{},onLightChoice=()=>{}}={}) {
   const dock=document.querySelector('.world-dock'),play=document.querySelector('[data-world-map]');
   for(const a of dock.querySelectorAll(':scope > a')){
     const id=a.dataset.worldRoute,label=id==='experience'?'About':a.textContent;
@@ -93,7 +81,20 @@ export function setupFocusedChrome(header,{signal,onMotionChange=()=>{}}={}) {
   for(const a of regions.querySelectorAll('a'))a.textContent=a.dataset.worldRoute==='coast'?'Coast':'Winter';
   panel.querySelector('[data-settings-season]').append(regions);
   const dusk=document.querySelector('[data-world-night]');dusk.textContent='Night';
-  panel.querySelector('[data-settings-light]').append(dusk);
+  const lights=panel.querySelector('[data-settings-light]');lights.append(dusk);
+  lights.querySelector('[data-world-day]').dataset.sceneLight='sunset';dusk.dataset.sceneLight='night';
+  for(const choice of ['auto','morning','day']){
+    const control=document.createElement('button');control.type='button';control.dataset.sceneLight=choice;
+    control.textContent=LIGHT_NAMES[choice];lights.insertBefore(control,lights.querySelector('[data-world-day]'));
+  }
+  const clock=document.createElement('p');clock.className='settings-perth-time';clock.dataset.perthTime='';lights.after(clock);
+  const syncLight=state=>{
+    lights.setAttribute('aria-busy',String(!!state.pending));
+    for(const control of lights.querySelectorAll('[data-scene-light]'))control.setAttribute('aria-pressed',String(control.dataset.sceneLight===state.choice));
+    clock.textContent='Perth · '+state.time+' · '+LIGHT_NAMES[state.phase];
+  };
+  const initial=initialLight();syncLight({...initial,time:perthLight().time});
+  lights.addEventListener('click',e=>{const control=e.target.closest('[data-scene-light]');if(control)onLightChoice(control.dataset.sceneLight);},{signal});
   const simple=document.querySelector('[data-world-text]');simple.textContent='Simple page view';
   simple.classList.add('scene-simple-page');panel.append(simple);
   const motion=panel.querySelector('[data-world-reduce-motion]');restoreMotionPreference();
@@ -116,5 +117,5 @@ export function setupFocusedChrome(header,{signal,onMotionChange=()=>{}}={}) {
     if(e.key!=='Escape'||panel.hidden)return;
     e.preventDefault();e.stopImmediatePropagation();close(true);
   },{capture:true,signal});
-  return {close,dispose(){close();menu.hidden=true;document.querySelector('[data-world-fallback]').before(dock);}};
+  return {close,syncLight,dispose(){close();menu.hidden=true;document.querySelector('[data-world-fallback]').before(dock);}};
 }

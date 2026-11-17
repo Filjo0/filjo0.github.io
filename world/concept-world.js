@@ -1,4 +1,6 @@
 import {reducedMotion} from './motion.js';
+import {createSceneAtmosphere} from './scene-atmosphere.js';
+import {createSceneTravel} from './scene-travel.js';
 import * as THREE from '../assets/vendor/three.module.js';
 import {createConceptScene} from './concept-scene.js';
 import {createConceptCamera} from './concept-camera.js';
@@ -64,6 +66,8 @@ export function createWorld({host,onNear,onArrive,onGame,onFailure,onRegion=()=>
   },undefined,()=>{if(!disposed){character='fallback';render();}});
 
   const hotspots=walkthrough?null:createSceneHotspots(host,onObject,view,()=>{render();request();});
+  const travel=createSceneTravel(host,render);
+  const atmosphere=walkthrough?null:createSceneAtmosphere(host,request);
   if(!walkthrough)character='none';
   Promise.all([environment.ready,hotspots?.ready]).then(()=>{
     if(disposed)return;loaded=true;host.dataset.sceneReady='true';render();request();
@@ -92,14 +96,16 @@ export function createWorld({host,onNear,onArrive,onGame,onFailure,onRegion=()=>
     actor.visible=loaded&&!view.inspecting()&&(walkthrough||!!activities.state());
     globeSnow.visible=season.phase==='transition'&&!reduced();
     view.update(activities.state());portfolio.inspect(view.inspecting());environment.highlight(activities.state()?null:near,camera);
+    atmosphere?.update(camera,season.region,environment.lighting(),loaded&&!view.inspecting()&&!travel.running(),paused);
     renderer.render(scene,camera);
     hotspots?.update(camera,season.region,loaded&&!view.inspecting()&&!activities.state()&&
       ['overview','coast','winter','globe'].includes(route),environment.lighting(),season,paused);
-    onSurface(view.inspecting(),camera,!view.animating());
+    onSurface(view.inspecting(),camera,!view.animating()&&!travel.running());
     renderer.domElement.dataset.worldState=JSON.stringify({
       renderer:'concept-scenes',navigation:walkthrough?'walk':'objects',character,position:{x:actor.position.x,y:actor.position.y,z:actor.position.z},
       region:season.region,snow:season.blend,transition:season,footprints:0,route,moving:path.length>0,
-      paused,night,lighting:environment.lighting(),ready:loaded,walkable:walkable(actor.position.x,actor.position.z),game:deviceGame||activities.state(),
+      paused,night:environment.lighting().phase==='night',lighting:environment.lighting(),travel:travel.state(),ready:loaded,
+      walkable:walkable(actor.position.x,actor.position.z),game:deviceGame||activities.state(),
       geometry:geometryEvidence({avatar:person,props:activities.props(),camera,host,portfolio})
     });
   }
@@ -150,8 +156,18 @@ export function createWorld({host,onNear,onArrive,onGame,onFailure,onRegion=()=>
   const observer=new ResizeObserver(render);observer.observe(host);
   onNear('');render();
   return {
-    travel(id,{immediate=false}={}) {
+    sceneLayout:()=>hotspots.layout(),
+    captureOverview(){
+      const saved=view.rememberOverview(),crop={...camera.view},snapshot=environment.capturePlate();request();
+      return {canvas:snapshot,crop,saved,area:view.sceneArea(),width:host.clientWidth,height:host.clientHeight};
+    },
+    restoreOverview(saved){view.restoreOverview(saved);render();request();},
+    travel(id,{immediate=false,source=id}={}) {
       if(!destinations[id])return;
+      if(!walkthrough&&!immediate&&loaded&&!view.inspecting()&&environment.portfolio.get(id)){
+        renderer.render(scene,camera);travel.start(source,renderer.domElement);
+      }else travel.cancel();
+      atmosphere?.reset();
       if(!['coast','winter','globe'].includes(id)&&regions.state().target!==regions.state().region)regions.cancel();
       view.clearInspection();activities.exit();input.clear();route=id;arrival=null;path=[];
       if(id==='coast'||id==='winter') {
@@ -180,16 +196,19 @@ export function createWorld({host,onNear,onArrive,onGame,onFailure,onRegion=()=>
       if(object&&!walkthrough)await portfolio.ensure(object,regions.state().region);
     },
     async inspect(id,{immediate=false}={}) {
-      input.clear();path=[];arrival=null;
+      const entered=performance.now();input.clear();path=[];arrival=null;
       const object=portfolio.get(id);
       if(object){
-        if(!walkthrough)await portfolio.ensure(object,regions.state().region);
+        try{if(!walkthrough)await portfolio.ensure(object,regions.state().region);}
+        catch(error){travel.cancel();throw error;}
         if(disposed||route!==id)return false;
-        view.inspect(object,immediate);render();request();
+        const beforeRender=performance.now();view.inspect(object,immediate);render();host.dataset.linkedPlateTiming=JSON.stringify({
+          ensure:beforeRender-entered,render:performance.now()-beforeRender});travel.reveal();request();
       }
       return !!object;
     },
     refreshMotion() {
+      travel.refresh();atmosphere?.reset();
       if(reduced()){regions.step(2);environment.stepLighting(2);const object=view.inspecting();if(object)view.inspect(object,true);}
       render();request();
     },
@@ -204,9 +223,10 @@ export function createWorld({host,onNear,onArrive,onGame,onFailure,onRegion=()=>
     },
     globe() {if(paused)return;this.travel('globe',{immediate:reduced()});},
     move:input.move, nearby:()=>near,
-    setPaused(value) {paused=value;view.pause(value||document.hidden);stop();render();if(!value)request();},
-    async setNight(value) {await environment.setNight(value);if(disposed)return;night=value;
+    setPaused(value) {paused=value;if(value)travel.cancel();view.pause(value||document.hidden);stop();render();if(!value)request();},
+    async setLight(phase) {await environment.setPhase(phase);if(disposed)return;
       environment.stepLighting(0);render();request();},
+    async setNight(value) {return this.setLight(value?'night':'sunset');},
     startGame(type) {
       if(paused||regions.state().phase==='transition')return;
       path=[];arrival=null;view.clearInspection();activities.enter(type,{prepare:!walkthrough&&['ball','skate','surf'].includes(type)?2:0});render();request();
@@ -230,7 +250,8 @@ export function createWorld({host,onNear,onArrive,onGame,onFailure,onRegion=()=>
     },
     state:()=>JSON.parse(renderer.domElement.dataset.worldState),
     dispose() {
-      disposed=true;environment.cancelLighting();regions.dispose();stop();activities.dispose();input.dispose();hotspots?.dispose();observer.disconnect();
+      disposed=true;travel.dispose();atmosphere?.dispose();environment.cancelLighting();regions.dispose();stop();
+      activities.dispose();input.dispose();hotspots?.dispose();observer.disconnect();
       resources.forEach(resource=>resource.dispose());renderer.dispose();renderer.domElement.remove();
     }
   };

@@ -49,7 +49,7 @@ try{
     await p.setViewportSize({width:794,height:1123});await p.screenshot({path:out+'/print-layout.png',fullPage:true});await p.setViewportSize(viewport);
   }
   samples.push({viewport,kind:'print',...print});await p.emulateMedia({media:'screen'});
-  await p.goto(base+'#resume');await p.waitForFunction(()=>document.querySelector('[data-world-reader]')?.dataset.object==='resume'&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+  await p.goto(base+'#resume');await p.waitForFunction(()=>document.querySelector('[data-world-reader]')?.dataset.object==='resume'&&!document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
   check(await p.locator('.world-resume-actions a[download]').count()===0,'Clipboard has no PDF download');
   const printable=p.getByRole('link',{name:'Read or print résumé ↗',exact:true});
   const [standalone]=await Promise.all([p.waitForEvent('popup'),printable.click()]);

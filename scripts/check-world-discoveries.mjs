@@ -1,3 +1,4 @@
+import {sceneFixtureURL} from './scene-fixture-url.mjs';
 import assert from 'node:assert/strict';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
 const name=process.env.STUDIO_BROWSER||'chromium';
@@ -9,7 +10,7 @@ try{
  for(const viewport of [{width:1440,height:900},{width:390,height:844},{width:320,height:844},{width:844,height:390}]){
   const page=await browser.newPage({viewport,reducedMotion:'reduce',hasTouch:viewport.width<700});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto('http://127.0.0.1:8765');await page.waitForFunction(()=>document.body.dataset.worldReady==='true');
+  await page.goto(sceneFixtureURL());await page.waitForFunction(()=>document.body.dataset.worldReady==='true');
   for(const region of ['coast','winter']){
    await page.locator('[data-settings-toggle]').click();
    await page.locator('[data-world-route="'+region+'"]').first().click();
@@ -22,7 +23,7 @@ try{
    for(const [id,text] of [['coaching','Floreat Athena FC'],['tennis','FUTSL'],['receipts','Aqua Local']]){
     const canonical=id==='coaching'?'experience':'work';
     await page.evaluate(route=>{location.hash=route;},id);
-    await page.waitForFunction(()=>!document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+    await page.waitForFunction(()=>!document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
     const reader=page.locator('[data-world-reader]');
     check(await reader.getAttribute('data-object')===canonical,id+': canonical physical object');
     check((await page.locator('[data-world-content]').textContent()).includes(text),id+': factual public content');
@@ -49,7 +50,7 @@ try{
     await action.press('Enter');
     const destination=id==='coaching'?'resume':'work';
     await page.waitForFunction(id=>document.querySelector('[data-world-reader]').dataset.object===id &&
-      !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'),destination);
+      !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'),destination);
     check(await reader.getAttribute('data-object')===destination,id+': contextual action opens the canonical public case study');
     await page.keyboard.press('Escape');
     if(await reader.isVisible())await page.keyboard.press('Escape');

@@ -1,9 +1,10 @@
+import {sceneFixtureURL} from './scene-fixture-url.mjs';
 import {revealDesk} from './outline-browser-evidence.mjs';
 import assert from 'node:assert/strict';
 import {mkdir} from 'node:fs/promises';
 import {resolve} from 'node:path';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
-const name=process.env.STUDIO_BROWSER||'chromium',url=process.env.STUDIO_URL||'http://127.0.0.1:8765';
+const name=process.env.STUDIO_BROWSER||'chromium',url=sceneFixtureURL();
 const artifact=resolve(import.meta.dirname,'../validation-artifacts/object-scenes',name);await mkdir(artifact,{recursive:true});
 const browser=await pw[name].launch({headless:true,
  ...(process.env.STUDIO_BROWSER_EXECUTABLE?{executablePath:process.env.STUDIO_BROWSER_EXECUTABLE}:{}),
@@ -45,7 +46,7 @@ try {
   if(viewport.width<720) {
     await p.locator('.world-dock [data-world-route="work"]').click();
     await p.waitForFunction(()=>document.querySelector('[data-world-reader]').dataset.object==='work'&&
-      !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+      !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
     check(await p.locator('.workspace-launcher').isVisible(),'The primary dock opens apps on phones without extra viewpoint chips');
     await p.locator('[data-world-close]').click();
   }
@@ -56,10 +57,10 @@ try {
   const apps=p.locator('[data-scene-object="work"]');
   if(await apps.isVisible()) {
     await apps.click();await p.locator('[data-world-reader]').waitFor();
-    await p.waitForFunction(()=>!document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+    await p.waitForFunction(()=>!document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
     check(await p.locator('[data-world-reader]').getAttribute('data-object')==='work','Pictured laptop opens apps');
     check(await p.locator('.scene-hotspots').isHidden(),'Overview markers disappear in close-ups');
-    check(await p.locator('[data-world-close]').textContent()==='← Coast','Clear return action');
+    check(await p.locator('[data-world-close]').textContent()==='← Back to desk','Clear return action');
     await p.screenshot({path:artifact+'/'+viewport.width+'-apps.png'});
     await p.keyboard.press('Escape');check(await p.locator('[data-world-reader]').isHidden(),'Escape returns to scene');
   }
@@ -81,7 +82,7 @@ try {
   if(!await p.locator('.scene-settings').evaluate(n=>n.querySelector('[data-settings-toggle]').getAttribute('aria-expanded')==='true'))await p.locator('[data-settings-toggle]').click();
   await p.locator('[data-world-route="coast"]').first().click();
   await p.locator('.world-dock [data-world-route="contact"]').click();
-  await p.waitForFunction(()=>!document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+  await p.waitForFunction(()=>!document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
   check(await p.locator('a[href="mailto:philalimov.apps@gmail.com"]').isVisible(),'Contact is readable on the phone');
   await p.locator('[data-world-close]').click();
   check(await p.locator('.scene-hotspots').isVisible(),'Close restores object exploration');
@@ -89,7 +90,7 @@ try {
   for(const id of ['books','fibonacci']) {
     const opener=id==='books'?p.locator('[data-scene-object="books"]'):p.locator('.world-dock [data-world-route="fibonacci"]');
     await opener.click();await p.locator('[data-world-reader]').waitFor();
-    await p.waitForFunction(()=>!document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+    await p.waitForFunction(()=>!document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
     check((await state(p)).route===id,'A native click opens '+id+' on its real surface');
     await p.locator('[data-world-close]').click();
     check(await p.locator('[data-world-reader]').isHidden(),'Close exits '+id+' to the scene');
@@ -112,7 +113,7 @@ try {
  if(!await motion.locator('.scene-settings').evaluate(n=>n.querySelector('[data-settings-toggle]').getAttribute('aria-expanded')==='true'))await motion.locator('[data-settings-toggle]').click();
  await motion.keyboard.press('p');
  await motion.locator('.world-dock [data-world-route="contact"]').click();
- await motion.waitForFunction(()=>!document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+ await motion.waitForFunction(()=>!document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
  check((await state(motion)).transition.phase==='settled','Opening an object cancels partial season changes');
  check(await motion.locator('a[href="mailto:philalimov.apps@gmail.com"]').isVisible(),'Animated close-up settles into readable contact');
  await motion.keyboard.press('Escape');

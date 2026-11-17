@@ -1,8 +1,9 @@
+import {sceneFixtureURL} from './scene-fixture-url.mjs';
 import assert from 'node:assert/strict';
 import {mkdir} from 'node:fs/promises';
 import {WORLD} from '../demo/treadfront/core.js';
 const pw=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
-const name=process.env.STUDIO_BROWSER||'chromium',url=process.env.STUDIO_URL||'http://127.0.0.1:8765';
+const name=process.env.STUDIO_BROWSER||'chromium',url=sceneFixtureURL();
 const art='validation-artifacts/presentation-recheck3-implementation/'+name;await mkdir(art,{recursive:true});
 const browser=await pw[name].launch({headless:true,
  ...(process.env.STUDIO_BROWSER_EXECUTABLE?{executablePath:process.env.STUDIO_BROWSER_EXECUTABLE}:{}),
@@ -26,9 +27,9 @@ try{for(const viewport of [{width:390,height:844},{width:1440,height:900},{width
  const p=await browser.newPage({viewport,hasTouch:touch,reducedMotion:'reduce'}),errors=[];current=p;
  let accessProbe=false;const probeErrors=[];
  p.on('pageerror',e=>(accessProbe?probeErrors:errors).push(e.message));console.log(name+': Treadfront '+viewport.width+'px');
- await p.goto(url+'/#work');
+ await p.goto(new URL('#work',url).href);
  await p.waitForFunction(()=>document.querySelector('[data-world-reader]').dataset.object==='work'&&
-  !document.querySelector('[data-world-reader]').classList.contains('world-object-opening'));
+  !document.querySelector('[data-world-reader]').hidden&&!document.querySelector('[data-world-reader]').classList.contains('world-object-opening')&&!document.querySelector('.linked-input-shield'));
  const launch=p.locator('.workspace-app[data-demo-open]');await launch.locator('..').scrollIntoViewIfNeeded();
  const scroll=await p.locator('[data-world-content]').evaluate(n=>n.scrollTop);
  const appsFullscreen=await p.locator('[data-world-reader]').getAttribute('data-fullscreen');
