@@ -50,7 +50,7 @@ export async function markerEvidence(page,check,{native=true}={}){
  check(state.objects.length>0,'The view has discoverable objects without any pointer interaction');
  check(state.fontLoaded,'The locally hosted extended marker typeface is loaded');
  const names={work:'My apps',contact:'Contact',resume:'R\u00e9sum\u00e9',experience:'About',books:'Book',fibonacci:'Maths',
-  globe:state.region==='winter'?'Coast':'Winter',aqua:'Aqua Local',futsl:'FUTSL'};
+  globe:'Globe',aqua:'Aqua Local',futsl:'FUTSL'};
  for(const m of state.objects){
   check(m.name===names[m.id],m.id+': the permanent label uses its approved name and intact accents');
   const p=m.pill,t=m.target,d=m.dot;

@@ -7,9 +7,9 @@ import {placeMarkers,markerVisible} from './scene-marker-layout.js';
 
 const NS='http://www.w3.org/2000/svg';let instance=0;
 const names={work:'My apps',contact:'Contact',resume:'Résumé',experience:'About',books:'Book',fibonacci:'Maths',
-  globe:'Winter',aqua:'Aqua Local',futsl:'FUTSL'};
+  globe:'Globe',aqua:'Aqua Local',futsl:'FUTSL'};
 const accessible={work:'My apps',experience:'About',books:'Book · Find a reading',fibonacci:'Maths notebook',
-  globe:'Winter · Change season with the snow globe',aqua:'Aqua Local · Pool',futsl:'FUTSL · Pitch'};
+  globe:'Globe · Change season',aqua:'Aqua Local · Pool',futsl:'FUTSL · Pitch'};
 const svg=(tag,attrs={})=>{const n=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))n.setAttribute(k,v);return n;};
 
 // A photographed silhouette, its dot and its name share one native accessible control.
@@ -180,11 +180,11 @@ export function createSceneHotspots(host,onObject,view,render) {
       if(!visible){hover='';keyboard='';return;}
       if(!data)return;
       const globe=buttons.find(b=>b.id==='globe'),next=region==='winter'?'Coast':'Winter';
-      if(globe.text.textContent!==next){
-        globe.text.textContent=next;globe.button.setAttribute('aria-label',next+' · Change season with the snow globe');
+      const globeAction='Globe · Switch to '+next;
+      if(globe.button.getAttribute('aria-label')!==globeAction){
+        globe.button.setAttribute('aria-label',globeAction);
         globe.pill.querySelector('svg').outerHTML=navIcon(next==='Winter'?'winter':'coast','scene-tab-icon');
       }
-      names.globe=next;
       const w=host.clientWidth,h=host.clientHeight,origin=host.getBoundingClientRect();
       const header=document.querySelector('.world-header').getBoundingClientRect(),dock=document.querySelector('.world-dock').getBoundingClientRect();
       if(!framing.hidden)framing.style.top=(header.bottom+12)+'px';

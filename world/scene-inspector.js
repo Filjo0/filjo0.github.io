@@ -1,7 +1,7 @@
 import {QUALITY_SOURCE_DIGEST} from './quality-build.js';
 import {qualityStats} from './quality-record.js';
 const roles={work:'Laptop → My apps',contact:'Phone → Contact',resume:'Clipboard → Résumé',experience:'Bag → About',
- books:'Book stack → Reading',fibonacci:'Notebook → Maths',globe:'Snow globe → Season',aqua:'Pool → Aqua Local',futsl:'Pitch → FUTSL'};
+ books:'Book stack → Reading',fibonacci:'Notebook → Maths',globe:'Globe → Season',aqua:'Pool → Aqua Local',futsl:'Pitch → FUTSL'};
 export function createSceneInspector(header,{signal,onChange=()=>{}}={}){
  const own=new AbortController(),wrap=document.createElement('div');wrap.className='scene-inspector';
  wrap.innerHTML='<button type="button" class="scene-inspect-toggle" data-scene-inspect aria-label="Inspect portfolio quality" '+
