@@ -3,7 +3,7 @@ import {navIcon} from './scene-icons.js';
 import {reducedMotion} from './motion.js';
 import {MORNING_GRADE} from './scene-lighting.js';
 import {bounds,clipRing,shapePath} from './scene-object-geometry.js';
-import {placeMarkers,markerVisible} from './scene-marker-layout.js';
+import {placeMarkers,markerVisible,stemHits} from './scene-marker-layout.js';
 
 const NS='http://www.w3.org/2000/svg';let instance=0;
 const names={work:'My apps',contact:'Contact',resume:'Résumé',experience:'About',books:'Book',fibonacci:'Maths',
@@ -67,12 +67,25 @@ export function createSceneHotspots(host,onObject,view,render) {
         geometry=geometry.filter(g=>!cropped.includes(g));layout=solve();
       }
     }
-    layer.dataset.markerLayout=layout.ok?'ready':'unresolved';if(layout.ok)previousMarkers=layout.positions;
+    layer.dataset.markerLayout=layout.ok?'ready':'unresolved';
+    layer.dataset.markerStems=layout.strictStems===false?'crossing':'clear';if(layout.ok)previousMarkers=layout.positions;
     for(const b of geometry){
       const r=layout.positions[b.id];b.button.dataset.labelFit=String(!!r);b.button.disabled=!r;
       if(!r)continue;
       b.dot.style.left=(r.anchor[0]-b.hit.left)+'px';b.dot.style.top=(r.anchor[1]-b.hit.top)+'px';
-      b.label.style.left=(r.box.left-b.hit.left)+'px';b.label.style.top=(r.box.top-b.hit.top)+'px';
+      // Whole-pixel names keep glyph edges crisp; the dot keeps its exact calibrated anchor.
+      const width=r.box.right-r.box.left,round=v=>Math.round(v)+width>safe.right?Math.floor(v):Math.round(v)<safe.left?Math.ceil(v):Math.round(v);
+      const labelLeft=round(r.box.left)-b.hit.left,labelTop=Math.round(r.box.top)-b.hit.top;
+      b.label.style.left=labelLeft+'px';b.label.style.top=labelTop+'px';
+      // The stem runs from the dot's edge to the nearest point of its own name.
+      const dx=r.end[0]-r.start[0],dy=r.end[1]-r.start[1],length=Math.hypot(dx,dy);
+      // Only on very cramped screens can a layout need a stem through another name; hide just that
+      // stem there, leaving the name beside its own object as before.
+      const crosses=Object.entries(layout.positions).some(([id,o])=>id!==b.id&&stemHits(r,o.pill,0));
+      b.stem.hidden=length<3||crosses;
+      Object.assign(b.stem.style,{left:(r.start[0]-b.hit.left)+'px',top:(r.start[1]-b.hit.top)+'px',
+        width:length+'px',transform:`rotate(${Math.atan2(dy,dx)}rad)`});
+      b.button.dataset.markerSide=r.pill.bottom<=r.anchor[1]?'above':r.pill.top>=r.anchor[1]?'below':'beside';
 
     }
   }
@@ -108,21 +121,24 @@ export function createSceneHotspots(host,onObject,view,render) {
       const pill=document.createElement('span');pill.className='scene-marker-name';pill.innerHTML=navIcon(id==='globe'?'winter':id,'scene-tab-icon');
       const text=document.createElement('span');text.className='scene-marker-text';text.textContent=label;pill.append(text);tag.append(pill);
       const dot=document.createElement('span');dot.className='scene-object-dot';dot.setAttribute('aria-hidden','true');
-      // Invisible calibration point: the native SVG silhouette owns the object hit.
-      button.append(hitSvg,dot,tag);layer.append(button);
+      const stem=document.createElement('span');stem.className='scene-marker-stem';stem.setAttribute('aria-hidden','true');stem.hidden=true;
+      // The native SVG silhouette, dot, stem and name share one control.
+      button.append(hitSvg,stem,dot,tag);layer.append(button);
       chromeObserver.observe(tag);
       let drag=null,suppressClick=false;
       button.addEventListener('pointerdown',e=>{
         if(e.button!==0)return;keyboard='';
-        drag={x:e.clientX,y:e.clientY,yaw:view.yaw,moved:false};button.setPointerCapture(e.pointerId);paint();
+        drag={x:e.clientX,y:e.clientY,yaw:view.yaw,moved:false};button.setPointerCapture(e.pointerId);
+        // iOS Safari does not reliably apply :active to taps; show the press explicitly.
+        button.dataset.pressed='';paint();
       },{signal});
       button.addEventListener('pointermove',e=>{
         if(!drag)return;
         if(Math.abs(e.clientX-drag.x)+Math.abs(e.clientY-drag.y)>8)drag.moved=true;
-        if(drag.moved){hover='';keyboard='';view.yaw=drag.yaw-(e.clientX-drag.x)*.008;host.focus({preventScroll:true});render();}
+        if(drag.moved){delete button.dataset.pressed;hover='';keyboard='';view.yaw=drag.yaw-(e.clientX-drag.x)*.008;host.focus({preventScroll:true});render();}
       },{signal});
-      button.addEventListener('pointerup',()=>{suppressClick=!!drag?.moved;drag=null;},{signal});
-      button.addEventListener('pointercancel',()=>{drag=null;paint();},{signal});
+      button.addEventListener('pointerup',()=>{suppressClick=!!drag?.moved;drag=null;delete button.dataset.pressed;},{signal});
+      button.addEventListener('pointercancel',()=>{drag=null;delete button.dataset.pressed;paint();},{signal});
       button.addEventListener('click',e=>{
         const dragged=suppressClick;suppressClick=false;
         if(dragged&&e.detail>0){e.preventDefault();return;}
@@ -133,10 +149,10 @@ export function createSceneHotspots(host,onObject,view,render) {
       button.addEventListener('focus',()=>{if(button.matches(':focus-visible'))keyboard=id;paint();},{signal});
       button.addEventListener('blur',()=>{if(keyboard===id)keyboard='';paint();},{signal});
       button.addEventListener('keydown',e=>{if(!['Shift','Control','Alt','Meta'].includes(e.key)){keyboard=id;paint();}},{signal});
-      buttons.push({id,button,dot,localFilter,label:tag,hitSvg,hitPath,effect,clipPath,mask,maskRect,maskPath,halo,edge,rim,text,pill});
+      buttons.push({id,button,dot,stem,localFilter,label:tag,hitSvg,hitPath,effect,clipPath,mask,maskRect,maskPath,halo,edge,rim,text,pill});
     }
   }
-  // Font metrics must be final before the first capsule placement. A failed font keeps system-type navigation usable.
+  // Font metrics must be final before the first name placement. A failed font keeps system-type navigation usable.
   const markerFont=document.fonts.load('500 13px "Zalando Sans Expanded"').catch(()=>[]);
   const outlineData=fetch(new URL('../assets/outdoor/hotspot-layout.json',import.meta.url),{signal}).then(r=>{
     if(!r.ok)throw Error('Scene outlines HTTP '+r.status);return r.json();
@@ -166,7 +182,12 @@ export function createSceneHotspots(host,onObject,view,render) {
   const media=matchMedia('(prefers-reduced-motion: reduce)');media.addEventListener('change',preference,{signal});
   const observer=new MutationObserver(preference);observer.observe(document.body,{attributes:true,attributeFilter:['data-motion']});
   // Header and tabs can settle after the scene (fonts, readiness styles, or text zoom).
-  const chromeObserver=new ResizeObserver(render);
+  // Re-layout on the next frame: laying markers out inside the observer callback can
+  // resize observed names again and trigger the engines' "ResizeObserver loop" error.
+  let relayout=0;
+  const chromeObserver=new ResizeObserver(()=>{
+    if(relayout||disposed)return;relayout=requestAnimationFrame(()=>{relayout=0;if(!disposed)render();});
+  });
   for(const node of document.querySelectorAll('.world-header,.world-dock,.scene-quality-panel'))chromeObserver.observe(node);
   return {
     ready,
@@ -248,6 +269,6 @@ export function createSceneHotspots(host,onObject,view,render) {
       if(key!==layer.dataset.markerProjection){layoutMarkers(obstacles);layer.dataset.markerProjection=key;}
       paint();
     },
-    dispose(){disposed=true;events.abort();observer.disconnect();chromeObserver.disconnect();layer.remove();framing.remove();}
+    dispose(){disposed=true;cancelAnimationFrame(relayout);events.abort();observer.disconnect();chromeObserver.disconnect();layer.remove();framing.remove();}
   };
 }

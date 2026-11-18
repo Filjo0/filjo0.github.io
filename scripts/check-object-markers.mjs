@@ -43,7 +43,7 @@ try{
    }));
    check(fallback.length>=5,'A failed optional font preserves the pictured controls');
    for(const item of fallback)check(item.box.width>=44&&item.box.height>=44&&item.font>=13&&
-    item.color==='rgb(0, 0, 0)'&&item.surface.slice(0,3).every(value=>value===255)&&item.surface[3]>=170&&item.surface[3]<=240,'System fallback retains target size and readable glass controls');
+    item.color==='rgb(0, 0, 0)'&&item.surface[0]>=245&&item.surface[1]>=245&&item.surface[2]>=240&&item.surface[3]>=235,'System fallback retains target size and readable solid name pills');
    for(const a of fallback)for(const c of fallback)if(a!==c)
     check(a.box.right<=c.box.left||c.box.right<=a.box.left||a.box.bottom<=c.box.top||c.box.bottom<=a.box.top,
      'Font failure cannot leave overlapping native controls');

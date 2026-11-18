@@ -9,7 +9,7 @@ async function readMarkerState(page){
   const matrix=document.querySelector('.scene-object-effects defs g[id$="-plate"]').transform.baseVal.consolidate().matrix;
   const box=n=>n.getBoundingClientRect().toJSON();
   const swatch=document.createElement('canvas');swatch.width=swatch.height=1;const paint=swatch.getContext('2d');
-  return {region:document.body.dataset.worldRegion,ready:nav.dataset.markerLayout,host:host.toJSON(),header:header.toJSON(),dock:dock.toJSON(),
+  return {region:document.body.dataset.worldRegion,ready:nav.dataset.markerLayout,stems:nav.dataset.markerStems,host:host.toJSON(),header:header.toJSON(),dock:dock.toJSON(),
    fontLoaded:[...document.fonts].some(face=>face.family.includes('Zalando Sans Expanded')&&face.status==='loaded'),
    diagnostic:{at:performance.now(),projection:nav.dataset.markerProjection,host:{...document.querySelector('[data-world-render]').dataset},
     canvas:JSON.parse(document.querySelector('[data-world-render] canvas').dataset.worldState),
@@ -17,6 +17,12 @@ async function readMarkerState(page){
     animations:document.getAnimations().map(a=>({target:a.effect?.target?.getAttribute('class'),tag:a.effect?.target?.tagName,playState:a.playState,currentTime:a.currentTime,name:a.animationName,property:a.transitionProperty,keyframes:a.effect?.getKeyframes()}))},
    pan:pan.hidden?null:box(pan),inspector:inspector?box(inspector):null,objects:[...nav.querySelectorAll('[data-scene-object]')].filter(n=>!n.hidden).map(n=>{
     const dot=n.querySelector('.scene-object-dot'),label=n.querySelector('.scene-marker-name'),target=n.querySelector('.scene-object-label');
+    const stemNode=n.querySelector('.scene-marker-stem'),buttonBox=n.getBoundingClientRect();
+    const angle=Number.parseFloat((stemNode?.style.transform.match(/rotate\(([-\d.e]+)rad\)/)||[])[1]||0);
+    const stemStart=stemNode?[buttonBox.x+Number.parseFloat(stemNode.style.left),buttonBox.y+Number.parseFloat(stemNode.style.top)]:null;
+    const stemLength=stemNode?Number.parseFloat(stemNode.style.width)||0:0;
+    const stem=stemNode&&stemStart.every(Number.isFinite)?{shown:!stemNode.hidden&&getComputedStyle(stemNode).display!=='none',start:stemStart,
+     end:[stemStart[0]+Math.cos(angle)*stemLength,stemStart[1]+Math.sin(angle)*stemLength],length:stemLength}:null;
     const d=box(dot),r=box(label),centre=[d.x+d.width/2,d.y+d.height/2],style=getComputedStyle(label);
     paint.clearRect(0,0,1,1);paint.fillStyle=style.backgroundColor;paint.fillRect(0,0,1,1);
     const surface=[...paint.getImageData(0,0,1,1).data];
@@ -40,6 +46,7 @@ async function readMarkerState(page){
      font:Number.parseFloat(style.fontSize),family:style.fontFamily,weight:Number(style.fontWeight),
      surface,glass:style.backdropFilter||style.webkitBackdropFilter,border:style.borderWidth,pillShadow:style.boxShadow,color:style.color,background:style.backgroundColor,opacity:getComputedStyle(target).opacity,
      textBox:range.getBoundingClientRect().toJSON(),
+     stem,side:n.dataset.markerSide,
      dotHit:document.elementFromPoint(...centre)?.closest('[data-scene-object]')===n,
      pillHit:document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest('[data-scene-object]')===n};
    })};
@@ -60,14 +67,29 @@ export async function markerEvidence(page,check,{native=true}={}){
   check(m.name===names[m.id],m.id+': the permanent label uses its approved name and intact accents');
   const p=m.pill,t=m.target,d=m.dot;
   check(!m.disabled&&m.opacity==='1',m.id+': dot and name stay enabled and visible at rest');
-  check(!m.anchorHidden&&m.dotColor==='rgb(255, 255, 255)'&&!m.iconVisible&&m.uppercase&&m.shadow==='none',m.id+': a visible white dot and compact uppercase name pill');
+  check(!m.anchorHidden&&m.dotColor==='rgb(255, 255, 255)'&&!m.iconVisible&&m.uppercase&&m.shadow==='none',m.id+': a visible white dot and a compact uppercase name pill');
   check(m.accessible.includes(m.name),m.id+': visible words are included in its accessible name');
   check(m.font>=13&&m.contrastSamples>=15&&m.contrast>=4.5,m.id+': native text/glow contrast '+m.contrast?.toFixed(2));
   check(m.weight===500&&m.family.includes('Zalando Sans Expanded'),m.id+': the name uses the approved extended medium face');
-  check(m.border==='0px'&&m.pillShadow==='none'&&m.color==='rgb(0, 0, 0)',
-   m.id+': the capsule retains borderless black extended lettering');
-  check(m.surface.slice(0,3).every(value=>value===255)&&m.surface[3]>=170&&m.surface[3]<=240&&m.glass.includes('8px'),
-   m.id+': the translucent white surface shows the scene through a soft backdrop');
+  check(m.border==='0px'&&m.pillShadow!=='none'&&m.color==='rgb(0, 0, 0)',
+   m.id+': the borderless pill has black extended lettering and a soft lifting shadow');
+  check(m.surface[0]>=245&&m.surface[1]>=245&&m.surface[2]>=240&&m.surface[3]>=235,
+   m.id+': a near-opaque white surface keeps the name readable on day and night artwork');
+  // The stem joins the dot to its own name, so every name visibly belongs to one object.
+  const s=m.stem,dc=[d.x+d.width/2,d.y+d.height/2];
+  const nearPill=s&&Math.hypot(Math.max(p.x-s.end[0],0,s.end[0]-p.right),Math.max(p.y-s.end[1],0,s.end[1]-p.bottom))<=1.5;
+  // Only a layout the solver reports as cramped ('crossing') may drop a stem; that name still sits
+  // beside its own object (edge gap check below), as in the earlier stemless design.
+  check(s&&(s.shown?Math.hypot(s.start[0]-dc[0],s.start[1]-dc[1])<=10.5&&nearPill:
+   Math.hypot(Math.max(p.x-dc[0],0,dc[0]-p.right),Math.max(p.y-dc[1],0,dc[1]-p.bottom))<=12||state.stems==='crossing'),
+   m.id+': a stem joins its dot to its own name');
+  if(state.host.width>=600||state.host.height>=330)check(state.stems==='clear',m.id+': every stem avoids every name at this size');
+  for(const o of state.objects)if(o.id!==m.id&&s?.shown){
+   const q=o.pill,steps=Math.ceil(s.length/2);let crosses=false;
+   for(let i=0;i<=steps;i++){const t=steps?i/steps:0,x=s.start[0]+(s.end[0]-s.start[0])*t,y=s.start[1]+(s.end[1]-s.start[1])*t;
+    if(x>q.x+1&&x<q.right-1&&y>q.y+1&&y<q.bottom-1)crosses=true;}
+   check(!crosses,m.id+': its stem never runs through the '+o.id+' name');
+  }
   check(p.x>=state.host.x+7.9&&p.right<=state.host.right-7.9&&p.y>=state.header.bottom+7.9&&
    p.bottom<=(state.dock.top>state.header.bottom?state.dock.top:state.host.bottom)-7.9,m.id+': the whole pill stays on screen');
   if(state.host.width>=360||state.host.height<760)check(m.font>=13,m.id+': standard layouts retain at least 13px type');
@@ -76,6 +98,7 @@ export async function markerEvidence(page,check,{native=true}={}){
    d.bottom<=(state.dock.top>state.header.bottom?state.dock.top:state.host.bottom),m.id+': the dot never clips into navigation');
   const x=d.x+d.width/2,y=d.y+d.height/2;
   check(m.edgeGap<=52.5,m.id+': the name remains next to its object edge');
+  check(['above','below','beside'].includes(m.side),m.id+': the marker records which side of its dot the name sits');
   check(m.distance<.75,m.id+': the dot is actually on the photographed object');
   if(m.original[0]>=11&&m.original[0]<=state.host.right-11&&m.original[1]>=state.header.bottom+11&&
    m.original[1]<=(state.dock.top>state.header.bottom?state.dock.top:state.host.bottom)-11)
@@ -93,7 +116,7 @@ export async function markerEvidence(page,check,{native=true}={}){
    check(!intersects,m.id+': its name never covers the pictured '+o.id);
   }
  }
- if(native)check(await page.locator('.scene-label-connector,.scene-connector-edge').count()===0,'Compact buttons have no detached connector stems');
+ if(native)check(await page.locator('.scene-label-connector,.scene-connector-edge').count()===0,'No legacy SVG label connectors remain; stems live inside each marker');
 
  return state;
  }catch(error){

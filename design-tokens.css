@@ -82,8 +82,22 @@
   --text-eyebrow: 11px;
   --text-xs: 12px;
   --text-marker: 13px;
+  --text-marker-wide: 14px;
+  --marker-height: 24px;
+  --marker-height-wide: 26px;
   --marker-phase: 0s;
   --font-marker: 'Zalando Sans Expanded', var(--font-ui);
+  /* Literal colours: near-white pills with black lettering in every lighting phase. */
+  --marker-surface: color-mix(in srgb, #fbfaf5 97%, transparent);
+  --marker-surface-hover: #fffdf5;
+  --marker-ink: #000000;
+  --marker-shadow: 0 1px 2px rgb(0 0 0 / .18), 0 3px 12px rgb(0 0 0 / .16);
+  --marker-shadow-raised: 0 2px 4px rgb(0 0 0 / .22), 0 8px 20px rgb(0 0 0 / .24);
+  --marker-dot-ring: 0 1px 5px rgb(0 0 0 / .35);
+  --marker-dot-halo: rgb(255 255 255 / .6);
+  --marker-dot-halo-fill: rgb(255 255 255 / .12);
+  --marker-stem: rgb(255 255 255 / .85);
+  --marker-stem-shadow: 0 0 2px rgb(0 0 0 / .45);
   --text-sm: 14px;
   --text-base: 16px;
   --text-lg: 18px;

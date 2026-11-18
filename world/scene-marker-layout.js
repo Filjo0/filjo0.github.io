@@ -1,8 +1,27 @@
-// Object anchors never move. Optional attached tabs meet their own silhouette edge.
+// Object anchors never move. Each name is pinned to its own dot by a short stem.
 import {bounds,clipRing,pointInRing,nearestPoint,rectangleHitsRing} from './scene-object-geometry.js';
 const overlaps=(a,b,pad=0)=>a.left<b.right+pad&&a.right>b.left-pad&&a.top<b.bottom+pad&&a.bottom>b.top-pad;
 const rect=(x,y,w,h)=>({left:x,top:y,right:x+w,bottom:y+h});
 const closest=(p,r)=>[Math.max(r.left,Math.min(r.right,p[0])),Math.max(r.top,Math.min(r.bottom,p[1]))];
+// Sample a stem segment; true when it passes through a rectangle (inflated by pad).
+export const stemHits=(s,r,pad=2)=>{
+ const length=Math.hypot(s.end[0]-s.start[0],s.end[1]-s.start[1]);
+ for(let i=0;i<=length;i+=2){
+  const t=length?i/length:0,x=s.start[0]+(s.end[0]-s.start[0])*t,y=s.start[1]+(s.end[1]-s.start[1])*t;
+  if(x>r.left-pad&&x<r.right+pad&&y>r.top-pad&&y<r.bottom+pad)return true;
+ }
+ return false;
+};
+const stemCrosses=(s,others)=>{
+ const length=Math.hypot(s.end[0]-s.start[0],s.end[1]-s.start[1]);
+ for(let i=0;i<=length;i+=3){
+  const t=length?i/length:0,p=[s.start[0]+(s.end[0]-s.start[0])*t,s.start[1]+(s.end[1]-s.start[1])*t];
+  if(others.some(o=>pointInRing(p,o.outline)))return true;
+ }
+ return false;
+};
+// Two markers clash when their targets overlap or one stem runs through the other's name.
+export const markersClash=(a,b,strict=true)=>overlaps(a.box,b.box,4)||strict&&(stemHits(a,b.pill)||stemHits(b,a.pill));
 export function markerAnchor(anchor,outline,viewport){
  const ring=clipRing(outline,{left:viewport.left+3,right:viewport.right-3,top:viewport.top+3,bottom:viewport.bottom-3});
  if(ring.length<3)return null;
@@ -42,7 +61,12 @@ export function placeMarkers(markers,viewport,obstacles=[],previous={}){
    if(other.some(o=>pointInRing(p,o.outline)))return null;
   }
   const start=length?[x+(end[0]-x)*Math.min(9,length)/length,y+(end[1]-y)*Math.min(9,length)/length]:[x,y];
-  return {box,pill,start,end,anchor:m.anchor,cost:penalty+length+Math.abs(left+w/2-x)*.08};
+  // A visible stem joins every dot to its own name. Prefer a short vertical stem with
+  // the name centred directly below its dot (as in the reference); above only when needed.
+  const aligned=x>=pill.left+10&&x<=pill.right-10,above=pill.bottom<=y;
+  let cost=penalty+length+Math.abs(left+w/2-x)*(aligned?.15:.6)+(aligned?0:40)+(above&&!m.preferAbove?24:0);
+  if(stemCrosses({start,end},other))cost+=120;
+  return {box,pill,start,end,anchor:m.anchor,cost};
  }
  // A pan translates the photograph. Reuse its valid layout instead of solving
  // the same arrangement on every frame; all collision checks still apply.
@@ -50,7 +74,7 @@ export function placeMarkers(markers,viewport,obstacles=[],previous={}){
   const restored=prepared.map(m=>{
    const old=previous[m.id];return [m.id,candidate(m,old.box.left+m.anchor[0]-old.anchor[0],old.box.top+m.anchor[1]-old.anchor[1])];
   });
-  if(restored.every(([,p],i)=>p&&restored.slice(0,i).every(([,o])=>o&&!overlaps(p.box,o.box,4))))
+  if(restored.every(([,p],i)=>p&&restored.slice(0,i).every(([,o])=>o&&!markersClash(p,o))))
    return {ok:true,positions:Object.fromEntries(restored),steps:0,reused:true};
  }
  const items=prepared.map(m=>{
@@ -90,7 +114,7 @@ export function placeMarkers(markers,viewport,obstacles=[],previous={}){
    for(let xx=Math.max(viewport.left,x-w-50);xx<=Math.min(viewport.right-w,x+50);xx+=2)add(xx,yy,32);
   return {m,options:options.sort((a,b)=>a.cost-b.cost)};
  }).sort((a,b)=>a.options.length-b.options.length);
- const result=new Map();let steps=0;
+ const result=new Map();let steps=0,strict=true;
  function search(index){
   if(index===items.length)return true;if(++steps>15000)return false;
   const placed=[...result.values()];let next=null,choices=null;
@@ -98,7 +122,7 @@ export function placeMarkers(markers,viewport,obstacles=[],previous={}){
   // This avoids spending the unchanged search budget on already impossible branches.
   for(const item of items){
    if(result.has(item.m.id))continue;
-   const legal=item.options.filter(p=>placed.every(o=>!overlaps(p.box,o.box,4)));
+   const legal=item.options.filter(p=>placed.every(o=>!markersClash(p,o,strict)));
    if(!legal.length)return false;
    if(!choices||legal.length<choices.length){next=item;choices=legal;}
   }
@@ -106,5 +130,9 @@ export function placeMarkers(markers,viewport,obstacles=[],previous={}){
    result.set(next.m.id,p);if(search(index+1))return true;result.delete(next.m.id);
   }return false;
  }
- return {ok:search(0),positions:Object.fromEntries(result),steps,counts:items.map(o=>[o.m.id,o.options.length])};
+ // Crowded crops may have no layout where every stem avoids every name; then
+ // keep the name next to its object rather than disabling the marker.
+ let ok=search(0);
+ if(!ok){result.clear();steps=0;strict=false;ok=search(0);}
+ return {ok,positions:Object.fromEntries(result),steps,strictStems:strict,counts:items.map(o=>[o.m.id,o.options.length])};
 }
