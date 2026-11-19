@@ -1,52 +1,89 @@
 /* Pinned markers after the Epic Sports reference: a ringed dot, a short stem and a solid
-   extended uppercase name read as one control. The face is locally hosted (OFL). */
-@font-face{
- font-family:'Zalando Sans Expanded';font-style:normal;font-weight:500;font-display:swap;
- src:url('./assets/fonts/zalando-sans-expanded/medium-latin.woff2') format('woff2');
-}
+   extended uppercase name read as one control. The locally hosted (OFL) face is registered
+   by world/scene-hotspots.js, so later stylesheet changes never reset its loaded state. */
 body[data-world-navigation="objects"] .scene-hotspots .scene-object-label{display:flex;}
+/* Frosted glass name: the scene shows through a blurred, lightly tinted pill with a bright edge. */
 body[data-world-navigation="objects"] .scene-marker-name{
+ position:relative;overflow:hidden;isolation:isolate;
  height:var(--marker-height);padding:0 13px;gap:0;border:0;border-radius:100px;
  background:var(--marker-surface);color:var(--marker-ink);font:500 var(--text-marker)/16px var(--font-marker);
  letter-spacing:normal;text-transform:uppercase;text-shadow:none;box-shadow:var(--marker-shadow);
- transition:transform 180ms cubic-bezier(.2,.8,.2,1),background-color 180ms ease,box-shadow 180ms ease;
+ -webkit-backdrop-filter:var(--marker-glass);backdrop-filter:var(--marker-glass);
+ transition:transform 200ms cubic-bezier(.2,.8,.2,1),background-color 200ms ease,box-shadow 200ms ease;
+}
+/* A light sweep crosses the name on hover, focus or press; at rest it is parked out of sight. */
+body[data-world-navigation="objects"] .scene-marker-name::after{
+ content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;border-radius:inherit;
+ background:linear-gradient(105deg,transparent 30%,var(--marker-shine) 50%,transparent 70%);
+ transform:translateX(-120%);
 }
 body[data-world-navigation="objects"] .scene-marker-name .scene-tab-icon{display:none;}
-body[data-world-navigation="objects"] .scene-hotspots [data-hotspot-state="hover"] .scene-marker-name,
-body[data-world-navigation="objects"] .scene-hotspots button:active .scene-marker-name{
+body[data-world-navigation="objects"] .scene-hotspots :is([data-hotspot-state="hover"],[data-hotspot-state="focus"],[data-pressed]) .scene-marker-name{
  background:var(--marker-surface-hover);color:var(--marker-ink);box-shadow:var(--marker-shadow-raised);
 }
-body[data-world-navigation="objects"] .scene-hotspots :is(button:active,[data-pressed]) .scene-marker-name{transform:scale(.96);background:var(--marker-surface-hover);}
-body[data-world-navigation="objects"] .scene-hotspots [data-pressed] .scene-object-dot{transform:translate(-50%,-50%) scale(1.2);}
+body[data-world-navigation="objects"] .scene-hotspots :is([data-hotspot-state="hover"],[data-pressed]) .scene-marker-name::after{
+ animation:scene-marker-shine 700ms cubic-bezier(.3,.6,.2,1) 1;
+}
+@keyframes scene-marker-shine{from{transform:translateX(-120%);}to{transform:translateX(120%);}}
+body[data-world-navigation="objects"] .scene-hotspots :is(button:active,[data-pressed]) .scene-marker-name{transform:scale(.95);}
 body[data-world-navigation="objects"] .scene-object-dot{
  width:14px;height:14px;box-sizing:border-box;border:0;border-radius:50%;
  background:var(--color-white);box-shadow:var(--marker-dot-ring);opacity:1;pointer-events:auto;
- transition:transform 180ms cubic-bezier(.2,.8,.2,1);
+ transition:transform 200ms cubic-bezier(.2,.8,.2,1);
 }
-body[data-world-navigation="objects"] .scene-hotspots [data-hotspot-state="hover"] .scene-object-dot{transform:translate(-50%,-50%) scale(1.2);}
+/* Keyboard focus keeps the dot at rest size so the painted focus outline stays fully visible. */
+body[data-world-navigation="objects"] .scene-hotspots :is([data-hotspot-state="hover"],[data-pressed]) .scene-object-dot{
+ transform:translate(-50%,-50%) scale(1.3);
+}
 body[data-world-navigation="objects"] .scene-object-dot::before{
  content:'';position:absolute;inset:-8px;border-radius:50%;pointer-events:none;
  border:1.5px solid var(--marker-dot-halo);background:var(--marker-dot-halo-fill);
 }
+/* A ripple keeps travelling out from every dot, staggered so the scene gently "breathes". */
 body[data-world-navigation="objects"] .scene-object-dot::after{
- content:'';position:absolute;inset:-6px;border-radius:50%;pointer-events:none;
- background:var(--color-white);filter:blur(1px);opacity:0;
- animation:scene-marker-breathe 3.6s ease-out infinite;animation-delay:var(--marker-phase,0s);
+ content:'';position:absolute;inset:-4px;border-radius:50%;pointer-events:none;
+ border:2px solid var(--color-white);opacity:0;
+ animation:scene-marker-breathe 2.6s cubic-bezier(.2,.7,.3,1) infinite;animation-delay:var(--marker-phase,0s);
+}
+@keyframes scene-marker-breathe{
+ 0%{opacity:.7;transform:scale(.7);}
+ 70%,100%{opacity:0;transform:scale(2.3);}
 }
 .scene-marker-stem{
  position:absolute;height:2px;margin-top:-1px;transform-origin:0 50%;border-radius:1px;pointer-events:none;
  background:var(--marker-stem);box-shadow:var(--marker-stem-shadow);
 }
 .scene-marker-stem[hidden]{display:none;}
-@keyframes scene-marker-breathe{
- 0%{opacity:.28;transform:scale(.65);}
- 75%,100%{opacity:0;transform:scale(1.6);}
+/* Arrival: each dot pops in turn and its stem draws out to the (already visible) name. */
+body[data-world-navigation="objects"] .scene-hotspots[data-marker-layout="ready"] .scene-object-dot{
+ animation:scene-marker-pop 520ms cubic-bezier(.3,1.6,.5,1) backwards;animation-delay:calc(var(--marker-order,0) * 80ms);
 }
+body[data-world-navigation="objects"] .scene-hotspots[data-marker-layout="ready"] .scene-marker-stem{
+ animation:scene-marker-draw 420ms cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(220ms + var(--marker-order,0) * 80ms);
+}
+@keyframes scene-marker-pop{from{transform:translate(-50%,-50%) scale(0);}}
+@keyframes scene-marker-draw{from{clip-path:inset(0 100% 0 0);}}
+@keyframes scene-marker-draw-down{from{clip-path:inset(0 0 100% 0);}}
+@keyframes scene-marker-draw-up{from{clip-path:inset(100% 0 0 0);}}
+body[data-world-navigation="objects"] .scene-hotspots[data-marker-layout="ready"] .scene-marker-stem[data-stem-axis="down"]{animation-name:scene-marker-draw-down;}
+body[data-world-navigation="objects"] .scene-hotspots[data-marker-layout="ready"] .scene-marker-stem[data-stem-axis="up"]{animation-name:scene-marker-draw-up;}
+body:has([data-world-pause][aria-pressed="true"]) .scene-hotspots :is(.scene-object-dot,.scene-marker-stem),
+body[data-motion="reduce"] .scene-hotspots :is(.scene-object-dot,.scene-marker-stem),
+body:has([data-world-pause][aria-pressed="true"]) .scene-hotspots .scene-marker-name::after,
+body[data-motion="reduce"] .scene-hotspots .scene-marker-name::after{animation:none!important;}
 body:has([data-world-pause][aria-pressed="true"]) .scene-object-dot::after,
-body[data-motion="reduce"] .scene-object-dot::after{animation:none!important;opacity:0;}
+body[data-motion="reduce"] .scene-object-dot::after,
+body[data-inspecting] .scene-hotspots .scene-marker-name::after,
+.scene-hotspots[data-suspended] .scene-marker-name::after{animation:none!important;opacity:0;}
 @media(prefers-reduced-motion:reduce){
  body[data-world-navigation="objects"] .scene-object-dot::after{animation:none!important;opacity:0;}
+ body[data-world-navigation="objects"] .scene-hotspots :is(.scene-object-dot,.scene-marker-stem){animation:none!important;}
+ body[data-world-navigation="objects"] .scene-marker-name::after{animation:none!important;}
  body[data-world-navigation="objects"] :is(.scene-marker-name,.scene-object-dot){transition:none!important;}
+}
+/* The menu item for the object under the finger or pointer lights up too, linking picture and menu. */
+body[data-world-navigation="objects"] .world-dock [data-world-route][data-scene-linked]{
+ color:var(--color-copper);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:6px;
 }
 @media(min-width:1024px){body[data-world-navigation="objects"] .scene-marker-name{font-size:var(--text-marker-wide);line-height:18px;height:var(--marker-height-wide);padding:0 15px;}}
 @media(max-width:360px){body[data-world-navigation="objects"] .scene-marker-name{padding:0 9px;}}

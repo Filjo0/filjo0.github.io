@@ -18,11 +18,14 @@ async function readMarkerState(page){
    pan:pan.hidden?null:box(pan),inspector:inspector?box(inspector):null,objects:[...nav.querySelectorAll('[data-scene-object]')].filter(n=>!n.hidden).map(n=>{
     const dot=n.querySelector('.scene-object-dot'),label=n.querySelector('.scene-marker-name'),target=n.querySelector('.scene-object-label');
     const stemNode=n.querySelector('.scene-marker-stem'),buttonBox=n.getBoundingClientRect();
-    const angle=Number.parseFloat((stemNode?.style.transform.match(/rotate\(([-\d.e]+)rad\)/)||[])[1]||0);
-    const stemStart=stemNode?[buttonBox.x+Number.parseFloat(stemNode.style.left),buttonBox.y+Number.parseFloat(stemNode.style.top)]:null;
-    const stemLength=stemNode?Number.parseFloat(stemNode.style.width)||0:0;
-    const stem=stemNode&&stemStart.every(Number.isFinite)?{shown:!stemNode.hidden&&getComputedStyle(stemNode).display!=='none',start:stemStart,
-     end:[stemStart[0]+Math.cos(angle)*stemLength,stemStart[1]+Math.sin(angle)*stemLength],length:stemLength}:null;
+    // data-stem holds the drawn ends relative to the marker button.
+    const ends=(stemNode?.dataset.stem||'').split(',').map(Number);
+    const stem=ends.length===4&&ends.every(Number.isFinite)?{shown:!stemNode.hidden&&getComputedStyle(stemNode).display!=='none',
+     start:[buttonBox.x+ends[0],buttonBox.y+ends[1]],end:[buttonBox.x+ends[2],buttonBox.y+ends[3]],
+     length:Math.hypot(ends[2]-ends[0],ends[3]-ends[1])}:null;
+    if(stem?.shown){const box=stemNode.getBoundingClientRect(),xs=[stem.start[0],stem.end[0]],ys=[stem.start[1],stem.end[1]];
+     // The painted stem must actually span its recorded ends (within its 2px width).
+     stem.painted=box.left<=Math.min(...xs)+1.5&&box.right>=Math.max(...xs)-1.5&&box.top<=Math.min(...ys)+1.5&&box.bottom>=Math.max(...ys)-1.5;}
     const d=box(dot),r=box(label),centre=[d.x+d.width/2,d.y+d.height/2],style=getComputedStyle(label);
     paint.clearRect(0,0,1,1);paint.fillStyle=style.backgroundColor;paint.fillRect(0,0,1,1);
     const surface=[...paint.getImageData(0,0,1,1).data];
@@ -46,7 +49,7 @@ async function readMarkerState(page){
      font:Number.parseFloat(style.fontSize),family:style.fontFamily,weight:Number(style.fontWeight),
      surface,glass:style.backdropFilter||style.webkitBackdropFilter,border:style.borderWidth,pillShadow:style.boxShadow,color:style.color,background:style.backgroundColor,opacity:getComputedStyle(target).opacity,
      textBox:range.getBoundingClientRect().toJSON(),
-     stem,side:n.dataset.markerSide,
+     stem,side:n.dataset.markerSide,state:n.dataset.hotspotState,
      dotHit:document.elementFromPoint(...centre)?.closest('[data-scene-object]')===n,
      pillHit:document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest('[data-scene-object]')===n};
    })};
@@ -73,14 +76,14 @@ export async function markerEvidence(page,check,{native=true}={}){
   check(m.weight===500&&m.family.includes('Zalando Sans Expanded'),m.id+': the name uses the approved extended medium face');
   check(m.border==='0px'&&m.pillShadow!=='none'&&m.color==='rgb(0, 0, 0)',
    m.id+': the borderless pill has black extended lettering and a soft lifting shadow');
-  check(m.surface[0]>=245&&m.surface[1]>=245&&m.surface[2]>=240&&m.surface[3]>=235,
-   m.id+': a near-opaque white surface keeps the name readable on day and night artwork');
+  check(m.surface[0]>=250&&m.surface[1]>=245&&m.surface[2]>=235&&m.surface[3]>=170&&m.surface[3]<=(m.state==='none'?215:240)&&/blur\(/.test(m.glass),
+   m.id+': a frosted, warm-white glass surface shows the scene through a soft backdrop');
   // The stem joins the dot to its own name, so every name visibly belongs to one object.
   const s=m.stem,dc=[d.x+d.width/2,d.y+d.height/2];
   const nearPill=s&&Math.hypot(Math.max(p.x-s.end[0],0,s.end[0]-p.right),Math.max(p.y-s.end[1],0,s.end[1]-p.bottom))<=1.5;
   // Only a layout the solver reports as cramped ('crossing') may drop a stem; that name still sits
   // beside its own object (edge gap check below), as in the earlier stemless design.
-  check(s&&(s.shown?Math.hypot(s.start[0]-dc[0],s.start[1]-dc[1])<=10.5&&nearPill:
+  check(s&&(s.shown?s.painted&&Math.hypot(s.start[0]-dc[0],s.start[1]-dc[1])<=10.5&&nearPill:
    Math.hypot(Math.max(p.x-dc[0],0,dc[0]-p.right),Math.max(p.y-dc[1],0,dc[1]-p.bottom))<=12||state.stems==='crossing'),
    m.id+': a stem joins its dot to its own name');
   if(state.host.width>=600||state.host.height>=330)check(state.stems==='clear',m.id+': every stem avoids every name at this size');

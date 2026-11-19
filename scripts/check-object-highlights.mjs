@@ -39,11 +39,14 @@ async function photoDifference(p,before,id,afterOverride){
   const effect=document.querySelector('[data-scene-effect="'+id+'"]'),shape=document.querySelector('[data-scene-outline="'+id+'"]');
   const button=document.querySelector('[data-scene-object="'+id+'"]'),object=effect.querySelector('.scene-object-rim').getBoundingClientRect(),label=button.lastElementChild.getBoundingClientRect();
   const dot=button.querySelector('.scene-object-dot').getBoundingClientRect();
+  // The matching menu item deliberately lights up with its object; only that item may change.
+  const menu=document.querySelector('.world-dock [data-world-route="'+id+'"][data-scene-linked]')?.getBoundingClientRect();
   let outside=0,inside=0,lift=0;
   for(let y=Math.ceil(host.y);y<Math.min(a.height,Math.floor(host.bottom));y++)for(let x=0;x<a.width;x++){
    const i=(y*a.width+x)*4,diff=Math.max(...[0,1,2].map(c=>Math.abs(a.data[i+c]-b.data[i+c])));
    const onObject=shape.isPointInFill(new DOMPoint(x-host.x,y-host.y));
-   const allowed=onObject||[object,label].some(r=>x>=r.left-15&&x<=r.right+15&&y>=r.top-15&&y<=r.bottom+15);
+   const allowed=onObject||[object,label].some(r=>x>=r.left-15&&x<=r.right+15&&y>=r.top-15&&y<=r.bottom+15)||
+    !!menu&&x>=menu.left-2&&x<=menu.right+2&&y>=menu.top-2&&y<=menu.bottom+10;
    if(diff>2&&!allowed)outside++;
    // Interior pixels are selected by native SVG fill, away from the outline and its labels.
    if(x%3||y%3||!onObject||[dot,label].some(r=>x>=r.left-1&&x<=r.right+1&&y>=r.top-1&&y<=r.bottom+1))continue;
@@ -94,7 +97,10 @@ try{
    check(await p.locator('[data-world-reader]').isHidden(),'Hover reveals the object without opening');
    check(await work.locator('small').count()===0&&(await work.locator('.scene-marker-text').textContent())=== 'My apps','Hover retains the destination name without a redundant Open action');
    await outlineGeometry(p,layout,check);const pixels=await photoDifference(p,before,'work');
-   check(pixels.outside===0,'Highlight changes only its own object, halo, tag and connector: '+JSON.stringify(pixels));
+   check(pixels.outside===0,'Highlight changes only its own object, halo, tag, connector and matching menu item: '+JSON.stringify(pixels));
+   check(await p.locator('.world-dock [data-world-route="work"]').getAttribute('data-scene-linked')==='',
+    'Hovering the laptop lights the matching My apps menu item');
+   check(await p.locator('.world-dock [data-scene-linked]').count()===1,'Only the matching menu item is lit');
    if(size.width===1440&&season==='coast'&&!night){
     // A one-pixel change in the empty sky must still fail the zero-outside rule.
     const changed=await p.evaluate(async base64=>{

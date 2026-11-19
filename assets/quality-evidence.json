@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "recordedAt": "2026-11-18T11:16:27.919Z",
-  "sourceDigest": "28370f383e6f25e2da07be7e83367ff8648e167d48c88da7bd1812a2cc0ac06a",
+  "recordedAt": "2026-11-19T06:00:16.866Z",
+  "sourceDigest": "f9544fe513d5ae8603df126cc1afe64a36794414ed857a925c589108a50224f4",
   "scope": "This source · local browser validation",
   "checks": [
     {
@@ -10,19 +10,19 @@
     },
     {
       "label": "Marker assertions · Chromium",
-      "passed": 9472
+      "passed": 9548
     },
     {
       "label": "Scene enhancement assertions · Chromium",
-      "passed": 15495
+      "passed": 15551
     },
     {
       "label": "Marker assertions · WebKit",
-      "passed": 9472
+      "passed": 9548
     },
     {
       "label": "Scene enhancement assertions · WebKit",
-      "passed": 15495
+      "passed": 15551
     },
     {
       "label": "Logic tests",
