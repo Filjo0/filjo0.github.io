@@ -49,6 +49,7 @@ export function createLinkedMenuFlow({
     serial = 0,
     lastPress = null,
     shield = null,
+    deferred = null,
     planeReady = Promise.resolve(),
     ignoredInputs = 0,
     pendingParent = null,
@@ -131,10 +132,18 @@ export function createLinkedMenuFlow({
   };
   function blockInput() {
     ignoredInputs = 0;
+    deferred = null;
     shield = document.createElement('div');
     shield.className = 'linked-input-shield';
     shield.addEventListener('pointerdown', e => {
       if (e.target.closest('[data-world-close]')) return;
+      // While returning, the header and menu are already back on screen. Remember a press on
+      // one of their controls and replay it once the return finishes, instead of losing it.
+      if (phase === 'returning') {
+        const under = document.elementsFromPoint(e.clientX, e.clientY).find(n => !shield.contains(n));
+        const control = under?.closest('.world-header :is(a,button), .world-dock :is(a,button)');
+        if (control) deferred = control;
+      }
       ignoredInputs++;
       if (entry) {
         entry.record.ignoredInputs = ignoredInputs;
@@ -673,6 +682,8 @@ export function createLinkedMenuFlow({
         clearSheet();
         unblock();
         highlight('');
+        const replay = deferred;
+        deferred = null;
         if (leaving.parent) {
           leaving.canvas.width = 0;
           setPhase('open');
@@ -687,6 +698,7 @@ export function createLinkedMenuFlow({
             preventScroll: true
           });
         }
+        if (replay?.isConnected && !replay.closest('[hidden]')) replay.click();
       } catch (error) {
         if (token === serial) {
           console.warn('[linked-menu:return]', error);

@@ -86,8 +86,10 @@ try{
   await markerEvidence(p,check);
   const header=await p.locator('.world-header').boundingBox(),role=await p.locator('.world-identity p').boundingBox();
   check(role&&role.y>=header.y&&role.y+role.height<=header.y+header.height,'Role stays inside the mobile header');
-  check(await p.locator('[data-scene-inspect]').evaluate((n,role)=>n.getBoundingClientRect().bottom<=role.y,role),
-   'The labelled Inspect button also stays clear of the role line');
+  // Portrait stacks Inspect above the full-width role line; compact landscape puts them side by side.
+  check(await p.locator('[data-scene-inspect]').evaluate((n,{role,landscape})=>{const r=n.getBoundingClientRect();
+   return landscape?r.right<=role.x||r.left>=role.x+role.width||r.bottom<=role.y||r.top>=role.y+role.height:r.bottom<=role.y;},
+   {role,landscape:width>height}),'The labelled Inspect button also stays clear of the role line');
   check(await p.locator('[data-scene-inspect]').evaluate(n=>n.getBoundingClientRect().width>=44),'Inspect has a real phone target');
   check(await p.locator('[data-scene-inspect] span').isVisible(),'The phone control visibly says Inspect, not an unexplained Search icon');
   check(await p.locator('.world-identity h1').evaluate(n=>n.getBoundingClientRect().right<=

@@ -520,6 +520,10 @@ try {
     if (a && !textMode) {
       e.preventDefault();
       go(a.dataset.worldRoute,{opener:a});
+    } else if (a && textMode && a.dataset.worldRoute === 'overview') {
+      // Simple page view disposed the scene; a clean load is the reliable way back to it.
+      e.preventDefault();
+      location.assign(location.pathname + location.search);
     }
   }, {
     signal
